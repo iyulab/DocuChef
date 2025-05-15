@@ -40,10 +40,70 @@ internal static class ImageFunction
             int height = context.Options?.DefaultImageHeight ?? 200;
             bool preserveAspectRatio = context.Options?.PreserveImageAspectRatio ?? true;
 
+            // Check for array references in parameters and add information to shape properties
+            var arrayMatch = System.Text.RegularExpressions.Regex.Match(imagePath, @"(\w+)\[(\d+)\]");
+            if (arrayMatch.Success && arrayMatch.Groups.Count >= 3)
+            {
+                string arrayName = arrayMatch.Groups[1].Value;
+                if (int.TryParse(arrayMatch.Groups[2].Value, out int index))
+                {
+                    // Check if index is valid for this array
+                    if (context.Variables.TryGetValue(arrayName, out var arrayObj) && arrayObj != null)
+                    {
+                        int arraySize = CollectionHelper.GetCollectionCount(arrayObj);
+                        if (index >= arraySize)
+                        {
+                            Logger.Warning($"[IMAGE-DEBUG] Array index out of bounds: {arrayName}[{index}] >= {arraySize}");
+
+                            // Hide the shape if it exists and index is out of bounds
+                            if (context.Shape?.ShapeObject != null)
+                            {
+                                PowerPointShapeHelper.HideShape(context.Shape.ShapeObject);
+                                Logger.Debug($"[IMAGE-DEBUG] Hiding shape due to invalid array index");
+                                return ""; // Return empty string to avoid error message
+                            }
+
+                            return ""; // Return empty string instead of error message
+                        }
+                    }
+
+                    // Add metadata to shape if valid
+                    if (context.Shape?.ShapeObject != null)
+                    {
+                        var nvProps = context.Shape.ShapeObject.NonVisualShapeProperties;
+                        if (nvProps?.NonVisualDrawingProperties != null)
+                        {
+                            // Add array reference to shape description (alt text)
+                            string arrayRef = $"{arrayName}[{index}]";
+                            nvProps.NonVisualDrawingProperties.Description = arrayRef;
+                            Logger.Debug($"[IMAGE-DEBUG] Added array reference to shape description: {arrayRef}");
+                        }
+                    }
+                }
+            }
+
             // Resolve array references
             if (imagePath.Contains('[') && imagePath.Contains(']'))
             {
-                imagePath = ResolveArrayIndexedPath(context, imagePath);
+                string resolvedPath = ResolveArrayIndexedPath(context, imagePath);
+
+                // Check if resolution resulted in an error
+                if (resolvedPath.StartsWith("[Error:"))
+                {
+                    Logger.Warning($"[IMAGE-DEBUG] Failed to resolve array path: {resolvedPath}");
+
+                    // Hide the shape if it exists
+                    if (context.Shape?.ShapeObject != null)
+                    {
+                        PowerPointShapeHelper.HideShape(context.Shape.ShapeObject);
+                        Logger.Debug($"[IMAGE-DEBUG] Hiding shape due to array resolution error");
+                        return ""; // Return empty string to avoid error message
+                    }
+
+                    return ""; // Return empty string instead of error message
+                }
+
+                imagePath = resolvedPath;
             }
             // Resolve property paths
             else if (imagePath.Contains('.'))
@@ -81,7 +141,16 @@ internal static class ImageFunction
             if (!File.Exists(imagePath))
             {
                 Logger.Warning($"[IMAGE-DEBUG] Image file not found: {imagePath}");
-                return $"[Error: Image file not found: {imagePath}]";
+
+                // Hide the shape if it exists
+                if (context.Shape?.ShapeObject != null)
+                {
+                    PowerPointShapeHelper.HideShape(context.Shape.ShapeObject);
+                    Logger.Debug($"[IMAGE-DEBUG] Hiding shape due to missing image file");
+                    return ""; // Return empty string to avoid error message
+                }
+
+                return $""; // Return empty string instead of error message
             }
 
             var fileInfo = new FileInfo(imagePath);
@@ -104,17 +173,29 @@ internal static class ImageFunction
                 else
                 {
                     Logger.Warning("Failed to process image in shape");
-                    return "[Image processing failed]";
+
+                    // Hide the shape on processing failure
+                    PowerPointShapeHelper.HideShape(context.Shape.ShapeObject);
+                    Logger.Debug($"[IMAGE-DEBUG] Hiding shape due to image processing failure");
+                    return "";
                 }
             }
 
             Logger.Warning($"Invalid context for image processing - shape: {context.Shape?.ShapeObject != null}, slide part: {context.SlidePart != null}");
-            return $"[Image: {imagePath}, {width}x{height}]";
+            return "";
         }
         catch (Exception ex)
         {
             Logger.Error($"Error processing image: {ex.Message}", ex);
-            return $"[Error processing image: {ex.Message}]";
+
+            // Hide the shape on exception
+            if (context.Shape?.ShapeObject != null)
+            {
+                PowerPointShapeHelper.HideShape(context.Shape.ShapeObject);
+                Logger.Debug($"[IMAGE-DEBUG] Hiding shape due to exception: {ex.Message}");
+            }
+
+            return "";
         }
     }
 
@@ -137,6 +218,14 @@ internal static class ImageFunction
         {
             Logger.Warning($"[IMAGE-DEBUG] Array not found: {arrayName}");
             return $"[Error: Array not found: {arrayName}]";
+        }
+
+        // Verify array index is within bounds
+        int arraySize = CollectionHelper.GetCollectionCount(arrayObj);
+        if (index >= arraySize)
+        {
+            Logger.Warning($"[IMAGE-DEBUG] Array index out of bounds: {arrayName}[{index}] >= {arraySize}");
+            return $"[Error: Array index out of bounds: {index} >= {arraySize}]";
         }
 
         object item = CollectionHelper.GetItemAtIndex(arrayObj, index);
@@ -290,10 +379,13 @@ internal static class ImageFunction
                 Logger.Debug("Created default outline");
             }
 
+            // Preserve description (alt text) from original shape
+            string description = nvdp?.Description?.Value;
+
             var picture = PowerPointHelper.CreatePicture(
                 relationshipId,
-                GetNextShapeId(slidePart),
-                shapeName + "_Image",
+                shapeId, // Keep the same ID for proper replacement
+                shapeName, // Keep original shape name
                 shapeX,
                 shapeY,
                 shapeWidth,
@@ -301,6 +393,12 @@ internal static class ImageFunction
                 preserveAspectRatio,
                 outline
             );
+
+            // Set description (alt text) on new picture from original shape
+            if (!string.IsNullOrEmpty(description))
+            {
+                picture.NonVisualPictureProperties.NonVisualDrawingProperties.Description = description;
+            }
 
             var parent = shape.Parent;
             if (parent == null)
@@ -339,29 +437,5 @@ internal static class ImageFunction
         } while (existingIds.Contains(relationshipId));
 
         return relationshipId;
-    }
-
-    /// <summary>
-    /// Get next available shape ID
-    /// </summary>
-    private static uint GetNextShapeId(SlidePart slidePart)
-    {
-        uint maxId = 0;
-
-        foreach (var shape in slidePart.Slide.Descendants<P.Shape>())
-        {
-            var id = shape.NonVisualShapeProperties?.NonVisualDrawingProperties?.Id?.Value;
-            if (id.HasValue && id.Value > maxId)
-                maxId = id.Value;
-        }
-
-        foreach (var pic in slidePart.Slide.Descendants<Picture>())
-        {
-            var id = pic.NonVisualPictureProperties?.NonVisualDrawingProperties?.Id?.Value;
-            if (id.HasValue && id.Value > maxId)
-                maxId = id.Value;
-        }
-
-        return maxId + 1;
     }
 }

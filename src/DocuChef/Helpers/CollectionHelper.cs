@@ -65,24 +65,6 @@ public static class CollectionHelper
     }
 
     /// <summary>
-    /// Convert object to list
-    /// </summary>
-    public static List<object> ConvertToList(object obj)
-    {
-        if (obj == null)
-            return new List<object>();
-
-        if (obj is IList list)
-            return list.Cast<object>().ToList();
-
-        if (obj is IEnumerable enumerable && !(obj is string))
-            return enumerable.Cast<object>().ToList();
-
-        // Single item
-        return new List<object> { obj };
-    }
-
-    /// <summary>
     /// Get item at index from any collection
     /// </summary>
     public static object GetItemAtIndex(object collection, int index)

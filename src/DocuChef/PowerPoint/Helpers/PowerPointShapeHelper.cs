@@ -9,23 +9,40 @@ internal static class PowerPointShapeHelper
     private static readonly Dictionary<string, (long x, long y)> _originalPositions = new();
 
     /// <summary>
-    /// Find array references in shape with simplified implementation
+    /// Find array references in shape with improved implementation for image detection
     /// </summary>
     public static List<ArrayReference> FindArrayReferences(P.Shape shape)
     {
         var result = new List<ArrayReference>();
 
-        if (shape?.TextBody == null)
-            return result;
-
-        var textRuns = shape.Descendants<A.Text>().ToList();
-        foreach (var textRun in textRuns)
+        // Check text content for array references
+        if (shape?.TextBody != null)
         {
-            if (!string.IsNullOrEmpty(textRun.Text))
+            var textRuns = shape.Descendants<A.Text>().ToList();
+            foreach (var textRun in textRuns)
             {
-                var references = ArrayReferenceHelper.ExtractArrayReferences(textRun.Text);
-                result.AddRange(references);
+                if (!string.IsNullOrEmpty(textRun.Text))
+                {
+                    var references = ArrayReferenceHelper.ExtractArrayReferences(textRun.Text);
+                    result.AddRange(references);
+                }
             }
+        }
+
+        // Check shape name for array references (important for image shapes)
+        string shapeName = shape.GetShapeName();
+        if (!string.IsNullOrEmpty(shapeName))
+        {
+            var nameReferences = ArrayReferenceHelper.ExtractArrayReferences(shapeName);
+            result.AddRange(nameReferences);
+        }
+
+        // Check shape alternative text for array references
+        var altText = shape.NonVisualShapeProperties?.NonVisualDrawingProperties?.Description?.Value;
+        if (!string.IsNullOrEmpty(altText))
+        {
+            var altTextReferences = ArrayReferenceHelper.ExtractArrayReferences(altText);
+            result.AddRange(altTextReferences);
         }
 
         return result;

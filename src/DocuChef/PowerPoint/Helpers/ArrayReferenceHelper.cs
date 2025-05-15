@@ -21,7 +21,12 @@ public static class ArrayReferenceHelper
     public static readonly Regex FunctionArgArrayPattern = new Regex(@"(\w+)\[(\d+)\](\.[\w\.]+)?([,\)])", RegexOptions.Compiled);
 
     /// <summary>
-    /// Extract array references from text
+    /// Improved pattern for array references with indirect syntax (for shape names and alt text)
+    /// </summary>
+    public static readonly Regex IndirectArrayPattern = new Regex(@"(\w+)_(\d+)(?:_|$)", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Extract array references from text with support for multiple patterns
     /// </summary>
     public static List<ArrayReference> ExtractArrayReferences(string text)
     {
@@ -30,14 +35,14 @@ public static class ArrayReferenceHelper
         if (string.IsNullOrEmpty(text))
             return result;
 
-        // Check dollar sign pattern
+        // 1. Check dollar sign pattern - ${Items[0].Property}
         var dollarMatches = DollarSignArrayPattern.Matches(text);
         foreach (Match match in dollarMatches)
         {
             result.Add(ParseArrayReference(match));
         }
 
-        // Check direct pattern
+        // 2. Check direct pattern - Items[0].Property
         var directMatches = DirectArrayPattern.Matches(text);
         foreach (Match match in directMatches)
         {
@@ -48,7 +53,7 @@ public static class ArrayReferenceHelper
             }
         }
 
-        // Check function argument pattern
+        // 3. Check function argument pattern
         var funcArgMatches = FunctionArgArrayPattern.Matches(text);
         foreach (Match match in funcArgMatches)
         {
@@ -57,6 +62,26 @@ public static class ArrayReferenceHelper
                 !directMatches.Cast<Match>().Any(m => m.Value.Contains(match.Value)))
             {
                 result.Add(ParseArrayReference(match));
+            }
+        }
+
+        // 4. Check indirect pattern (ArrayName_Index format used in shape names)
+        var indirectMatches = IndirectArrayPattern.Matches(text);
+        foreach (Match match in indirectMatches)
+        {
+            if (match.Groups.Count >= 3)
+            {
+                string arrayName = match.Groups[1].Value;
+                if (int.TryParse(match.Groups[2].Value, out int index))
+                {
+                    result.Add(new ArrayReference
+                    {
+                        ArrayName = arrayName,
+                        Index = index,
+                        PropertyPath = "",
+                        Pattern = match.Value
+                    });
+                }
             }
         }
 
@@ -115,6 +140,26 @@ public static class ArrayReferenceHelper
             return match.Value;
         });
 
+        // 3. Update indirect ArrayName_Index pattern (for shape names)
+        text = IndirectArrayPattern.Replace(text, match =>
+        {
+            if (match.Groups[1].Value != arrayName)
+                return match.Value;
+
+            // Check if index in range
+            if (match.Groups.Count > 2 && int.TryParse(match.Groups[2].Value, out int localIndex))
+            {
+                if (!IsValidIndex(localIndex, offset))
+                    return match.Value;
+
+                int newIndex = localIndex + offset;
+
+                // Replace only the number part, preserve the rest of the string
+                return $"{arrayName}_{newIndex}{match.Groups[0].Value.Substring(match.Groups[2].Index + match.Groups[2].Length - match.Groups[0].Index)}";
+            }
+            return match.Value;
+        });
+
         return text;
     }
 
@@ -150,30 +195,4 @@ public static class ArrayReferenceHelper
 
         return true;
     }
-}
-
-/// <summary>
-/// Represents an array reference in document template
-/// </summary>
-public class ArrayReference
-{
-    /// <summary>
-    /// The name of the array
-    /// </summary>
-    public string ArrayName { get; set; }
-
-    /// <summary>
-    /// The index referenced in the array
-    /// </summary>
-    public int Index { get; set; }
-
-    /// <summary>
-    /// The property path after the array index (if any)
-    /// </summary>
-    public string PropertyPath { get; set; }
-
-    /// <summary>
-    /// The full pattern matched in the text
-    /// </summary>
-    public string Pattern { get; set; }
 }

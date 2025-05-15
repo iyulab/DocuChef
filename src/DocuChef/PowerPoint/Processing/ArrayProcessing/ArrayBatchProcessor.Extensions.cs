@@ -1,7 +1,7 @@
 ﻿namespace DocuChef.PowerPoint.Processing.ArrayProcessing;
 
 /// <summary>
-/// Extension to ArrayBatchParameters for handling nested collection parameters
+/// Extension to ArrayBatchProcessor for handling nested collection parameters
 /// </summary>
 internal partial class ArrayBatchParameters
 {

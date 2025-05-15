@@ -120,14 +120,6 @@ internal partial class PowerPointProcessor : IExpressionEvaluator
     }
 
     /// <summary>
-    /// Gets the presentation part safely
-    /// </summary>
-    internal PresentationPart GetPresentationPart()
-    {
-        return ValidateDocument();
-    }
-
-    /// <summary>
     /// Gets slide IDs from a presentation part
     /// </summary>
     internal List<SlideId> GetSlideIds(PresentationPart presentationPart)

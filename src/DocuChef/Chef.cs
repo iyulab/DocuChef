@@ -1,6 +1,4 @@
 ﻿using DocuChef.Excel;
-using DocuChef.Extensions;
-using DocuChef.Logging;
 using DocuChef.PowerPoint;
 
 namespace DocuChef;

@@ -54,28 +54,6 @@ public static class FileExtensions
     }
 
     /// <summary>
-    /// Creates a unique file path by adding a counter if file already exists
-    /// </summary>
-    public static string GetUniquePath(this string filePath)
-    {
-        if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
-            return filePath;
-
-        string directory = Path.GetDirectoryName(filePath)!;
-        string filename = Path.GetFileNameWithoutExtension(filePath);
-        string extension = Path.GetExtension(filePath);
-
-        for (int i = 1; i < 1000; i++)
-        {
-            string newPath = Path.Combine(directory, $"{filename} ({i}){extension}");
-            if (!File.Exists(newPath))
-                return newPath;
-        }
-
-        return Path.Combine(directory, $"{filename} ({Guid.NewGuid().ToString("N").Substring(0, 8)}){extension}");
-    }
-
-    /// <summary>
     /// Creates a temporary file path with specified extension
     /// </summary>
     public static string GetTempFilePath(this string extension)

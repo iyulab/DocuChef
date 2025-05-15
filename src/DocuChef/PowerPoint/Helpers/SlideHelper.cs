@@ -70,55 +70,6 @@ internal static class SlideHelper
     }
 
     /// <summary>
-    /// Process slide for array batch with comprehensive updates
-    /// </summary>
-    public static void ProcessSlideForArrayBatch(SlidePart slidePart, string arrayName, int startIndex, int itemsPerSlide, int availableCount)
-    {
-        Logger.Debug($"Processing slide for array batch: arrayName={arrayName}, startIndex={startIndex}, itemsPerSlide={itemsPerSlide}, availableCount={availableCount}");
-
-        var shapes = slidePart.Slide.Descendants<P.Shape>().ToList();
-
-        foreach (var shape in shapes)
-        {
-            if (shape.TextBody == null)
-                continue;
-
-            var references = PowerPointShapeHelper.FindArrayReferences(shape);
-            if (references.Any(r => r.ArrayName == arrayName && r.Index >= availableCount))
-            {
-                PowerPointShapeHelper.HideShape(shape);
-                continue;
-            }
-
-            UpdateShapeArrayReferences(shape, arrayName, startIndex);
-        }
-
-        slidePart.Slide.Save();
-    }
-
-    /// <summary>
-    /// Update array references in shape for batch processing
-    /// </summary>
-    private static void UpdateShapeArrayReferences(P.Shape shape, string arrayName, int startIndex)
-    {
-        var textRuns = shape.Descendants<A.Text>().ToList();
-
-        foreach (var textRun in textRuns)
-        {
-            if (string.IsNullOrEmpty(textRun.Text))
-                continue;
-
-            string updatedText = ArrayReferenceHelper.UpdateArrayReferences(textRun.Text, arrayName, startIndex);
-
-            if (updatedText != textRun.Text)
-            {
-                textRun.Text = updatedText;
-                Logger.Debug($"Updated array reference in shape from '{textRun.Text}' to '{updatedText}'");
-            }
-        }
-    }
-
-    /// <summary>
     /// Clone slide relationships without circular references
     /// </summary>
     private static void CloneSlideRelationships(SlidePart sourceSlidePart, SlidePart targetSlidePart)
