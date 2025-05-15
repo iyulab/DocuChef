@@ -18,4 +18,13 @@ public abstract class TestBase : IDisposable
     {
         GC.SuppressFinalize(this);
     }
+
+    public Chef CreateNewChef()
+    {
+        var chef = new Chef(new RecipeOptions()
+        {
+            EnableVerboseLogging = true,
+        });
+        return chef;
+    }
 }

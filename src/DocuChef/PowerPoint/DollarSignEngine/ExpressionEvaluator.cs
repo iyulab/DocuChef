@@ -9,7 +9,7 @@ namespace DocuChef.PowerPoint.DollarSignEngine;
 /// </summary>
 internal class ExpressionEvaluator
 {
-    private readonly DollarSignOption _options;
+    private readonly DollarSignOptions _options;
     private readonly CultureInfo _cultureInfo;
 
     /// <summary>
@@ -19,13 +19,12 @@ internal class ExpressionEvaluator
     {
         _cultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
 
-        _options = new DollarSignOption
+        _options = new DollarSignOptions
         {
+            CultureInfo = _cultureInfo,
             SupportDollarSignSyntax = true,  // Use ${variable} syntax as per PPT guidelines
             ThrowOnMissingParameter = false, // Don't throw on missing params, show placeholder instead
             EnableDebugLogging = false,      // Disable debug logging by default
-            PreferCallbackResolution = true, // Prefer callback resolution for special functions
-            FormattingCulture = _cultureInfo,// Use provided culture for formatting
             VariableResolver = CustomVariableResolver // Custom resolver for PowerPoint functions and array indices
         };
     }

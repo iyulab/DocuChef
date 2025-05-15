@@ -7,11 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DollarSignEngine" Version="1.1.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\ClosedXML.Report.XLCustom\src\ClosedXML.Report.XLCustom\ClosedXML.Report.XLCustom.csproj" />
+    <ProjectReference Include="..\..\..\DollarSignEngine\src\DollarSignEngine\DollarSignEngine.csproj" />
   </ItemGroup>
 
 </Project>

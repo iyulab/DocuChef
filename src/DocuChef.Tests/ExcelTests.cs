@@ -4,9 +4,6 @@ using DocuChef.Exceptions;
 using ClosedXML.Report.XLCustom;
 using Xunit.Abstractions;
 using FluentAssertions;
-using System;
-using System.IO;
-using System.Collections.Generic;
 
 namespace DocuChef.Tests;
 
@@ -46,7 +43,7 @@ public class ExcelTests : TestBase
     public void Chef_LoadTemplate_WithExcelFile_ReturnsExcelRecipe()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
 
         // Act
         var recipe = chef.LoadTemplate(_templatePath);
@@ -60,7 +57,7 @@ public class ExcelTests : TestBase
     public void Chef_LoadTemplate_WithInvalidExtension_ThrowsException()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var invalidFilePath = Path.Combine(_tempDirectory, "template.txt");
         File.WriteAllText(invalidFilePath, "This is not an Excel file");
 
@@ -75,7 +72,7 @@ public class ExcelTests : TestBase
     public void Chef_LoadExcelTemplate_WithValidPath_ReturnsExcelRecipe()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
 
         // Act
         var recipe = chef.LoadExcelTemplate(_templatePath);
@@ -89,7 +86,7 @@ public class ExcelTests : TestBase
     public void Chef_LoadExcelTemplate_WithNonExistentFile_ThrowsFileNotFoundException()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var nonExistentPath = Path.Combine(_tempDirectory, "nonexistent.xlsx");
 
         // Act & Assert
@@ -102,7 +99,7 @@ public class ExcelTests : TestBase
     public void ExcelRecipe_AddVariable_AddsVariableToTemplate()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
 
         // Act
@@ -121,7 +118,7 @@ public class ExcelTests : TestBase
     public void ExcelRecipe_AddVariable_WithNullName_ThrowsArgumentNullException()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
 
         // Act & Assert
@@ -134,7 +131,7 @@ public class ExcelTests : TestBase
     public void ExcelRecipe_RegisterGlobalVariable_RegistersVariable()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
         var testValue = "TestGlobalValue";
 
@@ -153,7 +150,7 @@ public class ExcelTests : TestBase
     public void ExcelRecipe_RegisterGlobalVariable_WithNullName_ThrowsArgumentNullException()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
 
         // Act & Assert
@@ -166,7 +163,7 @@ public class ExcelTests : TestBase
     public void ExcelRecipe_RegisterFunction_RegistersFunction()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
 
         // Act
@@ -186,7 +183,7 @@ public class ExcelTests : TestBase
     public void ExcelRecipe_RegisterFunction_WithNullName_ThrowsArgumentNullException()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
 
         // Act & Assert
@@ -199,7 +196,7 @@ public class ExcelTests : TestBase
     public void ExcelRecipe_RegisterFunction_WithNullFunction_ThrowsArgumentNullException()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
 
         // Act & Assert
@@ -212,7 +209,7 @@ public class ExcelTests : TestBase
     public void ExcelRecipe_Generate_ReturnsExcelDocument()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
 
         // Act
@@ -227,7 +224,7 @@ public class ExcelTests : TestBase
     public void ExcelDocument_SaveAs_WithValidPath_SavesDocument()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
         var document = recipe.Generate();
         var outputPath = Path.Combine(_tempDirectory, "output.xlsx");
@@ -244,7 +241,7 @@ public class ExcelTests : TestBase
     public void ExcelDocument_SaveAs_WithNullPath_ThrowsArgumentNullException()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
         var document = recipe.Generate();
 
@@ -258,7 +255,7 @@ public class ExcelTests : TestBase
     public void ExcelDocument_SaveAs_WithStream_SavesDocument()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
         var document = recipe.Generate();
         using var stream = new MemoryStream();
@@ -274,7 +271,7 @@ public class ExcelTests : TestBase
     public void ExcelDocument_SaveAs_WithNullStream_ThrowsArgumentNullException()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
         var document = recipe.Generate();
 
@@ -288,7 +285,7 @@ public class ExcelTests : TestBase
     public void ExcelDocument_Dispose_DisposesWorkbook()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelTemplate(_templatePath);
         var document = recipe.Generate();
 
@@ -307,7 +304,7 @@ public class ExcelTests : TestBase
     public void ChefExtensions_LoadRecipe_LoadsExcelTemplate()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
 
         // Act
         var recipe = chef.LoadRecipe(_templatePath);
@@ -321,7 +318,7 @@ public class ExcelTests : TestBase
     public void RecipeExtensions_AddIngredient_AddsVariableToRecipe()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelRecipe(_templatePath);
 
         // Act
@@ -339,7 +336,7 @@ public class ExcelTests : TestBase
     public void RecipeExtensions_Cook_GeneratesDocument()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelRecipe(_templatePath);
 
         // Act
@@ -354,7 +351,7 @@ public class ExcelTests : TestBase
     public void DishExtensions_Serve_SavesDocument()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelRecipe(_templatePath);
         var dish = recipe.Cook();
         var outputPath = Path.Combine(_tempDirectory, "served.xlsx");
@@ -371,7 +368,7 @@ public class ExcelTests : TestBase
     public void Integration_CompleteWorkflow_GeneratesExpectedDocument()
     {
         // Arrange
-        var chef = new Chef();
+        var chef = CreateNewChef();
         var recipe = chef.LoadExcelRecipe(_templatePath);
 
         // Add data to the template
