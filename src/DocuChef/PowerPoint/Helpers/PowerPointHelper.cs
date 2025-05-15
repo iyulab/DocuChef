@@ -133,41 +133,4 @@ internal static class PowerPointHelper
 
         return picture;
     }
-
-    /// <summary>
-    /// Gets default slide size (16:9 ratio)
-    /// </summary>
-    public static (long Width, long Height) GetDefaultSlideSize()
-    {
-        return (9144000, 6858000); // Standard 16:9 slide
-    }
-
-    /// <summary>
-    /// Finds shape by name in slide
-    /// </summary>
-    public static Shape? FindShapeByName(SlidePart slidePart, string shapeName)
-    {
-        if (slidePart?.Slide == null || string.IsNullOrEmpty(shapeName))
-            return null;
-
-        foreach (var shape in slidePart.Slide.Descendants<Shape>())
-        {
-            string currentName = shape.NonVisualShapeProperties?.NonVisualDrawingProperties?.Name?.Value;
-            if (shapeName == currentName)
-                return shape;
-
-            // Check Alt Text
-            var anvdp = shape.NonVisualShapeProperties?.ApplicationNonVisualDrawingProperties;
-            if (anvdp != null)
-            {
-                var descAttr = anvdp.GetAttributes()
-                    .FirstOrDefault(a => a.LocalName.Equals("descr", StringComparison.OrdinalIgnoreCase));
-
-                if (descAttr.Value == shapeName)
-                    return shape;
-            }
-        }
-
-        return null;
-    }
 }

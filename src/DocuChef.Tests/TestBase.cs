@@ -14,7 +14,7 @@ public abstract class TestBase : IDisposable
         _output = output ?? throw new ArgumentNullException(nameof(output));
     }
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         GC.SuppressFinalize(this);
     }

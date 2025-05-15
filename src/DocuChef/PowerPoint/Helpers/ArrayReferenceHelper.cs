@@ -1,4 +1,4 @@
-﻿namespace DocuChef.Helpers;
+﻿namespace DocuChef.PowerPoint.Helpers;
 
 /// <summary>
 /// Helper class for array-related operations in document templates
@@ -116,30 +116,6 @@ public static class ArrayReferenceHelper
         });
 
         return text;
-    }
-
-    /// <summary>
-    /// Check if text contains array references
-    /// </summary>
-    public static bool ContainsArrayReferences(string text, string arrayName = null)
-    {
-        if (string.IsNullOrEmpty(text))
-            return false;
-
-        if (arrayName == null)
-            return DollarSignArrayPattern.IsMatch(text) || DirectArrayPattern.IsMatch(text) || FunctionArgArrayPattern.IsMatch(text);
-
-        return text.Contains($"{arrayName}[");
-    }
-
-    /// <summary>
-    /// Get maximum index for each array
-    /// </summary>
-    public static Dictionary<string, int> GetMaxIndicesByArray(List<ArrayReference> references)
-    {
-        return references
-            .GroupBy(r => r.ArrayName)
-            .ToDictionary(g => g.Key, g => g.Max(r => r.Index));
     }
 
     private static ArrayReference ParseArrayReference(Match match)

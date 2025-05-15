@@ -6,7 +6,7 @@ namespace DocuChef.PowerPoint;
 /// <summary>
 /// Represents a PowerPoint template for document generation using DollarSignEngine for expression evaluation
 /// </summary>
-public class PowerPointRecipe : RecipeBase
+public partial class PowerPointRecipe : RecipeBase
 {
     private readonly PowerPointOptions _options;
     private readonly string _templatePath;

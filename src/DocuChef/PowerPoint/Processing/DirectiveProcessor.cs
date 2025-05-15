@@ -1,186 +1,95 @@
-﻿using DocuChef.PowerPoint.Helpers;
+﻿using DocuChef.PowerPoint.Processing.Directives;
 
-namespace DocuChef.PowerPoint.Processing
+namespace DocuChef.PowerPoint.Processing;
+
+/// <summary>
+/// Processor for slide directives in PowerPoint templates
+/// </summary>
+internal class DirectiveProcessor
 {
+    private readonly PowerPointContext _context;
+    private readonly Dictionary<string, object> _variables;
+    private readonly List<IDirectiveHandler> _handlers;
+
     /// <summary>
-    /// Processor responsible for handling directives from slide notes
+    /// Initialize a new instance of DirectiveProcessor
     /// </summary>
-    internal class DirectiveProcessor
+    public DirectiveProcessor(PowerPointContext context, Dictionary<string, object> variables)
     {
-        private readonly PowerPointProcessor _mainProcessor;
-        private readonly PowerPointContext _context;
+        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _variables = variables ?? throw new ArgumentNullException(nameof(variables));
 
-        /// <summary>
-        /// Initialize directive processor
-        /// </summary>
-        public DirectiveProcessor(PowerPointProcessor mainProcessor, PowerPointContext context)
+        // Initialize handlers
+        _handlers = new List<IDirectiveHandler>
         {
-            _mainProcessor = mainProcessor ?? throw new ArgumentNullException(nameof(mainProcessor));
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-        }
+            new ForeachDirectiveHandler(),
+            new IfDirectiveHandler(ProcessorFactory.CreateExpressionEvaluator())
+        };
+    }
 
-        /// <summary>
-        /// Process shape directive
-        /// </summary>
-        public void ProcessShapeDirective(SlidePart slidePart, DirectiveContext directive)
+    /// <summary>
+    /// Process directives for a slide
+    /// </summary>
+    public SlideProcessingResult ProcessDirectives(PresentationPart presentationPart, SlidePart slidePart)
+    {
+        var result = new SlideProcessingResult
         {
-            _context.Directive = directive;
+            SlidePart = slidePart,
+            WasProcessed = false
+        };
 
-            // Get target shape name
-            if (!directive.Parameters.TryGetValue("target", out var targetName) || string.IsNullOrEmpty(targetName))
-            {
-                Logger.Warning($"No target shape specified for directive {directive.Name}");
-                return;
-            }
-
-            // Clean target name
-            targetName = CleanDirectiveParameter(targetName);
-
-            // Find target shapes
-            var targetShapes = FindShapesByName(slidePart, targetName);
-            if (!targetShapes.Any())
-            {
-                Logger.Warning($"Target shape '{targetName}' not found");
-                return;
-            }
-
-            // Process directive based on type
-            switch (directive.Name)
-            {
-                case "if":
-                    ProcessIfDirective(targetShapes, directive);
-                    break;
-                default:
-                    Logger.Warning($"Unknown directive: {directive.Name}");
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Process if directive
-        /// </summary>
-        private void ProcessIfDirective(List<P.Shape> targetShapes, DirectiveContext directive)
+        try
         {
-            string condition = directive.Value.Trim();
-            Logger.Debug($"Processing if directive with condition: {condition}");
+            // Get slide notes
+            string notes = slidePart.GetNotes();
+            if (string.IsNullOrEmpty(notes))
+                return result;
 
-            try
+            // Parse directives from notes
+            var directives = DirectiveParser.ParseDirectives(notes);
+            if (!directives.Any())
+                return result;
+
+            Logger.Debug($"Found {directives.Count} directives in slide");
+
+            // Process each directive
+            foreach (var directive in directives)
             {
-                // Evaluate condition
-                var result = EvaluateDirectiveCondition(condition);
-                bool conditionResult = ConvertToBoolean(result);
-
-                Logger.Debug($"Condition evaluated to: {conditionResult}");
-
-                // Set visibility of target shapes using PowerPointShapeHelper
-                foreach (var shape in targetShapes)
+                var directiveResult = ProcessDirective(presentationPart, slidePart, directive);
+                if (directiveResult.WasProcessed)
                 {
-                    if (conditionResult)
-                        PowerPointShapeHelper.ShowShape(shape);
-                    else
-                        PowerPointShapeHelper.HideShape(shape);
-                }
-
-                // Handle visibleWhenFalse shapes if specified
-                if (directive.Parameters.TryGetValue("visibleWhenFalse", out var visibleWhenFalseName))
-                {
-                    visibleWhenFalseName = CleanDirectiveParameter(visibleWhenFalseName);
-                    var visibleWhenFalseShapes = FindShapesByName(_context.SlidePart, visibleWhenFalseName);
-
-                    // Set opposite visibility for these shapes
-                    foreach (var shape in visibleWhenFalseShapes)
-                    {
-                        if (!conditionResult)
-                            PowerPointShapeHelper.ShowShape(shape);
-                        else
-                            PowerPointShapeHelper.HideShape(shape);
-                    }
+                    result.WasProcessed = true;
+                    result.GeneratedSlides.AddRange(directiveResult.GeneratedSlides);
                 }
             }
-            catch (Exception ex)
-            {
-                Logger.Error($"Error processing if directive: {condition}", ex);
-            }
         }
-
-        /// <summary>
-        /// Evaluate directive condition
-        /// </summary>
-        private object EvaluateDirectiveCondition(string expression)
+        catch (Exception ex)
         {
-            if (string.IsNullOrEmpty(expression))
-                return false;
-
-            try
-            {
-                var variables = _mainProcessor.PrepareVariables();
-                return _mainProcessor.EvaluateCompleteExpression(expression, variables);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Error evaluating directive condition '{expression}': {ex.Message}", ex);
-                return false;
-            }
+            Logger.Error($"Error processing directives: {ex.Message}", ex);
         }
 
-        /// <summary>
-        /// Find shapes by name
-        /// </summary>
-        private List<P.Shape> FindShapesByName(SlidePart slidePart, string targetName)
+        return result;
+    }
+
+    /// <summary>
+    /// Process a single directive
+    /// </summary>
+    private SlideProcessingResult ProcessDirective(PresentationPart presentationPart, SlidePart slidePart, SlideDirective directive)
+    {
+        // Find a handler that can process this directive
+        var handler = _handlers.FirstOrDefault(h => h.CanHandle(directive));
+
+        if (handler != null)
         {
-            var shapes = slidePart.Slide.Descendants<P.Shape>().ToList();
-            var targetShapes = new List<P.Shape>();
-
-            foreach (var shape in shapes)
-            {
-                string shapeName = shape.GetShapeName();
-
-                if (shapeName == targetName)
-                {
-                    targetShapes.Add(shape);
-                    Logger.Debug($"Found shape '{targetName}'");
-                }
-            }
-
-            return targetShapes;
+            Logger.Debug($"Found handler for directive: {directive.Name} => {handler.GetType().Name}");
+            return handler.Process(presentationPart, slidePart, directive, _context, _variables);
         }
 
-        /// <summary>
-        /// Convert result to boolean
-        /// </summary>
-        private bool ConvertToBoolean(object result)
+        Logger.Warning($"No handler found for directive: {directive.Name}");
+        return new SlideProcessingResult
         {
-            if (result is bool boolValue)
-                return boolValue;
-
-            if (result != null)
-            {
-                try
-                {
-                    return Convert.ToBoolean(result);
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Clean directive parameter by removing quotes
-        /// </summary>
-        private string CleanDirectiveParameter(string parameter)
-        {
-            parameter = parameter.Trim();
-
-            if (parameter.StartsWith("\"") && parameter.EndsWith("\"") && parameter.Length > 1)
-            {
-                parameter = parameter.Substring(1, parameter.Length - 2);
-            }
-
-            return parameter;
-        }
+            SlidePart = slidePart,
+            WasProcessed = false
+        };
     }
 }

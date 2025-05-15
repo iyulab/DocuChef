@@ -130,6 +130,81 @@ internal static class PPTHelper
     }
 
     /// <summary>
+    /// Adds a notes slide to a slide with the specified text
+    /// </summary>
+    public static NotesSlidePart AddNotesSlide(SlidePart slidePart, string notesText)
+    {
+        // Check if notes slide already exists
+        NotesSlidePart notesSlidePart = slidePart.NotesSlidePart;
+        if (notesSlidePart == null)
+        {
+            // Create a new notes slide part
+            notesSlidePart = slidePart.AddNewPart<NotesSlidePart>();
+            notesSlidePart.NotesSlide = new NotesSlide(
+                new CommonSlideData(
+                    new ShapeTree(
+                        new NonVisualGroupShapeProperties(
+                            new NonVisualDrawingProperties() { Id = 1U, Name = "" },
+                            new NonVisualGroupShapeDrawingProperties(),
+                            new ApplicationNonVisualDrawingProperties()),
+                        new GroupShapeProperties(new A.TransformGroup()),
+                        new Shape(
+                            new NonVisualShapeProperties(
+                                new NonVisualDrawingProperties() { Id = 2U, Name = "Notes Placeholder 1" },
+                                new NonVisualShapeDrawingProperties(new A.ShapeLocks() { NoGrouping = true }),
+                                new ApplicationNonVisualDrawingProperties(new PlaceholderShape())),
+                            new ShapeProperties(),
+                            new TextBody(
+                                new A.BodyProperties(),
+                                new A.ListStyle(),
+                                new A.Paragraph(
+                                    new A.Run(
+                                        new A.RunProperties(),
+                                        new A.Text() { Text = notesText }
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+        }
+        else
+        {
+            // Update existing notes with the new text
+            A.Text textElement = notesSlidePart.NotesSlide.Descendants<A.Text>().FirstOrDefault();
+            if (textElement != null)
+            {
+                textElement.Text = notesText;
+            }
+            else
+            {
+                // If no text element exists, create one
+                var shape = notesSlidePart.NotesSlide.Descendants<Shape>().FirstOrDefault();
+                if (shape != null)
+                {
+                    var textBody = shape.GetFirstChild<TextBody>();
+                    if (textBody == null)
+                    {
+                        textBody = new TextBody();
+                        shape.Append(textBody);
+                    }
+
+                    var paragraph = new A.Paragraph();
+                    var run = new A.Run();
+                    var text = new A.Text() { Text = notesText };
+
+                    run.Append(text);
+                    paragraph.Append(run);
+                    textBody.Append(paragraph);
+                }
+            }
+        }
+
+        return notesSlidePart;
+    }
+
+    /// <summary>
     /// Creates a template for basic syntax testing
     /// </summary>
     public static void CreateBasicSyntaxTemplate(string path)
@@ -157,7 +232,7 @@ internal static class PPTHelper
         AddTextShape(slidePart, "Visibility Test", "TestShape", 5, 1524000, 5500000, 4000000, 800000);
 
         // Add directive in slide notes
-        AddDirectiveToNotes(slidePart, "#if: ShowElement, target: \"TestShape\"");
+        AddNotesSlide(slidePart, "#if: ShowElement, target: \"TestShape\"");
 
         presentationDocument.PresentationPart.Presentation.Save();
     }
@@ -199,7 +274,7 @@ internal static class PPTHelper
             "Product2Shape", 4, 1524000, 3200000, 6096000, 800000);
 
         // Add directive in slide notes
-        AddDirectiveToNotes(slidePart, "#if: Products.length > 0, target: \"ProductsContainer\"\n#items: 2");
+        AddNotesSlide(slidePart, "#foreach: Products, max: 2");
 
         presentationDocument.PresentationPart.Presentation.Save();
     }
@@ -214,11 +289,15 @@ internal static class PPTHelper
         // Slide 1: Department template
         var deptSlidePart = AddSlide(presentationDocument, 1);
         AddTextShape(deptSlidePart, "Department: ${Departments[0].Name}", "DepartmentTitleShape", 1, 1524000, 1524000, 6096000, 1008000);
+        // Add directive for foreach Departments
+        AddNotesSlide(deptSlidePart, "#foreach: Departments");
 
         // Slide 2: Team template
         var teamSlidePart = AddSlide(presentationDocument, 2);
         AddTextShape(teamSlidePart, "Department: ${Departments_Name}", "CurrentDeptShape", 1, 1524000, 1524000, 6096000, 800000);
         AddTextShape(teamSlidePart, "Team: ${Departments_Teams[0].Name}", "TeamInfoShape", 2, 1524000, 2500000, 6096000, 800000);
+        // Add directive for foreach Departments_Teams
+        AddNotesSlide(teamSlidePart, "#foreach: Departments_Teams");
 
         // Slide 3: Member template
         var memberSlidePart = AddSlide(presentationDocument, 3);
@@ -228,6 +307,8 @@ internal static class PPTHelper
             "Member 1: ${Departments_Teams_Members[0].Name}, ${Departments_Teams_Members[0].Role}\n" +
             "Member 2: ${Departments_Teams_Members[1].Name}, ${Departments_Teams_Members[1].Role}",
             "MembersShape", 2, 1524000, 2500000, 6096000, 1500000);
+        // Add directive for foreach Departments_Teams_Members, max 2 per slide
+        AddNotesSlide(memberSlidePart, "#foreach: Departments_Teams_Members, max: 2");
 
         // Slide 4: Category template
         var categorySlidePart = AddSlide(presentationDocument, 4);
@@ -236,6 +317,8 @@ internal static class PPTHelper
             "Description: ${Categories[0].Description}\n" +
             "Product Count: ${Categories[0].Products.length}",
             "CategoryInfoShape", 1, 1524000, 1524000, 6096000, 1500000);
+        // Add directive for foreach Categories
+        AddNotesSlide(categorySlidePart, "#foreach: Categories");
 
         // Slide 5: Products template
         var productsSlidePart = AddSlide(presentationDocument, 5);
@@ -245,6 +328,8 @@ internal static class PPTHelper
             "Product 2: ${Categories_Products[1].Name} - $${Categories_Products[1].Price:N0}\n" +
             "Product 3: ${Categories_Products[2].Name} - $${Categories_Products[2].Price:N0}",
             "ProductsListShape", 2, 1524000, 2000000, 6096000, 2000000);
+        // Add directive for foreach Categories_Products, max 3 per slide
+        AddNotesSlide(productsSlidePart, "#foreach: Categories_Products, max: 3");
 
         presentationDocument.PresentationPart.Presentation.Save();
     }

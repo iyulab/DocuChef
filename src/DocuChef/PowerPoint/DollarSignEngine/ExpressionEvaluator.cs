@@ -1,16 +1,17 @@
-﻿using System.Text.RegularExpressions;
-using DollarSignEngine;
+﻿using DollarSignEngine;
 using System.Globalization;
 
 namespace DocuChef.PowerPoint.DollarSignEngine;
 
 /// <summary>
-/// DollarSignEngine adapter for processing expressions in PowerPoint templates
+/// Improved DollarSignEngine adapter for processing expressions in PowerPoint templates
+/// with enhanced nested data structure support
 /// </summary>
 internal class ExpressionEvaluator
 {
-    private readonly DollarSignOptions _options;
+    protected readonly DollarSignOptions _options;
     private readonly CultureInfo _cultureInfo;
+    private readonly PowerPointContext _context;
 
     /// <summary>
     /// Initializes a new instance of ExpressionEvaluator
@@ -18,6 +19,7 @@ internal class ExpressionEvaluator
     public ExpressionEvaluator(CultureInfo cultureInfo = null)
     {
         _cultureInfo = cultureInfo ?? CultureInfo.CurrentCulture;
+        _context = null;
 
         _options = new DollarSignOptions
         {
@@ -27,6 +29,15 @@ internal class ExpressionEvaluator
             EnableDebugLogging = false,      // Disable debug logging by default
             VariableResolver = CustomVariableResolver // Custom resolver for PowerPoint functions and array indices
         };
+    }
+
+    /// <summary>
+    /// Initializes a new instance of ExpressionEvaluator with context
+    /// </summary>
+    public ExpressionEvaluator(PowerPointContext context, CultureInfo cultureInfo = null)
+        : this(cultureInfo)
+    {
+        _context = context;
     }
 
     /// <summary>
@@ -56,9 +67,9 @@ internal class ExpressionEvaluator
     }
 
     /// <summary>
-    /// Custom variable resolver for PowerPoint functions and array indices
+    /// Enhanced custom variable resolver for PowerPoint functions, array indices, and nested data structures
     /// </summary>
-    private object CustomVariableResolver(string expression, object parameters)
+    protected virtual object CustomVariableResolver(string expression, object parameters)
     {
         // Convert parameters to dictionary if not already
         Dictionary<string, object> variables;
@@ -98,127 +109,315 @@ internal class ExpressionEvaluator
             return HandlePowerPointFunction(expression, variables);
         }
 
-        // Handle array indexing expressions: item[0].Property and Items[0].Property
-        var arrayIndexMatch = Regex.Match(expression, @"^([\w]+)\[(\d+)\](\.(\w+))?$");
+        // New approach: Handle nested data patterns with multiple levels (A_B_C)
+        if (expression.Contains('_') && !expression.StartsWith("_"))
+        {
+            var result = ResolveMultiLevelNestedData(expression, variables);
+            if (result != null)
+            {
+                Logger.Debug($"[EVAL] Resolved multi-level nested data: {expression}");
+                return result;
+            }
+        }
+
+        // Handle array indexing with multiple dimensions: collections[0].subcollections[1].items[2].property
+        var complexIndexerMatch = System.Text.RegularExpressions.Regex.Match(
+            expression, @"^([\w]+)(?:\[(\d+)\])((?:\.\w+(?:\[\d+\])?)+)$");
+
+        if (complexIndexerMatch.Success)
+        {
+            return ResolveComplexIndexerPath(complexIndexerMatch, variables);
+        }
+
+        // Handle simple array indexing expressions: item[0].Property and Items[0].Property
+        var arrayIndexMatch = System.Text.RegularExpressions.Regex.Match(
+            expression, @"^([\w]+)\[(\d+)\](\.(\w+))?$");
+
         if (arrayIndexMatch.Success)
         {
-            string arrayName = arrayIndexMatch.Groups[1].Value; // e.g., item or Items
-            int index = int.Parse(arrayIndexMatch.Groups[2].Value); // e.g., 0, 1, 2
-            string propPath = arrayIndexMatch.Groups[4].Success ? arrayIndexMatch.Groups[4].Value : null; // e.g., Id, Name, null
+            return ResolveSimpleArrayIndex(arrayIndexMatch, variables);
+        }
 
-            Logger.Debug($"[EVAL] Array expression: arrayName={arrayName}, index={index}, propPath={propPath}");
+        // For other expressions, let DollarSignEngine handle them
+        return null;
+    }
 
-            // First check if this is a case-insensitive match for "Items"
-            string normalizedName = null;
-            if (string.Equals(arrayName, "item", StringComparison.OrdinalIgnoreCase))
+    /// <summary>
+    /// Resolves multi-level nested data references (e.g., Parent_Child_Grandchild)
+    /// </summary>
+    private object ResolveMultiLevelNestedData(string expression, Dictionary<string, object> variables)
+    {
+        // Split by underscore
+        var parts = expression.Split('_');
+        if (parts.Length < 2)
+            return null;
+
+        // Look for direct variable with this name first
+        if (variables.TryGetValue(expression, out var directValue))
+        {
+            Logger.Debug($"[EVAL] Found direct variable for '{expression}'");
+            return directValue;
+        }
+
+        // Start with the first part as the root collection
+        string rootName = parts[0];
+        if (!variables.TryGetValue(rootName, out var rootObj) || rootObj == null)
+        {
+            Logger.Debug($"[EVAL] Root collection not found: {rootName}");
+            return null;
+        }
+
+        // Get the current index for the root collection
+        int rootIndex = _context?.CurrentIndices?.GetValueOrDefault(rootName, 0) ?? 0;
+        Logger.Debug($"[EVAL] Using index {rootIndex} for root collection {rootName}");
+
+        // Get item from root collection at current index
+        object currentObj = GetItemAtIndex(rootObj, rootIndex);
+        if (currentObj == null)
+        {
+            Logger.Debug($"[EVAL] Item at index {rootIndex} not found in collection {rootName}");
+            return null;
+        }
+
+        // Process each level of nesting
+        for (int i = 1; i < parts.Length - 1; i++)
+        {
+            string collectionName = parts[i];
+
+            // Get property from current object
+            var property = currentObj.GetType().GetProperty(collectionName);
+            if (property == null)
             {
-                normalizedName = "Items";
+                Logger.Debug($"[EVAL] Property {collectionName} not found on object type {currentObj.GetType().Name}");
+                return null;
             }
 
-            // Try both original and normalized names
-            object arrayObj = null;
-            if (normalizedName != null && variables.TryGetValue(normalizedName, out var normalizedObj))
+            // Get collection from property
+            var collection = property.GetValue(currentObj);
+            if (collection == null)
             {
-                arrayObj = normalizedObj;
-                arrayName = normalizedName;
-            }
-            else if (variables.TryGetValue(arrayName, out var originalObj))
-            {
-                arrayObj = originalObj;
+                Logger.Debug($"[EVAL] Collection {collectionName} is null");
+                return null;
             }
 
-            if (arrayObj != null)
-            {
-                Logger.Debug($"[EVAL] Found array '{arrayName}' in variables");
+            // Build the path so far for indexing purposes
+            string pathSoFar = string.Join("_", parts.Take(i + 1));
 
-                // Handle different collection types
-                if (arrayObj is IList list)
+            // Get index for this level
+            int index = _context?.CurrentIndices?.GetValueOrDefault(pathSoFar, 0) ?? 0;
+            Logger.Debug($"[EVAL] Using index {index} for collection {pathSoFar}");
+
+            // Get item at index
+            currentObj = GetItemAtIndex(collection, index);
+            if (currentObj == null)
+            {
+                Logger.Debug($"[EVAL] Item at index {index} not found in collection {pathSoFar}");
+                return null;
+            }
+        }
+
+        // Get final property value
+        string finalProperty = parts[parts.Length - 1];
+        var finalProp = currentObj.GetType().GetProperty(finalProperty);
+        if (finalProp == null)
+        {
+            Logger.Debug($"[EVAL] Final property {finalProperty} not found on object type {currentObj.GetType().Name}");
+            return null;
+        }
+
+        var result = finalProp.GetValue(currentObj);
+        Logger.Debug($"[EVAL] Resolved nested data {expression} to value: {result}");
+        return result;
+    }
+
+    /// <summary>
+    /// Resolves a complex indexer path (collection[0].subcollection[1].property)
+    /// </summary>
+    private object ResolveComplexIndexerPath(System.Text.RegularExpressions.Match match, Dictionary<string, object> variables)
+    {
+        string rootName = match.Groups[1].Value;
+        int rootIndex = int.Parse(match.Groups[2].Value);
+        string restOfPath = match.Groups[3].Value.TrimStart('.');
+
+        Logger.Debug($"[EVAL] Resolving complex indexer path: {rootName}[{rootIndex}].{restOfPath}");
+
+        // Get root collection
+        if (!variables.TryGetValue(rootName, out var rootCollection) || rootCollection == null)
+        {
+            Logger.Debug($"[EVAL] Root collection not found: {rootName}");
+            return null;
+        }
+
+        // Get item at root index
+        object currentObj = GetItemAtIndex(rootCollection, rootIndex);
+        if (currentObj == null)
+        {
+            Logger.Debug($"[EVAL] Item at index {rootIndex} not found in root collection {rootName}");
+            return null;
+        }
+
+        // Process each path segment
+        var segments = restOfPath.Split('.');
+        foreach (var segment in segments)
+        {
+            // Check if segment contains an indexer
+            var indexerMatch = System.Text.RegularExpressions.Regex.Match(segment, @"^(\w+)\[(\d+)\]$");
+            if (indexerMatch.Success)
+            {
+                // It's a collection property with index
+                string propName = indexerMatch.Groups[1].Value;
+                int index = int.Parse(indexerMatch.Groups[2].Value);
+
+                // Get property
+                var property = currentObj.GetType().GetProperty(propName);
+                if (property == null)
                 {
-                    Logger.Debug($"[EVAL] Array is IList with count={list.Count}");
-                    if (index >= 0 && index < list.Count)
-                    {
-                        var item = list[index];
-                        Logger.Debug($"[EVAL] Retrieved item at index {index}: {item?.GetType().Name}");
-
-                        // Return the item or its property
-                        if (string.IsNullOrEmpty(propPath))
-                            return item;
-
-                        // Get property value
-                        var property = item?.GetType().GetProperty(propPath);
-                        if (property != null)
-                        {
-                            var propValue = property.GetValue(item);
-                            Logger.Debug($"[EVAL] Property '{propPath}' value: {propValue}");
-                            return propValue;
-                        }
-                        else
-                        {
-                            Logger.Warning($"[EVAL] Property '{propPath}' not found on item type {item?.GetType().Name}");
-                        }
-                    }
-                    else
-                    {
-                        Logger.Warning($"[EVAL] Index {index} out of range for array with count {list.Count}");
-                    }
+                    Logger.Debug($"[EVAL] Property {propName} not found on object type {currentObj.GetType().Name}");
+                    return null;
                 }
-                else if (arrayObj is Array array)
+
+                // Get collection
+                var collection = property.GetValue(currentObj);
+                if (collection == null)
                 {
-                    Logger.Debug($"[EVAL] Array is Array with length={array.Length}");
-                    if (index >= 0 && index < array.Length)
-                    {
-                        var item = array.GetValue(index);
-                        Logger.Debug($"[EVAL] Retrieved item at index {index}: {item?.GetType().Name}");
-
-                        // Return the item or its property
-                        if (string.IsNullOrEmpty(propPath))
-                            return item;
-
-                        // Get property value
-                        var property = item?.GetType().GetProperty(propPath);
-                        if (property != null)
-                        {
-                            var propValue = property.GetValue(item);
-                            Logger.Debug($"[EVAL] Property '{propPath}' value: {propValue}");
-                            return propValue;
-                        }
-                    }
+                    Logger.Debug($"[EVAL] Collection {propName} is null");
+                    return null;
                 }
-                else if (arrayObj is IEnumerable enumerable)
+
+                // Get item at index
+                currentObj = GetItemAtIndex(collection, index);
+                if (currentObj == null)
                 {
-                    Logger.Debug($"[EVAL] Array is IEnumerable");
-                    // Try to get the item by index
-                    int currentIndex = 0;
-                    foreach (var item in enumerable)
-                    {
-                        if (currentIndex == index)
-                        {
-                            Logger.Debug($"[EVAL] Retrieved item at index {index}: {item?.GetType().Name}");
-
-                            // Return the item or its property
-                            if (string.IsNullOrEmpty(propPath))
-                                return item;
-
-                            // Get property value
-                            var property = item?.GetType().GetProperty(propPath);
-                            if (property != null)
-                            {
-                                var propValue = property.GetValue(item);
-                                Logger.Debug($"[EVAL] Property '{propPath}' value: {propValue}");
-                                return propValue;
-                            }
-                        }
-                        currentIndex++;
-                    }
+                    Logger.Debug($"[EVAL] Item at index {index} not found in collection {propName}");
+                    return null;
                 }
             }
             else
             {
-                Logger.Warning($"[EVAL] Array '{arrayName}' not found in variables");
+                // It's a simple property
+                var property = currentObj.GetType().GetProperty(segment);
+                if (property == null)
+                {
+                    Logger.Debug($"[EVAL] Property {segment} not found on object type {currentObj.GetType().Name}");
+                    return null;
+                }
+
+                currentObj = property.GetValue(currentObj);
+                if (currentObj == null)
+                {
+                    Logger.Debug($"[EVAL] Property {segment} is null");
+                    return null;
+                }
             }
         }
 
-        // For other expressions, let DollarSignEngine handle them
+        Logger.Debug($"[EVAL] Resolved complex indexer path to value: {currentObj}");
+        return currentObj;
+    }
+
+    /// <summary>
+    /// Resolves a simple array index expression (Items[0].Property)
+    /// </summary>
+    private object ResolveSimpleArrayIndex(System.Text.RegularExpressions.Match match, Dictionary<string, object> variables)
+    {
+        string arrayName = match.Groups[1].Value;
+        int index = int.Parse(match.Groups[2].Value);
+        string propPath = match.Groups.Count > 3 ? match.Groups[3].Value : null;
+
+        Logger.Debug($"[EVAL] Array expression: arrayName={arrayName}, index={index}, propPath={propPath}");
+
+        // First check if this is a case-insensitive match for "Items"
+        string normalizedName = null;
+        if (string.Equals(arrayName, "item", StringComparison.OrdinalIgnoreCase))
+        {
+            normalizedName = "Items";
+        }
+
+        // Try both original and normalized names
+        object arrayObj = null;
+        if (normalizedName != null && variables.TryGetValue(normalizedName, out var normalizedObj))
+        {
+            arrayObj = normalizedObj;
+            arrayName = normalizedName;
+        }
+        else if (variables.TryGetValue(arrayName, out var originalObj))
+        {
+            arrayObj = originalObj;
+        }
+
+        if (arrayObj != null)
+        {
+            Logger.Debug($"[EVAL] Found array '{arrayName}' in variables");
+
+            // Get item at index
+            object item = GetItemAtIndex(arrayObj, index);
+
+            if (item == null)
+            {
+                Logger.Warning($"[EVAL] Item at index {index} not found in array {arrayName}");
+                return null;
+            }
+
+            Logger.Debug($"[EVAL] Retrieved item at index {index}: {item?.GetType().Name}");
+
+            // Return the item or its property
+            if (string.IsNullOrEmpty(propPath))
+                return item;
+
+            // Remove leading dot
+            if (propPath.StartsWith("."))
+                propPath = propPath.Substring(1);
+
+            // Get property value
+            var property = item?.GetType().GetProperty(propPath);
+            if (property != null)
+            {
+                var propValue = property.GetValue(item);
+                Logger.Debug($"[EVAL] Property '{propPath}' value: {propValue}");
+                return propValue;
+            }
+            else
+            {
+                Logger.Warning($"[EVAL] Property '{propPath}' not found on item type {item?.GetType().Name}");
+            }
+        }
+        else
+        {
+            Logger.Warning($"[EVAL] Array '{arrayName}' not found in variables");
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets an item at a specific index from any collection type
+    /// </summary>
+    private object GetItemAtIndex(object collection, int index)
+    {
+        // Array
+        if (collection is Array array && index >= 0 && index < array.Length)
+        {
+            return array.GetValue(index);
+        }
+
+        // IList
+        if (collection is IList list && index >= 0 && index < list.Count)
+        {
+            return list[index];
+        }
+
+        // IEnumerable
+        if (collection is IEnumerable enumerable && !(collection is string))
+        {
+            int currentIndex = 0;
+            foreach (var item in enumerable)
+            {
+                if (currentIndex == index)
+                    return item;
+                currentIndex++;
+            }
+        }
+
         return null;
     }
 
@@ -228,7 +427,7 @@ internal class ExpressionEvaluator
     private object HandlePowerPointFunction(string expression, Dictionary<string, object> variables)
     {
         // Parse function expression: ppt.Function("arg", param1: value1, param2: value2)
-        var match = Regex.Match(expression, @"ppt\.(\w+)\((.+)??\)");
+        var match = System.Text.RegularExpressions.Regex.Match(expression, @"ppt\.(\w+)\((.+)??\)");
         if (!match.Success)
         {
             Logger.Warning($"Invalid PowerPoint function format: {expression}");

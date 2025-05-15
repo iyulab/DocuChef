@@ -8,7 +8,6 @@ internal static class PowerPointShapeHelper
     private static readonly Dictionary<string, (long cx, long cy)> _originalDimensions = new();
     private static readonly Dictionary<string, (long x, long y)> _originalPositions = new();
 
-
     /// <summary>
     /// Find array references in shape with simplified implementation
     /// </summary>
@@ -30,35 +29,6 @@ internal static class PowerPointShapeHelper
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Update array references in shape with simplified implementation
-    /// </summary>
-    public static void UpdateArrayReferences(P.Shape shape, string arrayName, int offset)
-    {
-        if (shape == null)
-            return;
-
-        if (shape.TextBody == null)
-            return;
-
-        var textRuns = shape.Descendants<A.Text>().ToList();
-
-        foreach (var textRun in textRuns)
-        {
-            if (string.IsNullOrEmpty(textRun.Text) || !textRun.Text.Contains(arrayName))
-                continue;
-
-            string originalText = textRun.Text;
-            string updatedText = ArrayReferenceHelper.UpdateArrayReferences(originalText, arrayName, offset);
-
-            if (updatedText != originalText)
-            {
-                textRun.Text = updatedText;
-                Logger.Debug($"Updated text from '{originalText}' to '{updatedText}'");
-            }
-        }
     }
 
     /// <summary>

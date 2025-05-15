@@ -1,6 +1,4 @@
-﻿using DocuChef.PowerPoint.Helpers;
-
-namespace DocuChef.PowerPoint;
+﻿namespace DocuChef.PowerPoint;
 
 /// <summary>
 /// Extension methods for working with OpenXml objects
@@ -37,49 +35,6 @@ public static class PresentationElementExtensions
     }
 
     /// <summary>
-    /// Sets text content in an element
-    /// </summary>
-    public static void SetText(this OpenXmlElement element, string text)
-    {
-        OpenXmlShapeHelper.SetText(element, text);
-    }
-
-    /// <summary>
-    /// Clears text content from a PowerPoint shape
-    /// </summary>
-    public static void ClearText(this Shape shape)
-    {
-        if (shape?.TextBody == null)
-            return;
-
-        // Remove all existing paragraphs
-        var existingParagraphs = shape.TextBody.Elements<A.Paragraph>().ToList();
-        foreach (var paragraph in existingParagraphs)
-        {
-            shape.TextBody.RemoveChild(paragraph);
-        }
-
-        // Add a single empty paragraph to maintain document structure
-        var emptyParagraph = new A.Paragraph();
-        var run = new A.Run();
-        var text = new A.Text("");
-        run.AppendChild(text);
-        emptyParagraph.AppendChild(run);
-        shape.TextBody.AppendChild(emptyParagraph);
-    }
-
-    /// <summary>
-    /// Sets visibility of a PowerPoint shape
-    /// </summary>
-    public static void SetVisibility(this Shape shape, bool visible)
-    {
-        if (visible)
-            PowerPointShapeHelper.ShowShape(shape);
-        else
-            PowerPointShapeHelper.HideShape(shape);
-    }
-
-    /// <summary>
     /// Gets notes from a PowerPoint slide
     /// </summary>
     public static string GetNotes(this SlidePart slidePart)
@@ -104,34 +59,10 @@ public static class PresentationElementExtensions
     }
 
     /// <summary>
-    /// Creates a copy of an OpenXml part
-    /// </summary>
-    public static void CopyTo(this OpenXmlPart sourcePart, OpenXmlPart targetPart)
-    {
-        using (var stream = sourcePart.GetStream())
-        {
-            stream.Position = 0;
-            targetPart.FeedData(stream);
-        }
-    }
-
-    /// <summary>
     /// Check if element contains expressions
     /// </summary>
     public static bool ContainsExpressions(this OpenXmlElement element)
     {
         return OpenXmlShapeHelper.HasExpressions(element);
-    }
-
-    /// <summary>
-    /// Process expressions in element
-    /// </summary>
-    public static string ProcessExpressions(this OpenXmlElement element, IExpressionEvaluator evaluator, Dictionary<string, object> variables)
-    {
-        string text = element.GetText();
-        if (string.IsNullOrEmpty(text))
-            return text;
-
-        return ExpressionHelper.ProcessExpressions(text, evaluator, variables);
     }
 }

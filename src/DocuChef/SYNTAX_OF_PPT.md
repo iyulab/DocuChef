@@ -29,6 +29,7 @@ ${ppt.Table("TableData")}       // 표 데이터 바인딩
 ### 3. 제어 지시문 (슬라이드 노트에만 배치)
 ```
 #if: Condition, target: "ShapeName", visibleWhenFalse: "AlternateShapeName"  // 조건부 요소 표시/숨김
+#foreach: Collection, max: Number, offset: Number                              // 배열 반복 처리 (선택적)
 ```
 
 ## 배열 데이터 처리
@@ -63,6 +64,55 @@ PowerPoint는 디자인 중심이므로, 배열 처리도 미리 디자인된 요소에 데이터를 바인딩
 3. **필요한 슬라이드 수 계산**: `총 항목 수 ÷ 슬라이드당 항목 수`로 계산
 4. **자동 슬라이드 복제**: 필요한 만큼 원본 슬라이드 복제
 5. **인덱스 자동 조정**: 각 복제된 슬라이드에서 인덱스 참조를 자동으로 조정
+
+## foreach 디렉티브 (선택 사항)
+
+`#foreach` 디렉티브는 배열 데이터 처리를 위한 명시적인 방법이지만, **필수가 아닙니다**. 라이브러리는 디자인 요소를 자동으로 분석하여 배열 패턴을 감지하고 처리할 수 있습니다.
+
+### #foreach 문법
+```
+#foreach: Collection, max: Number, offset: Number
+```
+
+- **Collection**: 반복할 배열 또는 컬렉션 (필수)
+- **max**: 슬라이드당 최대 항목 수 (선택, 기본값: 자동 감지)
+- **offset**: 시작 인덱스 오프셋 (선택, 기본값: 0)
+
+### 자동 감지 vs. 명시적 #foreach
+
+1. **자동 감지 (기본 동작)**
+   - 사용자가 `#foreach` 디렉티브를 포함하지 않아도 라이브러리는 배열 패턴을 자동으로 감지
+   - 슬라이드 내 `${Array[Index]}` 패턴을 분석하여 필요한 만큼 슬라이드 자동 복제
+   - 복제된 슬라이드에서 인덱스 자동 조정
+
+2. **명시적 #foreach (선택 사항)**
+   - 보다 세밀한 제어가 필요한 경우 `#foreach` 디렉티브를 사용
+   - 슬라이드당 항목 수 명시적 지정 가능
+   - 시작 오프셋 지정 가능
+   - 중첩된 배열 처리에 유용
+
+### 예시
+
+**자동 감지 방식 (디렉티브 없음)**:
+- 슬라이드에 `${Products[0]}`, `${Products[1]}`, `${Products[2]}` 참조가 있으면 자동으로 인식
+
+**명시적 #foreach 사용**:
+```
+#foreach: Products, max: 3
+```
+- 슬라이드에 `${Products[0]}`, `${Products[1]}`, `${Products[2]}` 참조를 포함하고
+- 슬라이드 노트에 위 디렉티브를 추가
+
+**중첩된 배열에서 명시적 #foreach**:
+```
+#foreach: Departments
+```
+- 부서별 슬라이드에서 `${Departments[0].Name}` 참조를 포함하고
+- 각 부서의 팀 목록을 표시하는 슬라이드에서는:
+```
+#foreach: Departments_Teams
+```
+- 위 디렉티브를 사용하여 현재 부서의 팀 목록에 접근
 
 ## 상세 문법 설명
 
@@ -123,6 +173,14 @@ ${ppt.Table("EmployeeData", headers: true, startRow: 1, endRow: 10)}
 - `target`: 조건부로 표시/숨김 처리할 도형의 이름
 - `visibleWhenFalse`: 조건이 거짓일 때 표시할 대체 도형의 이름
 
+#### 반복 지시문 (선택 사항)
+```
+#foreach: Products, max: 3
+#foreach: Departments_Teams, max: 5, offset: 10
+```
+- 자동 배열 처리가 기본 동작이므로 이 지시문은 옵션입니다
+- 기본적으로 라이브러리는 인덱스 패턴으로 배열 처리를 자동으로 수행합니다
+
 ## 문법 적용 위치
 
 1. **값 바인딩 & 특수 함수**: 
@@ -142,6 +200,7 @@ ${ppt.Table("EmployeeData", headers: true, startRow: 1, endRow: 10)}
 ```
 # 이 슬라이드는 제품 상세 정보를 표시합니다
 #if: Products.Count > 0, target: "ProductsContainer", visibleWhenFalse: "NoProductsMessage"
+#foreach: Products, max: 3  # 선택 사항: 명시적으로 지정하지 않아도 자동 처리됨
 ```
 
 ## 예제 시나리오
@@ -182,6 +241,7 @@ ${ppt.Table("EmployeeData", headers: true, startRow: 1, endRow: 10)}
 **슬라이드 노트:**
 ```
 #if: Products.Count > 0, target: "ProductsContainer"
+#foreach: Products, max: 3  # 선택 사항: 라이브러리는 인덱스 패턴을 자동으로 감지합니다
 ```
 
 **결과:**
@@ -224,6 +284,7 @@ ${ppt.Table("EmployeeData", headers: true, startRow: 1, endRow: 10)}
 **슬라이드 노트:**
 ```
 #if: Department.Members.Length > 0, target: "MembersContainer"
+#foreach: Department.Members, max: 6  # 선택 사항: 인덱스 패턴은 자동으로 감지됩니다
 ```
 
 **결과:**
@@ -295,3 +356,18 @@ ${ppt.Table("EmployeeData", headers: true, startRow: 1, endRow: 10)}
 ```
 
 이 방식으로 해당 인덱스에 멤버가 없는 경우 요소를 숨길 수 있습니다.
+
+### 자동 감지와 #foreach 함께 사용하기
+
+라이브러리는 기본적으로 `${Array[Index]}` 패턴을 자동으로 감지하여 배열 처리하지만, 명시적인 제어가 필요한 경우 `#foreach` 디렉티브를 사용할 수 있습니다. 두 방식은 함께 사용 가능합니다:
+
+1. **자동 감지만 사용**: 대부분의 경우 충분함
+   - 인덱스 패턴 분석으로 슬라이드당 항목 수 자동 결정
+   - 배열 크기에 따라 슬라이드 자동 복제
+
+2. **#foreach 디렉티브 사용**: 세밀한 제어가 필요한 경우
+   - 슬라이드당 항목 수 명시적 지정
+   - 시작 오프셋 제어
+   - 복잡한 중첩 구조 처리
+
+사용자는 필요에 따라 적절한 방식을 선택할 수 있으며, 대부분의 경우 자동 감지만으로도 충분합니다.

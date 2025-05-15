@@ -7,12 +7,12 @@ namespace DocuChef.Tests;
 /// <summary>
 /// Tests for PowerPoint template syntax
 /// </summary>
-public class PowerPointSyntaxTests : TestBase
+public class PPTSyntaxTests : TestBase
 {
     private readonly string _tempDirectory;
     private readonly string _templatePath;
 
-    public PowerPointSyntaxTests(ITestOutputHelper output) : base(output)
+    public PPTSyntaxTests(ITestOutputHelper output) : base(output)
     {
         _tempDirectory = Path.Combine(Path.GetTempPath(), "DocuChefTests", Guid.NewGuid().ToString());
         Directory.CreateDirectory(_tempDirectory);
@@ -20,7 +20,7 @@ public class PowerPointSyntaxTests : TestBase
         PPTHelper.CreateBasicSyntaxTemplate(_templatePath);
     }
 
-    public new void Dispose()
+    public override void Dispose()
     {
         try { if (Directory.Exists(_tempDirectory)) Directory.Delete(_tempDirectory, true); }
         catch { }

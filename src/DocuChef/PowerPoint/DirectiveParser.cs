@@ -3,110 +3,126 @@
 namespace DocuChef.PowerPoint;
 
 /// <summary>
-/// Parses directives from PowerPoint slide notes according to PPT syntax guidelines
+/// Parser for slide directives in PowerPoint templates
 /// </summary>
 internal static class DirectiveParser
 {
-    // Regex pattern for matching directives according to PPT syntax guidelines
-    // Format: #directive: value, param1: value1, param2: value2
-    private static readonly string DefaultPattern = @"#(\w+(?:-\w+)?):([^,]+)(?:,\s*(.+))?";
+    // Improved regex pattern for directives that supports foreach-items pattern
+    private static readonly Regex DirectivePattern = new(@"#(\w+(?:-\w+)?):([^,]+)(?:,\s*(.+))?", RegexOptions.Compiled);
 
     /// <summary>
-    /// Parse directives from slide notes using the default pattern
+    /// Parse directives from slide notes
     /// </summary>
-    public static List<DirectiveContext> ParseDirectives(string notes)
+    public static List<SlideDirective> ParseDirectives(string notes)
     {
-        return ParseDirectives(notes, DefaultPattern);
-    }
-
-    /// <summary>
-    /// Parse directives from slide notes using a custom pattern
-    /// </summary>
-    public static List<DirectiveContext> ParseDirectives(string notes, string pattern)
-    {
-        var directives = new List<DirectiveContext>();
-
+        var directives = new List<SlideDirective>();
         if (string.IsNullOrEmpty(notes))
             return directives;
 
         try
         {
-            // Match all directive patterns
-            var matches = Regex.Matches(notes, pattern, RegexOptions.Compiled);
-
+            // Find all directive patterns in the notes
+            var matches = DirectivePattern.Matches(notes);
             foreach (Match match in matches)
             {
-                var directive = new DirectiveContext
+                if (match.Groups.Count >= 3)
                 {
-                    Name = match.Groups[1].Value.Trim(),
-                    Value = match.Groups[2].Value.Trim(),
-                    Parameters = new Dictionary<string, string>()
-                };
+                    string directiveName = match.Groups[1].Value.Trim();
+                    string directiveValue = match.Groups[2].Value.Trim();
 
-                Logger.Debug($"Found directive: {directive.Name} with value: {directive.Value}");
+                    // Special handling for foreach-items directive
+                    if (directiveName.StartsWith("foreach-"))
+                    {
+                        // Extract the collection path from foreach-items directive
+                        string collectionType = directiveName.Substring(8); // after "foreach-"
 
-                // Parse parameters
-                if (match.Groups.Count > 3 && !string.IsNullOrEmpty(match.Groups[3].Value))
-                {
-                    var paramString = match.Groups[3].Value.Trim();
-                    ParseParameters(paramString, directive.Parameters);
+                        // Parse path like "Groups.Items" into parent and child components
+                        var pathParts = directiveValue.Split('.');
+                        if (pathParts.Length >= 2)
+                        {
+                            var directive = new SlideDirective
+                            {
+                                Name = "foreach-nested",
+                                Value = directiveValue, // Keep the original path (e.g., "Groups.Items")
+                                Parameters = new Dictionary<string, string>
+                                {
+                                    ["parent"] = pathParts[0],
+                                    ["child"] = pathParts[1],
+                                    ["type"] = collectionType
+                                }
+                            };
+
+                            // Parse additional parameters if present
+                            if (match.Groups.Count > 3 && !string.IsNullOrEmpty(match.Groups[3].Value))
+                            {
+                                ParseParameters(match.Groups[3].Value, directive.Parameters);
+                            }
+
+                            directives.Add(directive);
+                            Logger.Debug($"Parsed nested directive: {directive.Name} with parent: {pathParts[0]}, child: {pathParts[1]}");
+                        }
+                    }
+                    else
+                    {
+                        // Standard directive handling
+                        var directive = new SlideDirective
+                        {
+                            Name = directiveName,
+                            Value = directiveValue,
+                            Parameters = new Dictionary<string, string>()
+                        };
+
+                        // Parse additional parameters if present
+                        if (match.Groups.Count > 3 && !string.IsNullOrEmpty(match.Groups[3].Value))
+                        {
+                            ParseParameters(match.Groups[3].Value, directive.Parameters);
+                        }
+
+                        directives.Add(directive);
+                        Logger.Debug($"Parsed directive: {directive.Name} with value: {directive.Value}");
+                    }
                 }
-
-                // Add special handling for directive-specific parameters
-                ProcessDirectiveSpecificParameters(directive);
-
-                directives.Add(directive);
             }
         }
         catch (Exception ex)
         {
-            Logger.Error("Error parsing directives", ex);
+            Logger.Error($"Error parsing directives from notes: {ex.Message}", ex);
         }
 
         return directives;
     }
 
     /// <summary>
-    /// Parse parameters from a parameter string (param1: value1, param2: value2)
+    /// Parse directive parameters (param1: value1, param2: value2)
     /// </summary>
     private static void ParseParameters(string paramString, Dictionary<string, string> parameters)
     {
-        // Split parameters by commas, but not those inside quotes
-        var paramParts = SplitParameterString(paramString);
-
-        foreach (var part in paramParts)
+        foreach (var paramPair in SplitParameters(paramString))
         {
-            string paramPair = part.Trim();
+            var pair = paramPair.Trim();
+            var separatorIndex = pair.IndexOf(':');
 
-            // Split by the first colon to separate name and value
-            int colonIndex = paramPair.IndexOf(':');
-            if (colonIndex > 0)
+            if (separatorIndex > 0)
             {
-                string name = paramPair.Substring(0, colonIndex).Trim();
-                string value = paramPair.Substring(colonIndex + 1).Trim();
+                var name = pair.Substring(0, separatorIndex).Trim();
+                var value = pair.Substring(separatorIndex + 1).Trim();
 
-                // Remove quotes if present
+                // Remove surrounding quotes if present
                 if (value.StartsWith("\"") && value.EndsWith("\"") && value.Length > 1)
                 {
                     value = value.Substring(1, value.Length - 2);
-                    // Handle escaped characters
-                    value = value.Replace("\\\"", "\"").Replace("\\\\", "\\").Replace("\\n", "\n").Replace("\\r", "\r");
                 }
 
                 parameters[name] = value;
                 Logger.Debug($"Parsed parameter: {name} = {value}");
             }
-            else
-            {
-                Logger.Warning($"Invalid parameter format: {paramPair}");
-            }
         }
     }
 
     /// <summary>
-    /// Splits parameter string by commas, respecting quoted strings
+    /// Split parameters string respecting quotes
     /// </summary>
-    private static List<string> SplitParameterString(string paramString)
+    private static IEnumerable<string> SplitParameters(string paramString)
     {
         var result = new List<string>();
         bool inQuotes = false;
@@ -121,7 +137,7 @@ internal static class DirectiveParser
             {
                 inQuotes = !inQuotes;
             }
-            // Handle comma separators (only outside of quotes)
+            // Handle parameter separator
             else if (c == ',' && !inQuotes)
             {
                 result.Add(paramString.Substring(startIndex, i - startIndex));
@@ -129,7 +145,7 @@ internal static class DirectiveParser
             }
         }
 
-        // Add the last part
+        // Add the last parameter
         if (startIndex < paramString.Length)
         {
             result.Add(paramString.Substring(startIndex));
@@ -137,25 +153,69 @@ internal static class DirectiveParser
 
         return result;
     }
+}
+
+/// <summary>
+/// Represents a directive parsed from slide notes
+/// </summary>
+internal class SlideDirective
+{
+    /// <summary>
+    /// Directive name (e.g., "foreach")
+    /// </summary>
+    public string Name { get; set; }
 
     /// <summary>
-    /// Process directive-specific parameters based on PPT syntax guidelines
+    /// Primary directive value
     /// </summary>
-    private static void ProcessDirectiveSpecificParameters(DirectiveContext directive)
+    public string Value { get; set; }
+
+    /// <summary>
+    /// Additional directive parameters
+    /// </summary>
+    public Dictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>();
+
+    /// <summary>
+    /// Checks if a parameter exists
+    /// </summary>
+    public bool HasParameter(string name)
     {
-        // Specific handling for the 'if' directive
-        if (directive.Name == "if")
+        return Parameters.ContainsKey(name);
+    }
+
+    /// <summary>
+    /// Gets a parameter value, or default if not found
+    /// </summary>
+    public string GetParameter(string name, string defaultValue = null)
+    {
+        return Parameters.TryGetValue(name, out var value) ? value : defaultValue;
+    }
+
+    /// <summary>
+    /// Gets a parameter value as int, or default if not found or not parsable
+    /// </summary>
+    public int GetParameterAsInt(string name, int defaultValue = 0)
+    {
+        if (Parameters.TryGetValue(name, out var value) && int.TryParse(value, out var intValue))
         {
-            // Ensure condition is properly formatted
-            directive.Value = directive.Value.Trim();
-
-            // If target is not specified, look for it in parameters
-            if (!directive.Parameters.ContainsKey("target"))
-            {
-                Logger.Warning($"If directive missing required 'target' parameter: {directive.Value}");
-            }
+            return intValue;
         }
+        return defaultValue;
+    }
 
-        // Add other directive-specific processing as needed
+    /// <summary>
+    /// Gets a parameter value as bool, or default if not found or not parsable
+    /// </summary>
+    public bool GetParameterAsBool(string name, bool defaultValue = false)
+    {
+        if (Parameters.TryGetValue(name, out var value))
+        {
+            value = value.ToLowerInvariant();
+            if (value == "true" || value == "yes" || value == "1")
+                return true;
+            if (value == "false" || value == "no" || value == "0")
+                return false;
+        }
+        return defaultValue;
     }
 }

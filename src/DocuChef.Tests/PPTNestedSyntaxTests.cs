@@ -10,12 +10,12 @@ namespace DocuChef.Tests
     /// <summary>
     /// Tests for PowerPoint nested data structures
     /// </summary>
-    public class PowerPointNestedSyntaxTests : TestBase
+    public class PPTNestedSyntaxTests : TestBase
     {
         private readonly string _tempDirectory;
         private readonly string _templatePath;
 
-        public PowerPointNestedSyntaxTests(ITestOutputHelper output) : base(output)
+        public PPTNestedSyntaxTests(ITestOutputHelper output) : base(output)
         {
             _tempDirectory = Path.Combine(Path.GetTempPath(), "DocuChefTests", Guid.NewGuid().ToString());
             Directory.CreateDirectory(_tempDirectory);
@@ -23,7 +23,7 @@ namespace DocuChef.Tests
             PPTHelper.CreateNestedSyntaxTemplate(_templatePath);
         }
 
-        public new void Dispose()
+        public override void Dispose()
         {
             try { if (Directory.Exists(_tempDirectory)) Directory.Delete(_tempDirectory, true); }
             catch { }

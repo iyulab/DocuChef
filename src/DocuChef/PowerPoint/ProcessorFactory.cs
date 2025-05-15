@@ -10,29 +10,13 @@ namespace DocuChef.PowerPoint;
 internal static class ProcessorFactory
 {
     /// <summary>
-    /// Create a PowerPoint processor with all dependent processors
-    /// </summary>
-    public static PowerPointProcessor CreateProcessor(PresentationDocument document, PowerPointOptions options)
-    {
-        if (document == null)
-            throw new ArgumentNullException(nameof(document));
-
-        if (options == null)
-            throw new ArgumentNullException(nameof(options));
-
-        return new PowerPointProcessor(document, options);
-    }
-
-    /// <summary>
     /// Create a custom expression evaluator with specific culture settings
     /// </summary>
     public static IExpressionEvaluator CreateExpressionEvaluator(CultureInfo cultureInfo = null)
     {
-        var context = new PowerPointContext();
-        var processor = new ExpressionEvaluator(cultureInfo ?? CultureInfo.CurrentCulture);
-
         // Create a lightweight processor just for expression evaluation
-        return new ExpressionOnlyProcessor(processor);
+        var evaluator = new ExpressionEvaluator(cultureInfo);
+        return new ExpressionOnlyProcessor(evaluator);
     }
 
     /// <summary>

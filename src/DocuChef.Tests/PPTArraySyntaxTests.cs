@@ -1,5 +1,4 @@
-﻿using DocuChef.PowerPoint;
-using DocumentFormat.OpenXml.Packaging;
+﻿using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
 using FluentAssertions;
 using System.Text;
@@ -10,12 +9,12 @@ namespace DocuChef.Tests;
 /// <summary>
 /// Tests for PowerPoint array syntax
 /// </summary>
-public class PowerPointArraySyntaxTests : TestBase
+public class PPTArraySyntaxTests : TestBase
 {
     private readonly string _tempDirectory;
     private readonly string _templatePath;
 
-    public PowerPointArraySyntaxTests(ITestOutputHelper output) : base(output)
+    public PPTArraySyntaxTests(ITestOutputHelper output) : base(output)
     {
         _tempDirectory = Path.Combine(Path.GetTempPath(), "DocuChefTests", Guid.NewGuid().ToString());
         Directory.CreateDirectory(_tempDirectory);
@@ -23,7 +22,7 @@ public class PowerPointArraySyntaxTests : TestBase
         PPTHelper.CreateArraySyntaxTemplate(_templatePath);
     }
 
-    public new void Dispose()
+    public override void Dispose()
     {
         try { if (Directory.Exists(_tempDirectory)) Directory.Delete(_tempDirectory, true); }
         catch { }

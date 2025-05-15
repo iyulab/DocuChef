@@ -18,27 +18,7 @@ internal class BindingProcessor
         _processor = processor;
         _variables = variables ?? new Dictionary<string, object>();
     }
-
-    /// <summary>
-    /// Process shape text with formatting preservation
-    /// </summary>
-    public bool ProcessShape(P.Shape shape)
-    {
-        if (shape?.TextBody == null)
-            return false;
-
-        // Check if shape contains expressions
-        if (!shape.ContainsExpressions())
-            return false;
-
-        // Check if expressions span across runs
-        bool crossRunExpressions = ContainsCrossRunExpressions(shape);
-
-        return crossRunExpressions
-            ? ProcessCrossRunExpressions(shape)
-            : ProcessIndividualRuns(shape);
-    }
-
+    
     /// <summary>
     /// Process individual runs for expressions
     /// </summary>

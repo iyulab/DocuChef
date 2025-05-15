@@ -8,21 +8,6 @@ public static class ExpressionHelper
     private static readonly Regex ExpressionPattern = new Regex(@"\$\{([^{}]+)\}", RegexOptions.Compiled);
 
     /// <summary>
-    /// Extract all expressions from text
-    /// </summary>
-    public static List<string> ExtractExpressions(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-            return new List<string>();
-
-        return ExpressionPattern.Matches(text)
-            .Cast<Match>()
-            .Select(m => m.Value)
-            .Distinct()
-            .ToList();
-    }
-
-    /// <summary>
     /// Check if text contains expressions
     /// </summary>
     public static bool ContainsExpressions(string text)

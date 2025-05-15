@@ -26,16 +26,6 @@ public class PowerPointFunction
     public PowerPointFunction() { }
 
     /// <summary>
-    /// Creates a new PowerPoint function with the specified properties
-    /// </summary>
-    public PowerPointFunction(string name, string description, Func<PowerPointContext, object?, string[]?, object?> handler)
-    {
-        Name = name;
-        Description = description;
-        Handler = handler;
-    }
-
-    /// <summary>
     /// Execute the function
     /// </summary>
     public object? Execute(PowerPointContext context, object? value, string[]? parameters)
