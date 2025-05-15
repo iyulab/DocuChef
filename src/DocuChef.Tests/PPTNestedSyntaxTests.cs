@@ -1,5 +1,4 @@
-﻿using DocuChef.PowerPoint;
-using DocumentFormat.OpenXml.Packaging;
+﻿using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
 using FluentAssertions;
 using System.Text;

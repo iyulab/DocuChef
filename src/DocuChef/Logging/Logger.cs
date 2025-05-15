@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace DocuChef.Logging;
 
@@ -20,6 +21,7 @@ internal static class Logger
 
     private static LogLevel _minimumLevel = LogLevel.Warning;
     private static Action<string, LogLevel> _logAction = DefaultLogAction;
+    private static bool _isEnabled = true;
 
     /// <summary>
     /// Gets or sets the minimum log level
@@ -28,6 +30,15 @@ internal static class Logger
     {
         get => _minimumLevel;
         set => _minimumLevel = value;
+    }
+
+    /// <summary>
+    /// Gets or sets whether logging is enabled
+    /// </summary>
+    public static bool IsEnabled
+    {
+        get => _isEnabled;
+        set => _isEnabled = value;
     }
 
     /// <summary>
@@ -43,8 +54,10 @@ internal static class Logger
     /// </summary>
     public static void Debug(string message)
     {
-        if (_minimumLevel <= LogLevel.Debug)
-            _logAction(message, LogLevel.Debug);
+        if (!_isEnabled || _minimumLevel > LogLevel.Debug)
+            return;
+
+        _logAction(message, LogLevel.Debug);
     }
 
     /// <summary>
@@ -52,8 +65,10 @@ internal static class Logger
     /// </summary>
     public static void Info(string message)
     {
-        if (_minimumLevel <= LogLevel.Info)
-            _logAction(message, LogLevel.Info);
+        if (!_isEnabled || _minimumLevel > LogLevel.Info)
+            return;
+
+        _logAction(message, LogLevel.Info);
     }
 
     /// <summary>
@@ -61,8 +76,10 @@ internal static class Logger
     /// </summary>
     public static void Warning(string message)
     {
-        if (_minimumLevel <= LogLevel.Warning)
-            _logAction(message, LogLevel.Warning);
+        if (!_isEnabled || _minimumLevel > LogLevel.Warning)
+            return;
+
+        _logAction(message, LogLevel.Warning);
     }
 
     /// <summary>
@@ -70,14 +87,14 @@ internal static class Logger
     /// </summary>
     public static void Error(string message, Exception exception = null)
     {
-        if (_minimumLevel <= LogLevel.Error)
-        {
-            string fullMessage = message;
-            if (exception != null)
-                fullMessage += $" Exception: {exception.Message}";
+        if (!_isEnabled || _minimumLevel > LogLevel.Error)
+            return;
 
-            _logAction(fullMessage, LogLevel.Error);
-        }
+        string fullMessage = message;
+        if (exception != null)
+            fullMessage += $" Exception: {exception.Message}";
+
+        _logAction(fullMessage, LogLevel.Error);
     }
 
     /// <summary>

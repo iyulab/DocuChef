@@ -1,4 +1,6 @@
-﻿namespace DocuChef.Exceptions;
+﻿using System;
+
+namespace DocuChef.Exceptions;
 
 /// <summary>
 /// Base exception for all DocuChef errors

@@ -47,24 +47,23 @@ internal static class ImageFunction
                 string arrayName = arrayMatch.Groups[1].Value;
                 if (int.TryParse(arrayMatch.Groups[2].Value, out int index))
                 {
-                    // Check if index is valid for this array
-                    if (context.Variables.TryGetValue(arrayName, out var arrayObj) && arrayObj != null)
+                    // Use hierarchical path to check if index is valid
+                    var path = new HierarchicalPath($"{arrayName}");
+                    int arraySize = context.GetCollectionCount(path);
+
+                    if (index >= arraySize)
                     {
-                        int arraySize = CollectionHelper.GetCollectionCount(arrayObj);
-                        if (index >= arraySize)
+                        Logger.Warning($"[IMAGE-DEBUG] Array index out of bounds: {arrayName}[{index}] >= {arraySize}");
+
+                        // Hide the shape if it exists and index is out of bounds
+                        if (context.Shape?.ShapeObject != null)
                         {
-                            Logger.Warning($"[IMAGE-DEBUG] Array index out of bounds: {arrayName}[{index}] >= {arraySize}");
-
-                            // Hide the shape if it exists and index is out of bounds
-                            if (context.Shape?.ShapeObject != null)
-                            {
-                                PowerPointShapeHelper.HideShape(context.Shape.ShapeObject);
-                                Logger.Debug($"[IMAGE-DEBUG] Hiding shape due to invalid array index");
-                                return ""; // Return empty string to avoid error message
-                            }
-
-                            return ""; // Return empty string instead of error message
+                            ShapeHelper.HideShape(context.Shape.ShapeObject);
+                            Logger.Debug($"[IMAGE-DEBUG] Hiding shape due to invalid array index");
+                            return ""; // Return empty string to avoid error message
                         }
+
+                        return ""; // Return empty string instead of error message
                     }
 
                     // Add metadata to shape if valid
@@ -95,7 +94,7 @@ internal static class ImageFunction
                     // Hide the shape if it exists
                     if (context.Shape?.ShapeObject != null)
                     {
-                        PowerPointShapeHelper.HideShape(context.Shape.ShapeObject);
+                        ShapeHelper.HideShape(context.Shape.ShapeObject);
                         Logger.Debug($"[IMAGE-DEBUG] Hiding shape due to array resolution error");
                         return ""; // Return empty string to avoid error message
                     }
@@ -145,7 +144,7 @@ internal static class ImageFunction
                 // Hide the shape if it exists
                 if (context.Shape?.ShapeObject != null)
                 {
-                    PowerPointShapeHelper.HideShape(context.Shape.ShapeObject);
+                    ShapeHelper.HideShape(context.Shape.ShapeObject);
                     Logger.Debug($"[IMAGE-DEBUG] Hiding shape due to missing image file");
                     return ""; // Return empty string to avoid error message
                 }
@@ -175,7 +174,7 @@ internal static class ImageFunction
                     Logger.Warning("Failed to process image in shape");
 
                     // Hide the shape on processing failure
-                    PowerPointShapeHelper.HideShape(context.Shape.ShapeObject);
+                    ShapeHelper.HideShape(context.Shape.ShapeObject);
                     Logger.Debug($"[IMAGE-DEBUG] Hiding shape due to image processing failure");
                     return "";
                 }
@@ -191,7 +190,7 @@ internal static class ImageFunction
             // Hide the shape on exception
             if (context.Shape?.ShapeObject != null)
             {
-                PowerPointShapeHelper.HideShape(context.Shape.ShapeObject);
+                ShapeHelper.HideShape(context.Shape.ShapeObject);
                 Logger.Debug($"[IMAGE-DEBUG] Hiding shape due to exception: {ex.Message}");
             }
 
@@ -204,6 +203,32 @@ internal static class ImageFunction
     /// </summary>
     private static string ResolveArrayIndexedPath(PowerPointContext context, string path)
     {
+        // Use HierarchicalPath to resolve array indexed paths
+        try
+        {
+            var hierarchicalPath = new HierarchicalPath(path);
+            if (hierarchicalPath.Segments.Count > 0)
+            {
+                // Resolve the path with hierarchical indices
+                var resolvedValue = context.ResolveHierarchicalValue(hierarchicalPath);
+                if (resolvedValue != null)
+                {
+                    Logger.Debug($"[IMAGE-DEBUG] Successfully resolved hierarchical path: {path} to {resolvedValue}");
+                    return resolvedValue.ToString();
+                }
+                else
+                {
+                    Logger.Warning($"[IMAGE-DEBUG] Failed to resolve hierarchical path: {path}");
+                    return $"[Error: Path not found: {path}]";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warning($"[IMAGE-DEBUG] Error resolving hierarchical path: {ex.Message}");
+        }
+
+        // Fallback to regex-based parsing
         var match = System.Text.RegularExpressions.Regex.Match(path, @"^(\w+)\[(\d+)\](\.(.+))?$");
         if (!match.Success)
             return path;
@@ -221,33 +246,38 @@ internal static class ImageFunction
         }
 
         // Verify array index is within bounds
-        int arraySize = CollectionHelper.GetCollectionCount(arrayObj);
+        int arraySize = context.GetCollectionCount(new HierarchicalPath(arrayName));
         if (index >= arraySize)
         {
             Logger.Warning($"[IMAGE-DEBUG] Array index out of bounds: {arrayName}[{index}] >= {arraySize}");
             return $"[Error: Array index out of bounds: {index} >= {arraySize}]";
         }
 
-        object item = CollectionHelper.GetItemAtIndex(arrayObj, index);
-        if (item == null)
+        // Create a hierarchical path with the index
+        var indexedPath = new HierarchicalPath($"{arrayName}[{index}]");
+        if (string.IsNullOrEmpty(propertyPath))
         {
-            Logger.Warning($"[IMAGE-DEBUG] Array item not found: {arrayName}[{index}]");
-            return $"[Error: Array item not found: {arrayName}[{index}]]";
+            var item = context.ResolveHierarchicalValue(indexedPath);
+            if (item == null)
+            {
+                Logger.Warning($"[IMAGE-DEBUG] Array item not found: {arrayName}[{index}]");
+                return $"[Error: Array item not found: {arrayName}[{index}]]";
+            }
+
+            return item.ToString();
         }
 
-        Logger.Debug($"[IMAGE-DEBUG] Successfully retrieved item at index {index}");
+        // Add the property to the path
+        var fullPath = new HierarchicalPath($"{arrayName}[{index}].{propertyPath}");
+        var propertyValue = context.ResolveHierarchicalValue(fullPath);
 
-        if (string.IsNullOrEmpty(propertyPath))
-            return item.ToString();
-
-        object propValue = ResolveNestedProperty(item, propertyPath);
-        if (propValue == null)
+        if (propertyValue == null)
         {
             Logger.Warning($"[IMAGE-DEBUG] Property '{propertyPath}' not found or null");
             return $"[Error: Property '{propertyPath}' not found]";
         }
 
-        return propValue.ToString();
+        return propertyValue.ToString();
     }
 
     /// <summary>
@@ -255,36 +285,14 @@ internal static class ImageFunction
     /// </summary>
     private static string ResolvePropertyPath(PowerPointContext context, string path)
     {
-        var resolvedPath = context.ResolveVariable(path);
-        if (resolvedPath != null)
+        // Use hierarchical path for property resolution
+        var resolvedValue = context.ResolveHierarchicalValue(path);
+        if (resolvedValue != null)
         {
-            Logger.Debug($"[IMAGE-DEBUG] Resolved image path from property path: {resolvedPath}");
-            return resolvedPath.ToString();
+            Logger.Debug($"[IMAGE-DEBUG] Resolved image path from property path: {resolvedValue}");
+            return resolvedValue.ToString();
         }
         return path;
-    }
-
-    /// <summary>
-    /// Resolve nested property from object
-    /// </summary>
-    private static object? ResolveNestedProperty(object obj, string propertyPath)
-    {
-        var props = propertyPath.Split('.');
-        object? current = obj;
-
-        foreach (var prop in props)
-        {
-            if (current == null)
-                return null;
-
-            var property = current.GetType().GetProperty(prop);
-            if (property == null)
-                return null;
-
-            current = property.GetValue(current);
-        }
-
-        return current;
     }
 
     /// <summary>
@@ -352,7 +360,7 @@ internal static class ImageFunction
             string relationshipId = GenerateUniqueRelationshipId(slidePart);
             Logger.Debug($"Generated relationship ID: {relationshipId}");
 
-            var imagePart = PowerPointHelper.CreateImagePart(slidePart, contentType, relationshipId);
+            var imagePart = ElementHelper.CreateImagePart(slidePart, contentType, relationshipId);
             if (imagePart == null)
             {
                 Logger.Error("Failed to create image part");
@@ -370,19 +378,19 @@ internal static class ImageFunction
 
             if (originalOutline != null)
             {
-                outline = PowerPointHelper.CloneOutline(originalOutline);
+                outline = ElementHelper.CloneOutline(originalOutline);
                 Logger.Debug("Outline cloned from original shape");
             }
             else
             {
-                outline = PowerPointHelper.CreateDefaultOutline(9525, "808080");
+                outline = ElementHelper.CreateDefaultOutline(9525, "808080");
                 Logger.Debug("Created default outline");
             }
 
             // Preserve description (alt text) from original shape
             string description = nvdp?.Description?.Value;
 
-            var picture = PowerPointHelper.CreatePicture(
+            var picture = ElementHelper.CreatePicture(
                 relationshipId,
                 shapeId, // Keep the same ID for proper replacement
                 shapeName, // Keep original shape name

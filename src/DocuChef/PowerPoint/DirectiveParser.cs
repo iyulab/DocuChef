@@ -1,21 +1,23 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace DocuChef.PowerPoint;
 
 /// <summary>
-/// Parser for slide directives in PowerPoint templates
+/// Parser for slide directives in PowerPoint templates with hierarchical path support
 /// </summary>
 internal static class DirectiveParser
 {
-    // Improved regex pattern for directives that supports foreach-items pattern
+    // Enhanced directive pattern supporting hierarchical paths
     private static readonly Regex DirectivePattern = new(@"#(\w+(?:-\w+)?):([^,]+)(?:,\s*(.+))?", RegexOptions.Compiled);
 
     /// <summary>
-    /// Parse directives from slide notes
+    /// Parse directives from slide notes with hierarchical path support
     /// </summary>
-    public static List<SlideDirective> ParseDirectives(string notes)
+    public static List<Directive> ParseDirectives(string notes)
     {
-        var directives = new List<SlideDirective>();
+        var directives = new List<Directive>();
         if (string.IsNullOrEmpty(notes))
             return directives;
 
@@ -30,63 +32,34 @@ internal static class DirectiveParser
                     string directiveName = match.Groups[1].Value.Trim();
                     string directiveValue = match.Groups[2].Value.Trim();
 
-                    // Special handling for foreach-items directive
-                    if (directiveName.StartsWith("foreach-"))
+                    // Create the directive with hierarchical path support
+                    var directive = new Directive
                     {
-                        // Extract the collection path from foreach-items directive
-                        string collectionType = directiveName.Substring(8); // after "foreach-"
+                        Name = directiveName,
+                        Value = directiveValue,
+                        Parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    };
 
-                        // Parse path like "Groups.Items" into parent and child components
-                        var pathParts = directiveValue.Split('.');
-                        if (pathParts.Length >= 2)
-                        {
-                            var directive = new SlideDirective
-                            {
-                                Name = "foreach-nested",
-                                Value = directiveValue, // Keep the original path (e.g., "Groups.Items")
-                                Parameters = new Dictionary<string, string>
-                                {
-                                    ["parent"] = pathParts[0],
-                                    ["child"] = pathParts[1],
-                                    ["type"] = collectionType
-                                }
-                            };
-
-                            // Parse additional parameters if present
-                            if (match.Groups.Count > 3 && !string.IsNullOrEmpty(match.Groups[3].Value))
-                            {
-                                ParseParameters(match.Groups[3].Value, directive.Parameters);
-                            }
-
-                            directives.Add(directive);
-                            Logger.Debug($"Parsed nested directive: {directive.Name} with parent: {pathParts[0]}, child: {pathParts[1]}");
-                        }
-                    }
-                    else
+                    // Parse path
+                    if (directiveName.StartsWith("foreach", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Standard directive handling
-                        var directive = new SlideDirective
-                        {
-                            Name = directiveName,
-                            Value = directiveValue,
-                            Parameters = new Dictionary<string, string>()
-                        };
-
-                        // Parse additional parameters if present
-                        if (match.Groups.Count > 3 && !string.IsNullOrEmpty(match.Groups[3].Value))
-                        {
-                            ParseParameters(match.Groups[3].Value, directive.Parameters);
-                        }
-
-                        directives.Add(directive);
-                        Logger.Debug($"Parsed directive: {directive.Name} with value: {directive.Value}");
+                        directive.Path = new HierarchicalPath(directiveValue);
                     }
+
+                    // Parse additional parameters if present
+                    if (match.Groups.Count > 3 && !string.IsNullOrEmpty(match.Groups[3].Value))
+                    {
+                        ParseParameters(match.Groups[3].Value, directive.Parameters);
+                    }
+
+                    directives.Add(directive);
+                    Logger.Debug($"Parsed hierarchical directive: {directive.Name} with path: {directive.Path}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Logger.Error($"Error parsing directives from notes: {ex.Message}", ex);
+            Logger.Error($"Error parsing hierarchical directives from notes: {ex.Message}", ex);
         }
 
         return directives;
@@ -156,9 +129,9 @@ internal static class DirectiveParser
 }
 
 /// <summary>
-/// Represents a directive parsed from slide notes
+/// Represents a directive with hierarchical path support
 /// </summary>
-internal class SlideDirective
+internal class Directive
 {
     /// <summary>
     /// Directive name (e.g., "foreach")
@@ -171,9 +144,14 @@ internal class SlideDirective
     public string Value { get; set; }
 
     /// <summary>
+    /// Hierarchical path for the directive
+    /// </summary>
+    public HierarchicalPath Path { get; set; }
+
+    /// <summary>
     /// Additional directive parameters
     /// </summary>
-    public Dictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>();
+    public Dictionary<string, string> Parameters { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Checks if a parameter exists

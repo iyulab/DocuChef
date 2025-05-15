@@ -1,34 +1,96 @@
 ﻿namespace DocuChef.PowerPoint.Processing;
 
 /// <summary>
-/// Processor responsible for handling shape-related operations
+/// Processor responsible for handling shape-related operations with improved functionality
 /// </summary>
 internal class ShapeProcessor
 {
-    private readonly PowerPointProcessor _mainProcessor;
+    private readonly IExpressionEvaluator _evaluator;
     private readonly PowerPointContext _context;
     private readonly ExpressionProcessor _expressionProcessor;
+    private static readonly Regex PowerPointFunctionPattern = new(@"\${ppt\.(\w+)\(([^)]*)\)}", RegexOptions.Compiled);
 
     /// <summary>
     /// Initialize shape processor
     /// </summary>
-    public ShapeProcessor(PowerPointProcessor mainProcessor, PowerPointContext context)
+    public ShapeProcessor(IExpressionEvaluator evaluator, PowerPointContext context)
     {
-        _mainProcessor = mainProcessor ?? throw new ArgumentNullException(nameof(mainProcessor));
+        _evaluator = evaluator ?? throw new ArgumentNullException(nameof(evaluator));
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        _expressionProcessor = new ExpressionProcessor(mainProcessor, context);
+        _expressionProcessor = new ExpressionProcessor(evaluator, context);
     }
 
     /// <summary>
-    /// Process PowerPoint functions in shape
+    /// Process a shape with all its expressions and functions
     /// </summary>
-    public bool ProcessPowerPointFunctions(P.Shape shape)
+    public bool ProcessShape(P.Shape shape, Dictionary<string, object> variables)
     {
         if (shape.TextBody == null)
             return false;
 
         bool hasChanges = false;
-        var variables = _mainProcessor.PrepareVariables();
+
+        // Update shape context
+        UpdateShapeContext(shape);
+
+        // Process expression bindings
+        if (shape.ContainsExpressions())
+        {
+            if (_expressionProcessor.ProcessShapeExpressions(shape, variables))
+            {
+                hasChanges = true;
+                Logger.Debug($"Processed expressions in shape '{shape.GetShapeName()}'");
+            }
+        }
+
+        // Process PowerPoint functions
+        if (ProcessPowerPointFunctions(shape, variables))
+        {
+            hasChanges = true;
+            Logger.Debug($"Processed PowerPoint functions in shape '{shape.GetShapeName()}'");
+        }
+
+        return hasChanges;
+    }
+
+    /// <summary>
+    /// Update shape context
+    /// </summary>
+    private void UpdateShapeContext(P.Shape shape)
+    {
+        _context.Shape = new ShapeContext
+        {
+            Name = shape.GetShapeName(),
+            Id = shape.NonVisualShapeProperties?.NonVisualDrawingProperties?.Id?.Value.ToString(),
+            Text = shape.GetText(),
+            Type = GetShapeType(shape),
+            ShapeObject = shape
+        };
+    }
+
+    /// <summary>
+    /// Get shape type
+    /// </summary>
+    private string GetShapeType(P.Shape shape)
+    {
+        var presetGeometry = shape.ShapeProperties?.GetFirstChild<A.PresetGeometry>();
+        if (presetGeometry?.Preset != null)
+        {
+            return presetGeometry.Preset.Value.ToString();
+        }
+
+        return shape.TextBody != null ? "TextBox" : "Shape";
+    }
+
+    /// <summary>
+    /// Process PowerPoint functions in shape
+    /// </summary>
+    public bool ProcessPowerPointFunctions(P.Shape shape, Dictionary<string, object> variables)
+    {
+        if (shape.TextBody == null)
+            return false;
+
+        bool hasChanges = false;
 
         foreach (var paragraph in shape.TextBody.Elements<A.Paragraph>().ToList())
         {
@@ -39,24 +101,27 @@ internal class ShapeProcessor
                     continue;
 
                 string text = textElement.Text;
-                var functions = ExtractPowerPointFunctions(text);
+                var matches = PowerPointFunctionPattern.Matches(text);
 
-                if (!functions.Any())
+                if (matches.Count == 0)
                     continue;
 
                 // Process function if it's the entire text
-                if (functions.Count == 1 && DocuChef.Helpers.ExpressionHelper.IsSingleExpression(text))
+                if (matches.Count == 1 && matches[0].Value == text)
                 {
-                    var function = functions[0];
-                    if (ProcessPowerPointFunction(function, shape))
+                    var match = matches[0];
+                    string functionName = match.Groups[1].Value;
+                    string parameters = match.Groups[2].Value;
+
+                    if (ProcessPowerPointFunction(functionName, parameters, shape))
                     {
                         hasChanges = true;
                     }
                 }
                 else
                 {
-                    // Process mixed content
-                    string processedText = _expressionProcessor.ProcessExpressions(text);
+                    // Process mixed content with expressions and functions
+                    string processedText = _expressionProcessor.ProcessExpressions(text, variables);
                     if (processedText != text)
                     {
                         textElement.Text = processedText;
@@ -70,38 +135,16 @@ internal class ShapeProcessor
     }
 
     /// <summary>
-    /// Extract PowerPoint functions from text
-    /// </summary>
-    private List<PowerPointFunctionCall> ExtractPowerPointFunctions(string text)
-    {
-        var result = new List<PowerPointFunctionCall>();
-        var pattern = new Regex(@"\${ppt\.(\w+)\(([^)]*)\)}", RegexOptions.Compiled);
-
-        var matches = pattern.Matches(text);
-        foreach (Match match in matches)
-        {
-            result.Add(new PowerPointFunctionCall
-            {
-                FullMatch = match.Value,
-                FunctionName = match.Groups[1].Value,
-                Parameters = match.Groups[2].Value
-            });
-        }
-
-        return result;
-    }
-
-    /// <summary>
     /// Process a single PowerPoint function
     /// </summary>
-    private bool ProcessPowerPointFunction(PowerPointFunctionCall functionCall, P.Shape shape)
+    private bool ProcessPowerPointFunction(string functionName, string parametersString, P.Shape shape)
     {
-        Logger.Debug($"Processing PowerPoint function: {functionCall.FunctionName}({functionCall.Parameters})");
+        Logger.Debug($"Processing PowerPoint function: {functionName}({parametersString})");
 
         // Find the function
-        if (!_context.Functions.TryGetValue(functionCall.FunctionName, out var function))
+        if (!_context.Functions.TryGetValue(functionName, out var function))
         {
-            Logger.Warning($"Function not found: {functionCall.FunctionName}");
+            Logger.Warning($"Function not found: {functionName}");
             return false;
         }
 
@@ -109,7 +152,7 @@ internal class ShapeProcessor
         _context.Shape.ShapeObject = shape;
 
         // Parse parameters
-        var parameters = ParseFunctionParameters(functionCall.Parameters);
+        var parameters = DocuChef.Helpers.ExpressionHelper.ParseFunctionParameters(parametersString);
 
         try
         {
@@ -120,7 +163,7 @@ internal class ShapeProcessor
             if (result is string resultText)
             {
                 var textElements = shape.Descendants<A.Text>()
-                    .Where(t => t.Text == functionCall.FullMatch)
+                    .Where(t => t.Text.Contains($"${{ppt.{functionName}"))
                     .ToList();
 
                 foreach (var textElement in textElements)
@@ -136,26 +179,8 @@ internal class ShapeProcessor
         }
         catch (Exception ex)
         {
-            Logger.Error($"Error executing function {functionCall.FunctionName}: {ex.Message}", ex);
+            Logger.Error($"Error executing function {functionName}: {ex.Message}", ex);
             return false;
         }
-    }
-
-    /// <summary>
-    /// Parse function parameters
-    /// </summary>
-    private string[] ParseFunctionParameters(string parametersString)
-    {
-        return DocuChef.Helpers.ExpressionHelper.ParseFunctionParameters(parametersString);
-    }
-
-    /// <summary>
-    /// Represents a PowerPoint function call
-    /// </summary>
-    private class PowerPointFunctionCall
-    {
-        public string FullMatch { get; set; }
-        public string FunctionName { get; set; }
-        public string Parameters { get; set; }
     }
 }

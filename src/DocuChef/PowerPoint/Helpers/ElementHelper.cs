@@ -1,6 +1,6 @@
 ﻿namespace DocuChef.PowerPoint.Helpers;
 
-internal static class PowerPointHelper
+internal static class ElementHelper
 {
     /// <summary>
     /// Creates appropriate ImagePart based on content type

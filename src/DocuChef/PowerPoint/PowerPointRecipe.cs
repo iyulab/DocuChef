@@ -1,16 +1,19 @@
-﻿using DocuChef.PowerPoint.Processing;
-using DocumentFormat.OpenXml.Packaging;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using DocuChef.Extensions;
 
 namespace DocuChef.PowerPoint;
 
 /// <summary>
-/// Represents a PowerPoint template for document generation using DollarSignEngine for expression evaluation
+/// Represents a PowerPoint template for document generation
 /// </summary>
-public partial class PowerPointRecipe : RecipeBase
+public class PowerPointRecipe : RecipeBase
 {
     private readonly PowerPointOptions _options;
     private readonly string _templatePath;
-    private PresentationDocument _presentationDocument;
+    private readonly bool _isTemporaryFile;
+    private PowerPointGenerator _generator;
 
     /// <summary>
     /// Creates a new PowerPoint template from a file
@@ -25,17 +28,17 @@ public partial class PowerPointRecipe : RecipeBase
 
         _templatePath = templatePath;
         _options = options ?? new PowerPointOptions();
+        _isTemporaryFile = false;
 
-        // Ensure text formatting is preserved by default
-        _options.PreserveTextFormatting = true;
-
-        Logger.Debug($"PowerPoint recipe initialized from file: {templatePath}");
+        InitializeGenerator();
 
         if (_options.RegisterBuiltInFunctions)
             RegisterBuiltInFunctions();
 
         if (_options.RegisterGlobalVariables)
             RegisterStandardGlobalVariables();
+
+        Logger.Debug($"PowerPoint recipe initialized from file: {templatePath}");
     }
 
     /// <summary>
@@ -50,11 +53,13 @@ public partial class PowerPointRecipe : RecipeBase
 
         // Create a temporary file to work with
         _templatePath = ".pptx".GetTempFilePath();
+        _isTemporaryFile = true;
 
         try
         {
-            Logger.Debug($"Creating temporary template file: {_templatePath}");
             templateStream.CopyToFile(_templatePath);
+
+            InitializeGenerator();
 
             if (_options.RegisterBuiltInFunctions)
                 RegisterBuiltInFunctions();
@@ -66,9 +71,18 @@ public partial class PowerPointRecipe : RecipeBase
         }
         catch (Exception ex)
         {
-            Logger.Error("Failed to create temporary template file", ex);
-            throw new DocuChefException($"Failed to create temporary template file: {ex.Message}", ex);
+            CleanupTemporaryFile();
+            Logger.Error("Failed to create PowerPoint recipe from stream", ex);
+            throw new DocuChefException($"Failed to create PowerPoint recipe from stream: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Initializes the generator
+    /// </summary>
+    private void InitializeGenerator()
+    {
+        _generator = new PowerPointGenerator(_templatePath, _options);
     }
 
     /// <summary>
@@ -82,7 +96,6 @@ public partial class PowerPointRecipe : RecipeBase
             throw new ArgumentNullException(nameof(name));
 
         Variables[name] = value;
-        Logger.Debug($"Added variable: {name}");
     }
 
     /// <summary>
@@ -101,9 +114,23 @@ public partial class PowerPointRecipe : RecipeBase
         if (function.Handler == null)
             throw new ArgumentException("Function handler cannot be null", nameof(function));
 
-        var functionName = function.Name;
-        Variables[$"ppt.{functionName}"] = function;
-        Logger.Debug($"Registered function: {functionName}");
+        Variables[$"ppt.{function.Name}"] = function;
+    }
+
+    /// <summary>
+    /// Registers multiple functions at once
+    /// </summary>
+    public void RegisterFunctions(IEnumerable<PowerPointFunction> functions)
+    {
+        ThrowIfDisposed();
+
+        if (functions == null)
+            return;
+
+        foreach (var function in functions)
+        {
+            RegisterFunction(function);
+        }
     }
 
     /// <summary>
@@ -111,9 +138,16 @@ public partial class PowerPointRecipe : RecipeBase
     /// </summary>
     private void RegisterBuiltInFunctions()
     {
-        // Register PowerPoint specific functions through PowerPointFunctions class
-        PowerPointFunctions.RegisterBuiltInFunctions(this);
-        Logger.Debug("Registered built-in PowerPoint functions");
+        try
+        {
+            // Register PowerPoint specific functions through PowerPointFunctions class
+            PowerPointFunctions.RegisterBuiltInFunctions(this);
+            Logger.Debug("Registered built-in PowerPoint functions");
+        }
+        catch (Exception ex)
+        {
+            Logger.Warning($"Failed to register some built-in functions: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -125,40 +159,46 @@ public partial class PowerPointRecipe : RecipeBase
 
         try
         {
-            // Create a copy of the template to work with
-            string outputPath = ".pptx".GetTempFilePath();
-            Logger.Debug($"Creating output file: {outputPath}");
-
-            File.Copy(_templatePath, outputPath, true);
-
-            // Open the presentation
-            _presentationDocument = PresentationDocument.Open(outputPath, true);
-            Logger.Debug("Opened presentation document for editing");
-
-            // Process the template with DollarSignEngine-based processor
-            var processor = new PowerPointProcessor(_presentationDocument, _options);
-            Logger.Info("Processing PowerPoint template with DollarSignEngine...");
-
             // Extract PowerPoint functions from variables
-            var powerPointFunctions = Variables
-                .Where(v => v.Key.StartsWith("ppt.") && v.Value is PowerPointFunction)
-                .ToDictionary(
-                    v => v.Key.Substring(4), // Remove "ppt." prefix
-                    v => v.Value as PowerPointFunction
-                );
+            var powerPointFunctions = new List<PowerPointFunction>();
 
-            // Process the template
-            processor.Process(Variables, GlobalVariables, powerPointFunctions);
+            foreach (var entry in Variables)
+            {
+                if (entry.Key.StartsWith("ppt.") && entry.Value is PowerPointFunction function)
+                {
+                    powerPointFunctions.Add(function);
+                }
+            }
 
-            // Return the generated document
-            Logger.Info("PowerPoint document generated successfully");
-            return new PowerPointDocument(_presentationDocument, outputPath);
+            // Generate the document
+            return _generator.Generate(Variables, GlobalVariables, powerPointFunctions);
         }
         catch (Exception ex)
         {
-            _presentationDocument?.Dispose();
             Logger.Error("Failed to generate PowerPoint document", ex);
             throw new DocuChefException($"Failed to generate PowerPoint document: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Cleanup temporary file if needed
+    /// </summary>
+    private void CleanupTemporaryFile()
+    {
+        if (_isTemporaryFile &&
+            _options.CleanupTemporaryFiles &&
+            !string.IsNullOrEmpty(_templatePath) &&
+            File.Exists(_templatePath))
+        {
+            try
+            {
+                File.Delete(_templatePath);
+                Logger.Debug($"Deleted temporary file: {_templatePath}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"Failed to delete temporary file: {ex.Message}");
+            }
         }
     }
 
@@ -171,26 +211,9 @@ public partial class PowerPointRecipe : RecipeBase
 
         if (disposing)
         {
-            try
-            {
-                _presentationDocument?.Dispose();
-                Logger.Debug("Presentation document disposed");
-
-                // Delete temp file if created from stream and option is set
-                if (_options.CleanupTemporaryFiles &&
-                    _templatePath != null &&
-                    _templatePath.Contains("DocuChef_") &&
-                    File.Exists(_templatePath))
-                {
-                    File.Delete(_templatePath);
-                    Logger.Debug($"Temporary file deleted: {_templatePath}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("Error disposing PowerPoint recipe resources", ex);
-                // Ignore disposal errors
-            }
+            _generator?.Dispose();
+            CleanupTemporaryFile();
+            Logger.Debug("PowerPoint recipe disposed");
         }
 
         base.Dispose(disposing);

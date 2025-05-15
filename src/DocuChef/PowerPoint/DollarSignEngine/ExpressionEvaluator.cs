@@ -7,7 +7,7 @@ namespace DocuChef.PowerPoint.DollarSignEngine;
 /// Improved DollarSignEngine adapter for processing expressions in PowerPoint templates
 /// with enhanced nested data structure support
 /// </summary>
-internal class ExpressionEvaluator
+internal class ExpressionEvaluator : IExpressionEvaluator
 {
     protected readonly DollarSignOptions _options;
     private readonly CultureInfo _cultureInfo;
@@ -41,9 +41,9 @@ internal class ExpressionEvaluator
     }
 
     /// <summary>
-    /// Evaluates an expression synchronously
+    /// Evaluates a complete expression with provided variables
     /// </summary>
-    public object Evaluate(string expression, Dictionary<string, object> variables)
+    public object EvaluateCompleteExpression(string expression, Dictionary<string, object> variables)
     {
         try
         {
@@ -109,6 +109,34 @@ internal class ExpressionEvaluator
             return HandlePowerPointFunction(expression, variables);
         }
 
+        // First try to use hierarchical path resolution if context is available
+        if (_context?.Navigator != null &&
+            (expression.Contains('.') || expression.Contains('[') || expression.Contains('_')))
+        {
+            // For complex paths, use hierarchical path navigation
+            var hierarchicalPath = new HierarchicalPath(expression);
+            if (hierarchicalPath.Segments.Count > 0)
+            {
+                // Use the current hierarchical indices from context
+                var result = _context.Navigator.ResolveValueWithContext(hierarchicalPath, _context.HierarchicalIndices);
+                if (result != null)
+                {
+                    Logger.Debug($"[EVAL] Resolved hierarchical path: {expression}");
+                    return result;
+                }
+            }
+        }
+
+        // Handle dotted path notation (obj.prop.nested)
+        if (expression.Contains('.'))
+        {
+            string[] parts = expression.Split('.');
+            if (parts.Length > 1 && variables.TryGetValue(parts[0], out var rootObj) && rootObj != null)
+            {
+                return ResolveNestedProperty(rootObj, parts, 1);
+            }
+        }
+
         // New approach: Handle nested data patterns with multiple levels (A_B_C)
         if (expression.Contains('_') && !expression.StartsWith("_"))
         {
@@ -138,8 +166,66 @@ internal class ExpressionEvaluator
             return ResolveSimpleArrayIndex(arrayIndexMatch, variables);
         }
 
+        // For direct variable access, let DollarSignEngine handle it
+        if (variables.TryGetValue(expression, out var directValue))
+        {
+            return directValue;
+        }
+
         // For other expressions, let DollarSignEngine handle them
         return null;
+    }
+
+    /// <summary>
+    /// Resolve nested properties recursively
+    /// </summary>
+    private object ResolveNestedProperty(object obj, string[] parts, int startIndex)
+    {
+        if (obj == null || startIndex >= parts.Length)
+            return null;
+
+        var currentObj = obj;
+
+        // Navigate through the property chain
+        for (int i = startIndex; i < parts.Length; i++)
+        {
+            string propName = parts[i];
+
+            // Check if property has array index
+            var indexMatch = System.Text.RegularExpressions.Regex.Match(propName, @"(\w+)\[(\d+)\]");
+            if (indexMatch.Success)
+            {
+                propName = indexMatch.Groups[1].Value;
+                int index = int.Parse(indexMatch.Groups[2].Value);
+
+                // Get the property (which should be a collection)
+                var prop = currentObj.GetType().GetProperty(propName);
+                if (prop == null)
+                    return null;
+
+                var collection = prop.GetValue(currentObj);
+                if (collection == null)
+                    return null;
+
+                // Get item at index
+                currentObj = GetItemAtIndex(collection, index);
+                if (currentObj == null)
+                    return null;
+            }
+            else
+            {
+                // Simple property access
+                var prop = currentObj.GetType().GetProperty(propName);
+                if (prop == null)
+                    return null;
+
+                currentObj = prop.GetValue(currentObj);
+                if (currentObj == null)
+                    return null;
+            }
+        }
+
+        return currentObj;
     }
 
     /// <summary>
@@ -168,7 +254,7 @@ internal class ExpressionEvaluator
         }
 
         // Get the current index for the root collection
-        int rootIndex = _context?.CurrentIndices?.GetValueOrDefault(rootName, 0) ?? 0;
+        int rootIndex = _context?.HierarchicalIndices?.GetValueOrDefault(rootName, 0) ?? 0;
         Logger.Debug($"[EVAL] Using index {rootIndex} for root collection {rootName}");
 
         // Get item from root collection at current index
@@ -204,7 +290,7 @@ internal class ExpressionEvaluator
             string pathSoFar = string.Join("_", parts.Take(i + 1));
 
             // Get index for this level
-            int index = _context?.CurrentIndices?.GetValueOrDefault(pathSoFar, 0) ?? 0;
+            int index = _context?.HierarchicalIndices?.GetValueOrDefault(pathSoFar, 0) ?? 0;
             Logger.Debug($"[EVAL] Using index {index} for collection {pathSoFar}");
 
             // Get item at index

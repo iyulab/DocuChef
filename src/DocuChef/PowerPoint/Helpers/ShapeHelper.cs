@@ -3,50 +3,10 @@
 /// <summary>
 /// Helper class for PowerPoint-specific shape operations
 /// </summary>
-internal static class PowerPointShapeHelper
+internal static class ShapeHelper
 {
     private static readonly Dictionary<string, (long cx, long cy)> _originalDimensions = new();
     private static readonly Dictionary<string, (long x, long y)> _originalPositions = new();
-
-    /// <summary>
-    /// Find array references in shape with improved implementation for image detection
-    /// </summary>
-    public static List<ArrayReference> FindArrayReferences(P.Shape shape)
-    {
-        var result = new List<ArrayReference>();
-
-        // Check text content for array references
-        if (shape?.TextBody != null)
-        {
-            var textRuns = shape.Descendants<A.Text>().ToList();
-            foreach (var textRun in textRuns)
-            {
-                if (!string.IsNullOrEmpty(textRun.Text))
-                {
-                    var references = ArrayReferenceHelper.ExtractArrayReferences(textRun.Text);
-                    result.AddRange(references);
-                }
-            }
-        }
-
-        // Check shape name for array references (important for image shapes)
-        string shapeName = shape.GetShapeName();
-        if (!string.IsNullOrEmpty(shapeName))
-        {
-            var nameReferences = ArrayReferenceHelper.ExtractArrayReferences(shapeName);
-            result.AddRange(nameReferences);
-        }
-
-        // Check shape alternative text for array references
-        var altText = shape.NonVisualShapeProperties?.NonVisualDrawingProperties?.Description?.Value;
-        if (!string.IsNullOrEmpty(altText))
-        {
-            var altTextReferences = ArrayReferenceHelper.ExtractArrayReferences(altText);
-            result.AddRange(altTextReferences);
-        }
-
-        return result;
-    }
 
     /// <summary>
     /// Hide a PowerPoint shape completely
