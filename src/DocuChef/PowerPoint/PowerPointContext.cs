@@ -3,7 +3,7 @@
 /// <summary>
 /// Context for PowerPoint template processing
 /// </summary>
-public class PowerPointContext
+public partial class PowerPointContext
 {
     /// <summary>
     /// Current slide

@@ -3,7 +3,7 @@
 /// <summary>
 /// Helper class for expression processing in document templates
 /// </summary>
-public static class ExpressionProcessor
+public static class ExpressionHelper
 {
     private static readonly Regex ExpressionPattern = new Regex(@"\$\{([^{}]+)\}", RegexOptions.Compiled);
 

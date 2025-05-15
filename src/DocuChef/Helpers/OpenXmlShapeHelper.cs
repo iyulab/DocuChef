@@ -100,6 +100,6 @@ public static class OpenXmlShapeHelper
     public static bool HasExpressions(OpenXmlElement element)
     {
         return element.Descendants<A.Text>()
-            .Any(t => ExpressionProcessor.ContainsExpressions(t.Text));
+            .Any(t => ExpressionHelper.ContainsExpressions(t.Text));
     }
 }

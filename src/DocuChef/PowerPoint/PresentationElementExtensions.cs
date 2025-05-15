@@ -132,6 +132,6 @@ public static class PresentationElementExtensions
         if (string.IsNullOrEmpty(text))
             return text;
 
-        return ExpressionProcessor.ProcessExpressions(text, evaluator, variables);
+        return ExpressionHelper.ProcessExpressions(text, evaluator, variables);
     }
 }

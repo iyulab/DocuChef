@@ -1,4 +1,6 @@
-﻿namespace DocuChef.PowerPoint.Helpers;
+﻿using DocuChef.PowerPoint.Processing;
+
+namespace DocuChef.PowerPoint.Helpers;
 
 /// <summary>
 /// Helper class for processing binding with expression evaluation
@@ -49,10 +51,10 @@ internal class BindingProcessor
             foreach (var run in paragraph.Elements<A.Run>())
             {
                 var textElement = run.GetFirstChild<A.Text>();
-                if (textElement == null || !ExpressionProcessor.ContainsExpressions(textElement.Text))
+                if (textElement == null || !ExpressionHelper.ContainsExpressions(textElement.Text))
                     continue;
 
-                string processedText = ExpressionProcessor.ProcessExpressions(textElement.Text, _processor, _variables);
+                string processedText = ExpressionHelper.ProcessExpressions(textElement.Text, _processor, _variables);
                 if (processedText != textElement.Text)
                 {
                     textElement.Text = processedText;
@@ -76,11 +78,11 @@ internal class BindingProcessor
             // Reconstruct paragraph text
             var (paragraphText, runMappings) = ReconstructParagraphText(paragraph);
 
-            if (!ExpressionProcessor.ContainsExpressions(paragraphText))
+            if (!ExpressionHelper.ContainsExpressions(paragraphText))
                 continue;
 
             // Process expressions
-            string processedText = ExpressionProcessor.ProcessExpressions(paragraphText, _processor, _variables);
+            string processedText = ExpressionHelper.ProcessExpressions(paragraphText, _processor, _variables);
             if (processedText == paragraphText)
                 continue;
 

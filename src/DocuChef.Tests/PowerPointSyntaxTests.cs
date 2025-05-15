@@ -1,8 +1,6 @@
-﻿using DocuChef.PowerPoint;
-using Xunit.Abstractions;
+﻿using Xunit.Abstractions;
 using FluentAssertions;
 using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Presentation;
 
 namespace DocuChef.Tests;
 

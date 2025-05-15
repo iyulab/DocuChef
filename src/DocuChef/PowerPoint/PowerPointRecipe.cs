@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Packaging;
+﻿using DocuChef.PowerPoint.Processing;
+using DocumentFormat.OpenXml.Packaging;
 
 namespace DocuChef.PowerPoint;
 
