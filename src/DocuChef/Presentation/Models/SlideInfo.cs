@@ -38,20 +38,14 @@ public class SlideInfo
     public bool HasImplicitDirective { get; set; }
 
     /// <summary>
+    /// Gets the directive type if available, otherwise null
+    /// </summary>
+    public DirectiveType? DirectiveType => Directive?.Type;
+
+    /// <summary>
     /// Gets the slide type based on directive
     /// </summary>
-    public SlideType Type
-    {
-        get
-        {
-            if (Directive == null)
-                return SlideType.Regular;
-
-            return Directive.Type == DirectiveType.Foreach
-                ? SlideType.Foreach
-                : SlideType.If;
-        }
-    }
+    public SlideType Type { get; set; } = SlideType.Original;
 
     /// <summary>
     /// Returns a string representation of this slide info
@@ -59,7 +53,7 @@ public class SlideInfo
     public override string ToString()
     {
         if (!HasDirective)
-            return $"Slide {SlideId} (Regular): No directive";
+            return $"Slide {SlideId} ({Type}): No directive";
 
         string directiveSource = HasImplicitDirective ? "Implicit" : "Explicit";
         return $"Slide {SlideId} ({Type}): {directiveSource} {Directive}";

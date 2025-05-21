@@ -46,7 +46,6 @@ internal class ForeachDirective : Directive
     /// <summary>
     /// Determines if this directive should use grouped items mode
     /// </summary>
-    /// <returns>True if items should be grouped on a slide, false for one item per slide</returns>
     public bool ShouldUseGroupedMode()
     {
         // If MaxItems is specified and greater than 1, use grouped mode
@@ -57,18 +56,15 @@ internal class ForeachDirective : Directive
     /// Processes the slides that should be included in the foreach section
     /// (this slide and potential following slides)
     /// </summary>
-    /// <param name="slides">All slides in the template</param>
-    /// <param name="currentSlideIndex">Index of the slide with this directive</param>
-    /// <returns>A list of slide indices that should be included in this section</returns>
     public List<int> GetSectionSlides(List<Models.SlideInfo> slides, int currentSlideIndex)
     {
         var result = new List<int> { currentSlideIndex };
 
-        // Find subsequent slides to include until the next foreach or end
+        // Find subsequent slides to include until the next source slide with foreach directive
         for (int i = currentSlideIndex + 1; i < slides.Count; i++)
         {
-            // Stop if we hit another foreach directive
-            if (slides[i].Type == Models.SlideType.Foreach)
+            // Stop if we hit another slide with foreach directive
+            if (slides[i].DirectiveType == DirectiveType.Foreach)
             {
                 break;
             }

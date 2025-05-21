@@ -15,38 +15,39 @@ internal class DataBinder
     /// </summary>
     public static void BindDataWithContext(SlidePart slidePart, Models.SlideContext context, object data)
     {
-        if (slidePart == null || context == null)
-        {
-            Logger.Debug("Cannot bind data: slidePart or context is null");
-            return;
-        }
+        return;
+        //if (slidePart == null || context == null)
+        //{
+        //    Logger.Debug("Cannot bind data: slidePart or context is null");
+        //    return;
+        //}
 
-        try
-        {
-            Logger.Debug($"Starting data binding for slide with context: {context.GetContextDescription()}");
+        //try
+        //{
+        //    Logger.Debug($"Starting data binding for slide with context: {context.GetContextDescription()}");
 
-            // Create DollarSignOptions with context-aware variable resolver
-            var options = CreateDollarSignOptions(data);
+        //    // Create DollarSignOptions with context-aware variable resolver
+        //    var options = CreateDollarSignOptions(data);
 
-            // Get snapshot of all text elements before we modify anything
-            var allTextElements = CaptureTextElements(slidePart);
-            LogTextElements(allTextElements);
+        //    // Get snapshot of all text elements before we modify anything
+        //    var allTextElements = CaptureTextElements(slidePart);
+        //    LogTextElements(allTextElements);
 
-            // First check for expressions that need to be processed at the Run level
-            ProcessRunLevelExpressions(slidePart, context, options, allTextElements);
+        //    // First check for expressions that need to be processed at the Run level
+        //    ProcessRunLevelExpressions(slidePart, context, options, allTextElements);
 
-            // Then process expressions at the Paragraph level for split expressions
-            ProcessTextElementsByParagraph(slidePart, context, options, allTextElements);
+        //    // Then process expressions at the Paragraph level for split expressions
+        //    ProcessTextElementsByParagraph(slidePart, context, options, allTextElements);
 
-            // Finally, process any remaining individual text elements
-            ProcessIndividualTextElements(slidePart, context, options, allTextElements);
+        //    // Finally, process any remaining individual text elements
+        //    ProcessIndividualTextElements(slidePart, context, options, allTextElements);
 
-            Logger.Debug("Data binding completed successfully");
-        }
-        catch (Exception ex)
-        {
-            Logger.Error($"Error binding data to slide: {ex.Message}", ex);
-        }
+        //    Logger.Debug("Data binding completed successfully");
+        //}
+        //catch (Exception ex)
+        //{
+        //    Logger.Error($"Error binding data to slide: {ex.Message}", ex);
+        //}
     }
 
     /// <summary>
@@ -290,19 +291,201 @@ internal class DataBinder
                 }
             }
 
-            // Normal text binding
+            // Normal text binding - get the original combined text and the evaluated text
             string newText = EvaluateExpression(combinedText, context, options);
 
             // Only update if text changed
             if (newText != combinedText)
             {
                 Logger.Debug($"Binding combined text: '{combinedText}' -> '{newText}'");
-                UpdateParagraphText(paragraphTextElements, newText);
+                UpdateParagraphTextPreservingRuns(paragraph, paragraphTextElements, combinedText, newText);
             }
         }
         catch (Exception ex)
         {
             Logger.Error($"Error evaluating combined expression '{combinedText}': {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Updates the text elements in a paragraph while preserving formatting
+    /// </summary>
+    private static void UpdateParagraphTextPreservingRuns(D.Paragraph paragraph, List<TextElementInfo> paragraphTextElements,
+                                                         string originalText, string newText)
+    {
+        // If the original text and new text are the same length, distribute proportionally
+        if (originalText.Length == newText.Length)
+        {
+            for (int i = 0; i < paragraphTextElements.Count; i++)
+            {
+                var textInfo = paragraphTextElements[i];
+                int length = textInfo.Text.Length;
+                int startPos = 0;
+
+                // Calculate start position based on previous elements
+                for (int j = 0; j < i; j++)
+                {
+                    startPos += paragraphTextElements[j].Text.Length;
+                }
+
+                if (length > 0 && startPos < newText.Length)
+                {
+                    // Make sure we don't go out of bounds
+                    int charsToTake = Math.Min(length, newText.Length - startPos);
+                    textInfo.TextElement.Text = newText.Substring(startPos, charsToTake);
+                    textInfo.IsProcessed = true;
+                }
+                else
+                {
+                    textInfo.TextElement.Text = string.Empty;
+                    textInfo.IsProcessed = true;
+                }
+            }
+        }
+        else
+        {
+            // For different lengths, try to distribute based on expressions
+            var expressionRanges = FindExpressionRanges(newText);
+
+            if (expressionRanges.Count > 0 && paragraphTextElements.Count > 1)
+            {
+                // Try to keep expressions in single runs if possible
+                DistributeTextWithExpressions(paragraphTextElements, newText, expressionRanges);
+            }
+            else
+            {
+                // Fallback: Update the first element with the entire result, clear others
+                var firstTextInfo = paragraphTextElements.First();
+                if (firstTextInfo.TextElement != null)
+                {
+                    firstTextInfo.TextElement.Text = newText;
+                    firstTextInfo.IsProcessed = true;
+
+                    // Clear all other text elements in this paragraph
+                    for (int i = 1; i < paragraphTextElements.Count; i++)
+                    {
+                        var textInfo = paragraphTextElements[i];
+                        if (textInfo.TextElement != null)
+                        {
+                            textInfo.TextElement.Text = string.Empty;
+                            textInfo.IsProcessed = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Finds all expression ranges in a text string
+    /// </summary>
+    private static List<ExpressionRange> FindExpressionRanges(string text)
+    {
+        var result = new List<ExpressionRange>();
+        int pos = 0;
+
+        while (pos < text.Length)
+        {
+            int startPos = text.IndexOf("${", pos);
+            if (startPos == -1)
+                break;
+
+            int endPos = text.IndexOf("}", startPos);
+            if (endPos == -1)
+                break;
+
+            result.Add(new ExpressionRange
+            {
+                Start = startPos,
+                End = endPos,
+                Expression = text.Substring(startPos, endPos - startPos + 1)
+            });
+
+            pos = endPos + 1;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Distributes text containing expressions across text elements
+    /// </summary>
+    private static void DistributeTextWithExpressions(List<TextElementInfo> textElements, string text, List<ExpressionRange> expressionRanges)
+    {
+        // Find non-expression text segments
+        var textSegments = new List<TextSegment>();
+        int lastEnd = 0;
+
+        foreach (var range in expressionRanges)
+        {
+            // Add segment before this expression
+            if (range.Start > lastEnd)
+            {
+                textSegments.Add(new TextSegment
+                {
+                    Start = lastEnd,
+                    End = range.Start - 1,
+                    Text = text.Substring(lastEnd, range.Start - lastEnd)
+                });
+            }
+
+            // Add the expression segment
+            textSegments.Add(new TextSegment
+            {
+                Start = range.Start,
+                End = range.End,
+                Text = range.Expression,
+                IsExpression = true
+            });
+
+            lastEnd = range.End + 1;
+        }
+
+        // Add any text after the last expression
+        if (lastEnd < text.Length)
+        {
+            textSegments.Add(new TextSegment
+            {
+                Start = lastEnd,
+                End = text.Length - 1,
+                Text = text.Substring(lastEnd)
+            });
+        }
+
+        // Clear all text elements
+        foreach (var element in textElements)
+        {
+            element.TextElement.Text = string.Empty;
+            element.IsProcessed = true;
+        }
+
+        // Now distribute segments across text elements
+        int currentElement = 0;
+
+        foreach (var segment in textSegments)
+        {
+            if (currentElement >= textElements.Count)
+                currentElement = textElements.Count - 1; // Use last element if we run out
+
+            // For expressions, try to keep them in a single element
+            if (segment.IsExpression)
+            {
+                // If this element already has text and we have more elements available, go to next element
+                if (!string.IsNullOrEmpty(textElements[currentElement].TextElement.Text) &&
+                    currentElement < textElements.Count - 1)
+                    currentElement++;
+
+                textElements[currentElement].TextElement.Text += segment.Text;
+
+                // Move to next element after an expression
+                if (currentElement < textElements.Count - 1)
+                    currentElement++;
+            }
+            else
+            {
+                // For non-expression text, add to current element
+                textElements[currentElement].TextElement.Text += segment.Text;
+            }
         }
     }
 
@@ -495,6 +678,27 @@ internal class DataBinder
             Logger.Debug($"Error checking index bounds: {ex.Message}");
             return false;
         }
+    }
+
+    /// <summary>
+    /// Helper class for tracking expression ranges
+    /// </summary>
+    private class ExpressionRange
+    {
+        public int Start { get; set; }
+        public int End { get; set; }
+        public string Expression { get; set; }
+    }
+
+    /// <summary>
+    /// Helper class for tracking text segments
+    /// </summary>
+    private class TextSegment
+    {
+        public int Start { get; set; }
+        public int End { get; set; }
+        public string Text { get; set; }
+        public bool IsExpression { get; set; }
     }
 }
 

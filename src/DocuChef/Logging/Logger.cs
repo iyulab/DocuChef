@@ -74,7 +74,7 @@ internal static class Logger
     /// <summary>
     /// Logs a warning message
     /// </summary>
-    public static void Warning(string message)
+    public static void Warning(string message, Exception ex)
     {
         if (!_isEnabled || _minimumLevel > LogLevel.Warning)
             return;
@@ -108,5 +108,10 @@ internal static class Logger
         // For Error level, also write to trace
         if (level == LogLevel.Error)
             Trace.TraceError($"{prefix}{message}");
+    }
+
+    internal static void Warning(string v)
+    {
+        throw new NotImplementedException();
     }
 }

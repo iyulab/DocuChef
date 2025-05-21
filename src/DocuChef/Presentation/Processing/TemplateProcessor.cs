@@ -50,9 +50,19 @@ internal partial class TemplateProcessor
         foreach (SlideId slideId in slideIdList.Elements<SlideId>())
         {
             var slideInfo = ProcessTemplateSlide(presentationPart, slideId);
-            Logger.Debug($"Processed slide {slideId.Id}: {(slideInfo?.HasDirective == true ? slideInfo.Type.ToString() : "Regular slide")}");
             if (slideInfo != null)
             {
+                // Set appropriate slide type based on directive
+                if (slideInfo.HasDirective)
+                {
+                    slideInfo.Type = SlideType.Source; // Slides with directives are typically sources for cloning
+                }
+                else
+                {
+                    slideInfo.Type = SlideType.Original; // Regular slides with no directives
+                }
+
+                Logger.Debug($"Processed slide {slideId.Id}: {slideInfo.Type}, Directive: {(slideInfo.HasDirective ? slideInfo.DirectiveType.ToString() : "None")}");
                 result.Add(slideInfo);
             }
         }
@@ -78,21 +88,21 @@ internal partial class TemplateProcessor
 
         foreach (var slide in slides)
         {
-            switch (slide.Type)
+            if (slide.DirectiveType == DirectiveType.Foreach)
             {
-                case SlideType.Foreach:
-                    foreachCount++;
-                    if (slide.Directive is ForeachDirective foreachDirective)
-                    {
-                        collections.Add(foreachDirective.CollectionName);
-                    }
-                    break;
-                case SlideType.If:
-                    ifCount++;
-                    break;
-                default:
-                    regularCount++;
-                    break;
+                foreachCount++;
+                if (slide.Directive is ForeachDirective foreachDirective)
+                {
+                    collections.Add(foreachDirective.CollectionName);
+                }
+            }
+            else if (slide.DirectiveType == DirectiveType.If)
+            {
+                ifCount++;
+            }
+            else
+            {
+                regularCount++;
             }
 
             // Track implicit directives
@@ -154,10 +164,12 @@ internal partial class TemplateProcessor
                 RelationshipId = relationshipId,
                 NoteText = noteText,
                 Directive = directive,
-                HasImplicitDirective = hasImplicitDirective
+                HasImplicitDirective = hasImplicitDirective,
+                // Default to Original, will be adjusted after analysis
+                Type = SlideType.Original
             };
 
-            Logger.Debug($"Processed template slide {slideId.Id}: {(slideInfo.HasDirective ? slideInfo.Type.ToString() : "Regular slide")}");
+            Logger.Debug($"Processed template slide {slideId.Id}: Directive type: {slideInfo.DirectiveType}");
             return slideInfo;
         }
         catch (Exception ex)
@@ -259,7 +271,7 @@ internal partial class TemplateProcessor
         }
         catch (Exception ex)
         {
-            Logger.Warning($"Error creating implicit directive: {ex.Message}");
+            Logger.Warning($"Error creating implicit directive: {ex.Message}", ex);
             return null;
         }
     }
@@ -322,7 +334,7 @@ internal partial class TemplateProcessor
     private List<ForeachSlideInfo> GetForeachSlides(List<SlideInfo> slides)
     {
         return slides
-            .Where(s => s.Type == SlideType.Foreach)
+            .Where(s => s.DirectiveType == DirectiveType.Foreach)
             .Select(s => new ForeachSlideInfo
             {
                 Slide = s,

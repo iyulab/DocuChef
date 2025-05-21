@@ -1,22 +1,27 @@
 ﻿namespace DocuChef.Presentation.Models;
 
 /// <summary>
-/// Defines slide types
+/// Defines slide types based on their role in the presentation
 /// </summary>
 public enum SlideType
 {
     /// <summary>
-    /// Regular slide with no directives
+    /// Original slide in the template
     /// </summary>
-    Regular,
+    Original,
 
     /// <summary>
-    /// Slide with foreach directive
+    /// Slide that is skipped during processing
     /// </summary>
-    Foreach,
+    Skipped,
 
     /// <summary>
-    /// Slide with if directive
+    /// Source slide used as a template for cloning
     /// </summary>
-    If
+    Source,
+
+    /// <summary>
+    /// Cloned slide derived from a source
+    /// </summary>
+    Cloned
 }

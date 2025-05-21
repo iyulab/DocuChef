@@ -16,12 +16,21 @@ internal class ExpressionAdjuster
         if (string.IsNullOrEmpty(originalText) || context == null || context.Offset == 0)
             return originalText;
 
-        Logger.Debug($"Adjusting expression indices in text: '{originalText}' with context {context.CollectionName}, offset {context.Offset}");
+        Logger.Debug($"Adjusting expression indices in text: '{originalText}' with context {context.CollectionName}, offset {context.Offset}, isGroup: {context.IsGroupContext}, itemsInGroup: {context.ItemsInGroup}");
 
-        // Simple string-based approach without regex
+        // Create builder for result
         StringBuilder result = new StringBuilder();
         int currentPos = 0;
         int nextExprStart;
+
+        // Get the hierarchy delimiter
+        string delimiter = PowerPointOptions.Current.HierarchyDelimiter;
+        bool isNestedContext = context.CollectionName.Contains(delimiter);
+
+        // Handle hierarchical paths if delimiter is present
+        string[] segments = isNestedContext
+            ? context.CollectionName.Split(new[] { delimiter }, StringSplitOptions.None)
+            : new[] { context.CollectionName };
 
         // Find all expressions starting with "${" and ending with "}"
         while ((nextExprStart = originalText.IndexOf("${", currentPos)) != -1)
@@ -40,53 +49,48 @@ internal class ExpressionAdjuster
 
             // Extract the full expression
             string fullExpr = originalText.Substring(nextExprStart, exprEnd - nextExprStart + 1);
+            bool expressionAdjusted = false;
 
-            // Check for collection name in the expression
+            // Check for direct collection name match
             string searchKey = context.CollectionName + "[";
-            int collectionPos = fullExpr.IndexOf(searchKey);
-
-            if (collectionPos != -1)
+            if (fullExpr.Contains(searchKey))
             {
-                // Found collection name with bracket, now extract the index
-                int indexStart = collectionPos + searchKey.Length;
-                int indexEnd = fullExpr.IndexOf("]", indexStart);
-
-                if (indexEnd != -1)
-                {
-                    string indexStr = fullExpr.Substring(indexStart, indexEnd - indexStart);
-
-                    if (int.TryParse(indexStr, out int originalIndex))
-                    {
-                        // Calculate adjusted index
-                        int adjustedIndex = ApplyDirectIndexAdjustment(originalIndex, context);
-
-                        Logger.Debug($"Adjusted index in expression: {originalIndex} -> {adjustedIndex}");
-
-                        // Create the adjusted expression
-                        string beforeIndex = fullExpr.Substring(0, indexStart);
-                        string afterIndex = fullExpr.Substring(indexEnd);
-                        string adjustedExpr = beforeIndex + adjustedIndex + afterIndex;
-
-                        // Append the adjusted expression
-                        result.Append(adjustedExpr);
-                    }
-                    else
-                    {
-                        // Not a valid index, keep the original expression
-                        result.Append(fullExpr);
-                    }
-                }
-                else
-                {
-                    // No closing bracket for index, keep the original expression
-                    result.Append(fullExpr);
-                }
-            }
-            else
-            {
-                // Check if this is a parent or child collection match
-                string adjustedExpr = CheckForParentChildMatch(fullExpr, context);
+                string adjustedExpr = AdjustDirectCollectionIndices(fullExpr, searchKey, context);
                 result.Append(adjustedExpr);
+                expressionAdjusted = true;
+            }
+            // If this is a hierarchical context, check for segment matches
+            else if (isNestedContext)
+            {
+                string adjustedExpr = fullExpr;
+
+                // Check each segment separately, starting from the most specific (last)
+                for (int i = segments.Length - 1; i >= 0; i--)
+                {
+                    string segmentKey = segments[i] + "[";
+                    if (fullExpr.Contains(segmentKey))
+                    {
+                        adjustedExpr = AdjustHierarchicalSegmentIndices(fullExpr, segmentKey, context, i);
+                        expressionAdjusted = true;
+                        break;
+                    }
+                }
+
+                result.Append(adjustedExpr);
+            }
+
+            // If no adjustment was made yet, try Item[index] for group contexts
+            if (!expressionAdjusted && context.IsGroupContext && fullExpr.Contains("Item["))
+            {
+                string adjustedExpr = AdjustGroupItemIndices(fullExpr, context);
+                result.Append(adjustedExpr);
+                expressionAdjusted = true;
+            }
+
+            // If still not adjusted, use the original expression
+            if (!expressionAdjusted)
+            {
+                result.Append(fullExpr);
             }
 
             // Move to the next position
@@ -103,55 +107,13 @@ internal class ExpressionAdjuster
     }
 
     /// <summary>
-    /// Checks for parent or child collection matches
+    /// Adjusts indices for direct collection name matches
     /// </summary>
-    private static string CheckForParentChildMatch(string expression, Models.SlideContext context)
+    private static string AdjustDirectCollectionIndices(string expression, string searchKey, Models.SlideContext context)
     {
-        // Get the hierarchy delimiter from options
-        string delimiter = PowerPointOptions.Current.HierarchyDelimiter;
+        int keyPos = expression.IndexOf(searchKey);
+        int keyLength = searchKey.Length;
 
-        // If context collection contains the hierarchy delimiter, check for parent/child matches
-        if (context.CollectionName.Contains(delimiter))
-        {
-            // Split using the configured delimiter
-            string[] segments = context.CollectionName.Split(
-                new[] { delimiter },
-                StringSplitOptions.None);
-
-            // Check for parent segment match
-            if (segments.Length > 0)
-            {
-                string parentKey = segments[0] + "[";
-                int parentPos = expression.IndexOf(parentKey, StringComparison.OrdinalIgnoreCase);
-
-                if (parentPos != -1)
-                {
-                    return AdjustIndexInExpression(expression, parentPos, parentKey.Length, context, true);
-                }
-            }
-
-            // Check for child segment match
-            if (segments.Length > 1)
-            {
-                string childKey = segments[1] + "[";
-                int childPos = expression.IndexOf(childKey, StringComparison.OrdinalIgnoreCase);
-
-                if (childPos != -1)
-                {
-                    return AdjustIndexInExpression(expression, childPos, childKey.Length, context, false);
-                }
-            }
-        }
-
-        // No match found, return original expression
-        return expression;
-    }
-
-    /// <summary>
-    /// Adjusts index in expression
-    /// </summary>
-    private static string AdjustIndexInExpression(string expression, int keyPos, int keyLength, Models.SlideContext context, bool isParent)
-    {
         // Extract the index
         int indexStart = keyPos + keyLength;
         int indexEnd = expression.IndexOf("]", indexStart);
@@ -162,19 +124,10 @@ internal class ExpressionAdjuster
 
             if (int.TryParse(indexStr, out int originalIndex))
             {
-                // Calculate adjusted index based on whether it's parent or child
-                int adjustedIndex;
+                // Calculate adjusted index
+                int adjustedIndex = ApplyDirectIndexAdjustment(originalIndex, context);
 
-                if (isParent && context.ParentContext != null)
-                {
-                    adjustedIndex = originalIndex + context.ParentContext.Offset;
-                    Logger.Debug($"Parent match adjustment: {originalIndex} + parent offset {context.ParentContext.Offset} = {adjustedIndex}");
-                }
-                else
-                {
-                    adjustedIndex = originalIndex + context.Offset;
-                    Logger.Debug($"Child/Default match adjustment: {originalIndex} + {context.Offset} = {adjustedIndex}");
-                }
+                Logger.Debug($"Adjusted direct index in expression: {originalIndex} -> {adjustedIndex}");
 
                 // Create the adjusted expression
                 string beforeIndex = expression.Substring(0, indexStart);
@@ -183,7 +136,64 @@ internal class ExpressionAdjuster
             }
         }
 
-        // No valid index found, return original
+        // Return original if no adjustment was made
+        return expression;
+    }
+
+    /// <summary>
+    /// Adjusts indices for hierarchical segment matches
+    /// </summary>
+    private static string AdjustHierarchicalSegmentIndices(string expression, string segmentKey, Models.SlideContext context, int segmentIndex)
+    {
+        int keyPos = expression.IndexOf(segmentKey);
+        int keyLength = segmentKey.Length;
+
+        // Extract the index
+        int indexStart = keyPos + keyLength;
+        int indexEnd = expression.IndexOf("]", indexStart);
+
+        if (indexEnd != -1)
+        {
+            string indexStr = expression.Substring(indexStart, indexEnd - indexStart);
+
+            if (int.TryParse(indexStr, out int originalIndex))
+            {
+                // Get the offset for this segment level
+                int segmentOffset = context.Offset;
+
+                // For parent segments, use parent context offsets if available
+                if (segmentIndex < context.HierarchyLevel && context.ParentContext != null)
+                {
+                    segmentOffset = context.ParentContext.Offset;
+                }
+                else if (context.LevelOffsets.TryGetValue(segmentIndex, out int levelOffset))
+                {
+                    segmentOffset = levelOffset;
+                }
+
+                // Apply the offset
+                int adjustedIndex = originalIndex + segmentOffset;
+
+                Logger.Debug($"Adjusted hierarchical segment index in expression: {originalIndex} -> {adjustedIndex} (segment '{segmentKey}', offset {segmentOffset})");
+
+                // Create the adjusted expression
+                string beforeIndex = expression.Substring(0, indexStart);
+                string afterIndex = expression.Substring(indexEnd);
+                return beforeIndex + adjustedIndex + afterIndex;
+            }
+        }
+
+        // Return original if no adjustment was made
+        return expression;
+    }
+
+    /// <summary>
+    /// Adjusts indices for Item[index] in group contexts
+    /// </summary>
+    private static string AdjustGroupItemIndices(string expression, Models.SlideContext context)
+    {
+        // For group contexts, Item[0], Item[1], etc. should not be adjusted because they refer
+        // to items within the current group, not to global collection indices
         return expression;
     }
 

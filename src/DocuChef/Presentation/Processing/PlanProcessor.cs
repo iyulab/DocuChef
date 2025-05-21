@@ -45,7 +45,8 @@ internal class PlanProcessor
             if (processedSlideIds.Contains(slide.SlideId))
                 continue;
 
-            if (slide.Type == SlideType.Foreach)
+            // Process slide based on its directive type
+            if (slide.DirectiveType == DirectiveType.Foreach)
             {
                 // Process foreach slide with its collection
                 var directive = slide.Directive as ForeachDirective;
@@ -55,14 +56,14 @@ internal class PlanProcessor
                         hierarchyInfo, processedSlideIds);
                 }
             }
-            else if (slide.Type == SlideType.If)
+            else if (slide.DirectiveType == DirectiveType.If)
             {
                 // Process if slide
                 ProcessIfSlide(slide, plan, dataSource, processedSlideIds);
             }
             else
             {
-                // Process regular slide
+                // Process regular slide with no directive
                 ProcessRegularSlide(slide, plan, dataSource, processedSlideIds);
             }
         }

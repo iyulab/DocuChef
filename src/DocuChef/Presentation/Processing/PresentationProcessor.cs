@@ -154,7 +154,7 @@ internal class PresentationProcessor
             return;
         }
 
-        Logger.Debug($"Processing planned slide with context: {plannedSlide.Context?.GetContextDescription() ?? "No context"}");
+        Logger.Debug($"Processing planned slide: {plannedSlide.Operation}, context: {plannedSlide.Context?.GetContextDescription() ?? "No context"}");
 
         // Find the original slide ID
         if (!relIdToSlideId.TryGetValue(plannedSlide.Source.RelationshipId, out SlideId originalSlideId))

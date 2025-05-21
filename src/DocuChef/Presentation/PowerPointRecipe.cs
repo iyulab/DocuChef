@@ -1,4 +1,5 @@
 ﻿using DocuChef.Presentation.Core;
+using DocuChef.Presentation.Directives;
 using DocuChef.Presentation.Models;
 using DocuChef.Presentation.Processing;
 using DocuChef.Presentation.Utils;
@@ -253,9 +254,9 @@ public class PowerPointRecipe : RecipeBase
         return new TemplateAnalysisResult
         {
             TotalSlides = slides.Count,
-            ForeachSlides = slides.Count(s => s.Type == SlideType.Foreach),
-            IfSlides = slides.Count(s => s.Type == SlideType.If),
-            RegularSlides = slides.Count(s => s.Type == SlideType.Regular),
+            ForeachSourceSlides = slides.Count(s => s.DirectiveType == DirectiveType.Foreach),
+            IfSourceSlides = slides.Count(s => s.DirectiveType == DirectiveType.If),
+            OriginalSlides = slides.Count(s => !s.HasDirective),
             ImplicitDirectives = slides.Count(s => s.HasImplicitDirective)
         };
     }

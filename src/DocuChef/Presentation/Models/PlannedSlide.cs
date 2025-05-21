@@ -21,6 +21,27 @@ public class PlannedSlide
     public SlideOperation Operation { get; set; }
 
     /// <summary>
+    /// The resulting type of this slide after planning
+    /// </summary>
+    public SlideType ResultingType
+    {
+        get
+        {
+            switch (Operation)
+            {
+                case SlideOperation.Keep:
+                    return SlideType.Original;
+                case SlideOperation.Clone:
+                    return SlideType.Cloned;
+                case SlideOperation.Skip:
+                    return SlideType.Skipped;
+                default:
+                    return SlideType.Original;
+            }
+        }
+    }
+
+    /// <summary>
     /// Indicates whether this slide has data context
     /// </summary>
     public bool HasContext => Context != null;

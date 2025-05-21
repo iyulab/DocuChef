@@ -139,28 +139,11 @@ internal class ContextProcessor
         string childPropertyName = segments[segments.Length - 1];
 
         // Get the child collection from the parent item
-        var childCollection = parentContext.CurrentItem.GetCollection(childPropertyName);
+        var childCollection = GetNestedCollection(parentContext.CurrentItem, childPropertyName);
         if (childCollection == null)
         {
-            // Try alternative approach - get child property directly and check if it's a collection
-            var parentType = parentContext.CurrentItem.GetType();
-            var childProperty = parentType.GetProperty(childPropertyName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.IgnoreCase);
-
-            if (childProperty != null)
-            {
-                var childValue = childProperty.GetValue(parentContext.CurrentItem);
-                if (childValue is IEnumerable enumerable && !(childValue is string))
-                {
-                    childCollection = enumerable;
-                    Logger.Debug($"Found child collection '{childPropertyName}' directly from parent item of type {parentType.Name}");
-                }
-            }
-
-            if (childCollection == null)
-            {
-                Logger.Debug($"No child collection '{childPropertyName}' found in parent item");
-                return result;
-            }
+            Logger.Debug($"No child collection '{childPropertyName}' found in parent item");
+            return result;
         }
 
         // Count child items
@@ -216,6 +199,75 @@ internal class ContextProcessor
     }
 
     /// <summary>
+    /// Gets a nested collection from a parent item using property name
+    /// </summary>
+    private IEnumerable GetNestedCollection(object parentItem, string childPropertyName)
+    {
+        try
+        {
+            // Try to get property by reflection first
+            var parentType = parentItem.GetType();
+            var childProperty = parentType.GetProperty(childPropertyName,
+                System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.IgnoreCase);
+
+            if (childProperty != null)
+            {
+                var childValue = childProperty.GetValue(parentItem);
+                if (childValue is IEnumerable enumerable && !(childValue is string))
+                {
+                    Logger.Debug($"Found child collection '{childPropertyName}' using reflection from parent item of type {parentType.Name}");
+                    return enumerable;
+                }
+            }
+
+            // Try using GetCollection extension method
+            var collection = parentItem.GetCollection(childPropertyName);
+            if (collection != null)
+            {
+                Logger.Debug($"Found child collection '{childPropertyName}' using GetCollection method");
+                return collection;
+            }
+
+            // Try to access dictionary
+            if (parentItem is IDictionary<string, object> dict && dict.TryGetValue(childPropertyName, out var dictValue))
+            {
+                if (dictValue is IEnumerable enumerable && !(dictValue is string))
+                {
+                    Logger.Debug($"Found child collection '{childPropertyName}' in dictionary");
+                    return enumerable;
+                }
+            }
+
+            // Try using dynamic if everything else fails
+            try
+            {
+                dynamic dynamicParent = parentItem;
+                var dynamicResult = dynamicParent[childPropertyName];
+
+                if (dynamicResult is IEnumerable enumerable && !(dynamicResult is string))
+                {
+                    Logger.Debug($"Found child collection '{childPropertyName}' using dynamic access");
+                    return enumerable;
+                }
+            }
+            catch
+            {
+                // Dynamic access failed, continue with other methods
+            }
+
+            Logger.Warning($"Could not find child collection '{childPropertyName}' in parent item of type {parentItem.GetType().Name}");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Error accessing nested collection '{childPropertyName}': {ex.Message}", ex);
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Generates nested contexts with grouping based on max items per slide
     /// </summary>
     public List<SlideContext> GenerateGroupedNestedContexts(
@@ -241,25 +293,9 @@ internal class ContextProcessor
         // Get child items from parent context if not provided
         if (childItems == null)
         {
-            childItems = parentContext.CurrentItem.GetCollection(childPropertyName);
+            childItems = GetNestedCollection(parentContext.CurrentItem, childPropertyName);
             if (childItems == null)
-            {
-                // Try alternative approach - get child property directly
-                var parentType = parentContext.CurrentItem.GetType();
-                var childProperty = parentType.GetProperty(childPropertyName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.IgnoreCase);
-
-                if (childProperty != null)
-                {
-                    var childValue = childProperty.GetValue(parentContext.CurrentItem);
-                    if (childValue is IEnumerable enumerable && !(childValue is string))
-                    {
-                        childItems = enumerable;
-                    }
-                }
-
-                if (childItems == null)
-                    return result;
-            }
+                return result;
         }
 
         // Count total items if not provided

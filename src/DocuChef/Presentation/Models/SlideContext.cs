@@ -383,46 +383,4 @@ public partial class SlideContext
 
         return false;
     }
-
-    internal object? GetData()
-    {
-        string delimiter = PowerPointOptions.Current.HierarchyDelimiter;
-        var splits = CollectionName.Split(delimiter);
-
-        if (this.Parent != null && splits.Length > 1)
-        {
-            string last = splits.Last();
-            var parentType = this.Parent.GetType();
-            var pInfo = parentType.GetProperty(last, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.IgnoreCase);
-
-            if (pInfo != null)
-            {
-                var value = pInfo.GetValue(this.Parent);
-                if (value != null)
-                {
-                    // 계층적 컬렉션을 위한 특별 처리
-                    var expandoObj = new System.Dynamic.ExpandoObject() as IDictionary<string, object>;
-
-                    // 전체 계층적 경로를 데이터에 추가
-                    expandoObj[CollectionName.Replace(delimiter, "__")] = value;
-
-                    // 계층적 경로의 마지막 세그먼트만 추가 (중첩 처리용)
-                    expandoObj[last] = value;
-
-                    // 부모 컨텍스트의 데이터도 결합
-                    if (ParentContext != null && ParentContext.GetData() is IDictionary<string, object> parentData)
-                    {
-                        foreach (var kvp in parentData)
-                        {
-                            expandoObj[kvp.Key] = kvp.Value;
-                        }
-                    }
-
-                    return expandoObj;
-                }
-            }
-        }
-
-        return null;
-    }
 }

@@ -11,19 +11,19 @@ public class TemplateAnalysisResult
     public int TotalSlides { get; set; }
 
     /// <summary>
-    /// Number of slides with foreach directives
+    /// Number of source slides for foreach directives
     /// </summary>
-    public int ForeachSlides { get; set; }
+    public int ForeachSourceSlides { get; set; }
 
     /// <summary>
-    /// Number of slides with if directives
+    /// Number of source slides for if directives
     /// </summary>
-    public int IfSlides { get; set; }
+    public int IfSourceSlides { get; set; }
 
     /// <summary>
-    /// Number of regular slides without directives
+    /// Number of original slides without directives
     /// </summary>
-    public int RegularSlides { get; set; }
+    public int OriginalSlides { get; set; }
 
     /// <summary>
     /// Number of slides with implicitly detected directives
@@ -38,8 +38,8 @@ public class TemplateAnalysisResult
         string implicitInfo = ImplicitDirectives > 0 ? $", Implicit: {ImplicitDirectives}" : "";
 
         return $"Total: {TotalSlides} slides " +
-               $"(Regular: {RegularSlides}, " +
-               $"Foreach: {ForeachSlides}, " +
-               $"If: {IfSlides}{implicitInfo})";
+               $"(Original: {OriginalSlides}, " +
+               $"Foreach source: {ForeachSourceSlides}, " +
+               $"If source: {IfSourceSlides}{implicitInfo})";
     }
 }
