@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using ClosedXML.Report.XLCustom;
 using DocuChef.Excel;
 using DocuChef.Presentation;

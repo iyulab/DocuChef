@@ -1,4 +1,4 @@
-﻿using DocuChef.Excel;
+using DocuChef.Excel;
 using DocuChef.Presentation;
 using System.Reflection;
 
@@ -23,7 +23,7 @@ public interface IRecipe : IDisposable
     /// Clears all variables from the template
     /// </summary>
     void ClearVariables();
-
+    
     /// <summary>
     /// Registers a global variable
     /// </summary>
@@ -139,7 +139,7 @@ public abstract class RecipeBase : IRecipe
     {
         if (IsDisposed)
             throw new ObjectDisposedException(GetType().Name, $"Cannot access {memberName} after the object is disposed.");
-    }
+    }    
 }
 
 /// <summary>

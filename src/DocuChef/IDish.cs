@@ -1,4 +1,4 @@
-﻿using DocuChef.Excel;
+using DocuChef.Excel;
 using DocuChef.Presentation;
 
 namespace DocuChef;

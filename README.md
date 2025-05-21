@@ -1,4 +1,4 @@
-﻿# DocuChef
+# DocuChef
 The Master Chef for Document Templates - Cook delicious documents with your data and templates.
 
 ## Overview
@@ -84,10 +84,10 @@ chef.PrepareDish("template.xlsx", salesData, "result.xlsx");
 ### Excel-specific Features
 ```csharp
 // Load Excel template
-var excelRecipe = chef.LoadExcelRecipe("template.xlsx");
+var recipe = chef.LoadTemplate("template.xlsx");
 
 // Register custom functions for Excel processing
-excelRecipe.RegisterFunction("FormatCurrency", (cell, value, parameters) => {
+recipe.RegisterFunction("FormatCurrency", (cell, value, parameters) => {
     if (value is decimal amount)
     {
         cell.Style.NumberFormat.Format = "$#,##0.00";
@@ -97,13 +97,11 @@ excelRecipe.RegisterFunction("FormatCurrency", (cell, value, parameters) => {
 });
 
 // Or using the culinary API
-excelRecipe.RegisterTechnique("FormatCurrency", (cell, value, parameters) => {
+recipe.RegisterTechnique("FormatCurrency", (cell, value, parameters) => {
     // Same implementation
 });
 
-// Generate and get workbook for further manipulation
-var excelDish = excelRecipe.CookDish() as ExcelDocument;
-var workbook = excelDish.Workbook;
+recipe.Cook("result.xlsx");
 ```
 
 ## Working with PowerPoint Templates
@@ -111,29 +109,12 @@ var workbook = excelDish.Workbook;
 ### PowerPoint Features
 ```csharp
 // Load PowerPoint template
-var pptRecipe = chef.LoadPowerPointRecipe("template.pptx");
+var recipe = chef.LoadTemplate("template.pptx");
 
-// Add nested collections for multi-level data iteration
 var categories = new List<Category>();
-// Each category has Products collection
-pptRecipe.AddVariable("Categories", categories);
+recipe.AddVariable("Categories", categories);
+// recipe.AddVariable(data);
 
 // Generate the presentation
-var pptDish = pptRecipe.CookDish();
-pptDish.Serve("result.pptx");
-```
-
-## Advanced Usage
-
-### Working with IDish Interface
-```csharp
-// Generate any document type through a common interface
-IDish dish = recipe.CookDish();
-
-// Save to file or stream
-dish.SaveAs("output.docx");
-dish.SaveAs(stream);
-
-// Open in default application
-dish.Present();
+recipe.Cook("result.pptx");
 ```

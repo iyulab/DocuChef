@@ -1,4 +1,4 @@
-﻿/*
+/*
 # 템플릿 엔진 동작 설명
 
 ## 템플릿 구조
@@ -84,8 +84,6 @@ Categories = [
    - 중첩된 컬렉션(Categories>Products)에서는 부모 컨텍스트(현재 카테고리)도 유지되어 슬라이드 간의 관계가 보존됩니다.
  */
 
-using DocuChef.Presentation;
-using DocuChef.Presentation.Models;
 using System.Diagnostics;
 
 namespace DocuChef.TestConsoleApp.NestedPPT

@@ -1,4 +1,4 @@
-﻿using DocuChef.Excel;
+using DocuChef.Excel;
 using DocuChef.Presentation;
 
 namespace DocuChef;
@@ -9,9 +9,8 @@ namespace DocuChef;
 public class Chef : IDisposable
 {
     private readonly RecipeOptions _options;
-    private readonly Dictionary<string, object> _globalData = new Dictionary<string, object>();
-    private readonly Dictionary<string, Func<object>> _dynamicData = new Dictionary<string, Func<object>>();
     private bool _isDisposed;
+    private Dictionary<string, object?> _globalData = [];
 
     /// <summary>
     /// Creates a new DocuChef instance with default options
@@ -32,12 +31,6 @@ public class Chef : IDisposable
             Logger.LogLevel.Debug : Logger.LogLevel.Warning;
 
         Logger.IsEnabled = true;
-
-        // Register default dynamic data providers
-        RegisterDynamicData("Today", () => DateTime.Today);
-        RegisterDynamicData("Now", () => DateTime.Now);
-        RegisterDynamicData("UtcNow", () => DateTime.UtcNow);
-        RegisterDynamicData("Random", () => new Random());
 
         Logger.Debug("DocuChef initialized");
     }
@@ -84,10 +77,6 @@ public class Chef : IDisposable
         try
         {
             var recipe = new ExcelRecipe(templatePath, options ?? _options.GetExcelOptions());
-
-            // Add global data to the recipe
-            ApplyGlobalData(recipe);
-
             return recipe;
         }
         catch (Exception ex) when (!(ex is DocuChefException))
@@ -113,10 +102,6 @@ public class Chef : IDisposable
         try
         {
             var recipe = new ExcelRecipe(templateStream, options ?? _options.GetExcelOptions());
-
-            // Add global data to the recipe
-            ApplyGlobalData(recipe);
-
             return recipe;
         }
         catch (Exception ex) when (!(ex is DocuChefException))
@@ -142,10 +127,6 @@ public class Chef : IDisposable
         try
         {
             var recipe = new PowerPointRecipe(templatePath, options ?? _options.GetPowerPointOptions());
-
-            // Add global data to the recipe
-            ApplyGlobalData(recipe);
-
             return recipe;
         }
         catch (Exception ex) when (!(ex is DocuChefException))
@@ -171,10 +152,6 @@ public class Chef : IDisposable
         try
         {
             var recipe = new PowerPointRecipe(templateStream, options ?? _options.GetPowerPointOptions());
-
-            // Add global data to the recipe
-            ApplyGlobalData(recipe);
-
             return recipe;
         }
         catch (Exception ex) when (!(ex is DocuChefException))
@@ -182,46 +159,6 @@ public class Chef : IDisposable
             Logger.Error("Failed to load PowerPoint template from stream", ex);
             throw new DocuChefException($"Failed to load PowerPoint template from stream: {ex.Message}", ex);
         }
-    }
-
-    /// <summary>
-    /// Prepare a dish by loading a template and cooking it with provided data
-    /// </summary>
-    public IDish PrepareDish(string templatePath, object data)
-    {
-        ThrowIfDisposed();
-
-        if (string.IsNullOrEmpty(templatePath))
-            throw new ArgumentNullException(nameof(templatePath));
-
-        if (data == null)
-            throw new ArgumentNullException(nameof(data));
-
-        // Load the appropriate recipe based on file extension
-        var recipe = LoadTemplate(templatePath);
-
-        // Add data to the recipe
-        recipe.AddVariable(data);
-
-        // Generate the document
-        return recipe.CookDish();
-    }
-
-    /// <summary>
-    /// Prepare a dish and save it to the specified output path
-    /// </summary>
-    public void PrepareDish(string templatePath, object data, string outputPath)
-    {
-        ThrowIfDisposed();
-
-        if (string.IsNullOrEmpty(outputPath))
-            throw new ArgumentNullException(nameof(outputPath));
-
-        // Prepare the dish
-        var dish = PrepareDish(templatePath, data);
-
-        // Save it to the specified path
-        dish.SaveAs(outputPath);
     }
 
     /// <summary>
@@ -246,9 +183,7 @@ public class Chef : IDisposable
     public Chef AddData(object data)
     {
         ThrowIfDisposed();
-
-        if (data == null)
-            throw new ArgumentNullException(nameof(data));
+        ArgumentNullException.ThrowIfNull(data);
 
         // Add all properties of the object to the global data dictionary
         var properties = data.GetProperties();
@@ -258,25 +193,6 @@ public class Chef : IDisposable
         }
 
         Logger.Debug($"Added {properties.Count} properties to global data from object");
-
-        return this; // For method chaining
-    }
-
-    /// <summary>
-    /// Registers a dynamic data provider that will be evaluated at document generation time
-    /// </summary>
-    public Chef RegisterDynamicData(string key, Func<object> dataProvider)
-    {
-        ThrowIfDisposed();
-
-        if (string.IsNullOrEmpty(key))
-            throw new ArgumentNullException(nameof(key));
-
-        if (dataProvider == null)
-            throw new ArgumentNullException(nameof(dataProvider));
-
-        _dynamicData[key] = dataProvider;
-        Logger.Debug($"Registered dynamic data provider with key: {key}");
 
         return this; // For method chaining
     }
@@ -295,59 +211,11 @@ public class Chef : IDisposable
     }
 
     /// <summary>
-    /// Clears all dynamic data providers
-    /// </summary>
-    public Chef ClearDynamicData()
-    {
-        ThrowIfDisposed();
-
-        _dynamicData.Clear();
-        Logger.Debug("Cleared dynamic data providers");
-
-        return this; // For method chaining
-    }
-
-    /// <summary>
-    /// Applies global and dynamic data to a recipe
-    /// </summary>
-    private void ApplyGlobalData(IRecipe recipe)
-    {
-        // Apply static global data
-        foreach (var kvp in _globalData)
-        {
-            recipe.AddVariable(kvp.Key, kvp.Value);
-        }
-
-        // Apply dynamic data providers
-        foreach (var kvp in _dynamicData)
-        {
-            recipe.RegisterGlobalVariable(kvp.Key, kvp.Value);
-        }
-    }
-
-    /// <summary>
-    /// Gets all registered data keys
-    /// </summary>
-    public IEnumerable<string> GetDataKeys()
-    {
-        ThrowIfDisposed();
-
-        var keys = new HashSet<string>(_globalData.Keys);
-        foreach (var dynamicKey in _dynamicData.Keys)
-        {
-            keys.Add(dynamicKey);
-        }
-
-        return keys;
-    }
-
-    /// <summary>
     /// Throws if the object is disposed
     /// </summary>
     private void ThrowIfDisposed()
     {
-        if (_isDisposed)
-            throw new ObjectDisposedException(nameof(Chef));
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
     }
 
     /// <summary>
@@ -370,7 +238,6 @@ public class Chef : IDisposable
         {
             // Dispose any resources here
             _globalData.Clear();
-            _dynamicData.Clear();
             Logger.Debug("Chef disposed");
         }
 

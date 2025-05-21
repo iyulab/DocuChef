@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using ClosedXML.Report.XLCustom;
 using DocuChef.Extensions;
 using DocuChef.Logging;
