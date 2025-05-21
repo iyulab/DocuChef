@@ -333,31 +333,15 @@ public class ExcelTests : TestBase
     }
 
     [Fact]
-    public void RecipeExtensions_Cook_GeneratesDocument()
-    {
-        // Arrange
-        var chef = CreateNewChef();
-        var recipe = chef.LoadExcelRecipe(_templatePath);
-
-        // Act
-        var dish = recipe.Cook();
-
-        // Assert
-        dish.Should().NotBeNull();
-        dish.Should().BeOfType<ExcelDocument>();
-    }
-
-    [Fact]
     public void DishExtensions_Serve_SavesDocument()
     {
         // Arrange
         var chef = CreateNewChef();
         var recipe = chef.LoadExcelRecipe(_templatePath);
-        var dish = recipe.Cook();
         var outputPath = Path.Combine(_tempDirectory, "served.xlsx");
 
         // Act
-        dish.Serve(outputPath);
+        recipe.Cook(outputPath);
 
         // Assert
         File.Exists(outputPath).Should().BeTrue();
@@ -391,9 +375,8 @@ public class ExcelTests : TestBase
         });
 
         // Act
-        var dish = recipe.Cook();
         var outputPath = Path.Combine(_tempDirectory, "integration_test.xlsx");
-        dish.Serve(outputPath);
+        recipe.Cook(outputPath);
 
         // Assert
         File.Exists(outputPath).Should().BeTrue();

@@ -1,133 +1,162 @@
-﻿/*
-template_2.pptx description
-# First slide:
-- Top center shape 1: ${ppt.Image(LogoPath)}
-- Title 1: ${Title}
-- Subtitle 2: hello ${Subtitle} world
-  - Formatting required: <bold>hello</bold><fontsize:16>${Subtitle}</fontsize><italic>world</italic>
-- TextBox 3: Created By: ${Date:yyyy-MM-dd}
-# Second slide:
-- Top-left rectangle 1: ${ppt.Image(LogoPath)}
-- Top-right rectangle 5: ${CompanyName}
-- List rectangle 1:
-${Items[0].Id}. ${Items[0].Name} - ${Items[0].Description}
-Price: ${Items[0].Price:C0} KRW
-- List rectangle 2:
-${Items[1].Id}. ${Items[1].Name} - ${Items[1].Description}
-Price: ${Items[1].Price:C0} KRW
-- List rectangle 3:
-${Items[2].Id}. ${Items[2].Name} - ${Items[2].Description}
-Price: ${Items[2].Price:C0} KRW
-- List rectangle 4:
-${Items[3].Id}. ${Items[3].Name} - ${Items[3].Description}
-Price: ${Items[3].Price:C0} KRW
-- List rectangle 5:
-${Items[4].Id}. ${Items[4].Name} - ${Items[4].Description}
-Price: ${Items[4].Price:C0} KRW
- */
+﻿///*
+//template_2.pptx description
+//# First slide:
+//- Top center shape 1: ${ppt.Image(LogoPath)}
+//- Title 1: ${Title}
+//- Subtitle 2: hello ${Subtitle} world
+//  - Formatting required: <bold>hello</bold><fontsize:16>${Subtitle}</fontsize><italic>world</italic>
+//- TextBox 3: Created By: ${Date:yyyy-MM-dd}
+//# Second slide:
+//- Top-left rectangle 1: ${ppt.Image(LogoPath)}
+//- Top-right rectangle 5: ${CompanyName}
+//- List rectangle 1:
+//${Items[0].Id}. ${Items[0].Name} - ${Items[0].Description}
+//Price: ${Items[0].Price:C0} USD
+//- List rectangle 2:
+//${Items[1].Id}. ${Items[1].Name} - ${Items[1].Description}
+//Price: ${Items[1].Price:C0} USD
+//- List rectangle 3:
+//${Items[2].Id}. ${Items[2].Name} - ${Items[2].Description}
+//Price: ${Items[2].Price:C0} USD
+//- List rectangle 4:
+//${Items[3].Id}. ${Items[3].Name} - ${Items[3].Description}
+//Price: ${Items[3].Price:C0} USD
+//- List rectangle 5:
+//${Items[4].Id}. ${Items[4].Name} - ${Items[4].Description}
+//Price: ${Items[4].Price:C0} USD
 
-using DocuChef;
-using DocuChef.PowerPoint;
-using System.Diagnostics;
+//## 예상되는 슬라이드 생성 결과
+//- 첫 번째 슬라이드: 제목, 부제목, 날짜, 로고 이미지
+//- 두 번째 슬라이드: 로고 이미지, 회사 이름, 제품 목록 Items 1~5
+//- 세 번째 슬라이드: 로고 이미지, 회사 이름, 제품 목록 Items 6~나머지
+// */
 
-Console.WriteLine("DocuChef PowerPoint Template Test - Multi-Slide and Data Binding");
-Console.WriteLine("=======================================================");
+//using DocuChef;
+//using DocuChef.Presentation;
+//using System.Diagnostics;
 
-// File path setup
-string basePath = AppDomain.CurrentDomain.BaseDirectory;
-string templatePath = Path.Combine(basePath, "files", "ppt", "template_3.pptx");
-string logoPath = Path.Combine(basePath, "files", "logo.png");
-string outputPath = Path.Combine(basePath, "output_multi_slides.pptx");
+//Console.WriteLine("DocuChef PowerPoint Template Test - Multi-Slide and Data Binding");
+//Console.WriteLine("=======================================================");
 
-// Check if template file exists
-if (!File.Exists(templatePath))
-{
-    Console.WriteLine($"Template file not found: {templatePath}");
-    return;
-}
+//// File path setup
+//string basePath = AppDomain.CurrentDomain.BaseDirectory;
+////string templatePath = Path.Combine(basePath, "files", "ppt", "template_1.pptx");
+////string templatePath = Path.Combine(basePath, "files", "ppt", "template_2.pptx");
+//string templatePath = Path.Combine(basePath, "files", "ppt", "template_3.pptx");
+//string logoPath = Path.Combine(basePath, "files", "logo.png");
+//string outputPath = Path.Combine(basePath, "output_multi_slides.pptx");
 
-// Check if logo file exists
-if (!File.Exists(logoPath))
-{
-    Console.WriteLine($"Logo file not found: {logoPath}");
-    Console.WriteLine("Continuing, but the logo may not be displayed.");
-}
+//// Check if template file exists
+//if (!File.Exists(templatePath))
+//{
+//    Console.WriteLine($"Template file not found: {templatePath}");
+//    return;
+//}
 
-Console.WriteLine($"Template file: {templatePath}");
-Console.WriteLine($"Logo file: {logoPath}");
+//// Check if logo file exists
+//if (!File.Exists(logoPath))
+//{
+//    Console.WriteLine($"Logo file not found: {logoPath}");
+//    Console.WriteLine("Continuing, but the logo may not be displayed.");
+//}
 
-try
-{
-    // Create Chef instance
-    using var chef = new Chef(new RecipeOptions()
-    {
-        EnableVerboseLogging = true,
-        PowerPoint = new PowerPointOptions()
-    });
+//Console.WriteLine($"Template file: {templatePath}");
+//Console.WriteLine($"Logo file: {logoPath}");
 
-    // Load PowerPoint template
-    Console.WriteLine("Loading template...");
-    var recipe = chef.LoadPowerPointTemplate(templatePath);
+//try
+//{
+//    // Create Chef instance
+//    using var chef = new Chef(new RecipeOptions()
+//    {
+//        EnableVerboseLogging = true,
+//        PowerPoint = new PowerPointOptions()
+//        {
+//            EnableVerboseLogging = true
+//        }
+//    });
 
-    // Add basic variables
-    Console.WriteLine("Adding variables...");
-    recipe.AddVariable("Title", "DocuChef Test");
-    recipe.AddVariable("Subtitle", "Multi-Slide and Data Binding Test");
-    recipe.AddVariable("Date", DateTime.Now);
-    recipe.AddVariable("LogoPath", logoPath);
-    recipe.AddVariable("CompanyName", "DocuChef Technology Lab");
+//    // Load PowerPoint template
+//    Console.WriteLine("Loading template...");
+//    var recipe = chef.LoadPowerPointTemplate(templatePath);
 
-    // Create Items array
-    var items = new List<Item>();
-    for (int i = 1; i <= 13; i++)
-    {
-        items.Add(new Item
-        {
-            Id = i,
-            Name = $"Product {i}",
-            Description = $"Description for Product {i}.",
-            Price = 10000 * i,
-            //ImageUrl = logoPath
-            ImageUrl = $"https://placehold.co/60x60?text=Item{i}"
-        });
-    }
+//    // Add basic variables
+//    Console.WriteLine("Adding variables...");
+//    recipe.AddVariable("Title", "DocuChef Test");
+//    recipe.AddVariable("Subtitle", "Multi-Slide and Data Binding Test");
+//    recipe.AddVariable("Date", DateTime.Now);
+//    recipe.AddVariable("LogoPath", logoPath);
+//    recipe.AddVariable("CompanyName", "DocuChef Technology Lab");
 
-    // Add Items variable
-    recipe.AddVariable("Items", items);
-    Console.WriteLine($"Added {items.Count} product items.");
+//    // Create Items array
+//    var items = new List<Item>();
+//    for (int i = 1; i <= 7; i++)
+//    {
+//        items.Add(new Item
+//        {
+//            Id = i,
+//            Name = $"Product {i}",
+//            Description = $"Description for Product {i}.",
+//            Price = 10000 * i,
+//            //ImageUrl = $"https://placehold.co/60x60?text=Item{i}"
+//            ImageUrl = logoPath
+//        });
+//    }
 
-    // Generate document
-    Console.WriteLine("Generating document...");
-    var document = recipe.Generate();
+//    // Add Items variable
+//    recipe.AddVariable("Items", items);
+//    Console.WriteLine($"Added {items.Count} product items.");
 
-    // Save document
-    Console.WriteLine($"Saving document: {outputPath}");
-    document.SaveAs(outputPath);
-    Console.WriteLine("Document generation completed!");
+//    // Analyze template first to verify directives
+//    var analysis = recipe.AnalyzeTemplate();
+//    Console.WriteLine($"Template analysis: {analysis.TotalSlides} slides, " +
+//                     $"{analysis.ForeachSlides} foreach slides, {analysis.IfSlides} if slides");
 
-    // Automatically open the generated document
-    Console.WriteLine("Opening the generated document...");
-    Process.Start(new ProcessStartInfo
-    {
-        FileName = outputPath,
-        UseShellExecute = true
-    });
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Error occurred: {ex.Message}");
-    Console.WriteLine(ex.StackTrace);
-}
+//    // Update template with implicit directives if needed
+//    if (analysis.ImplicitDirectives > 0)
+//    {
+//        Console.WriteLine($"Updating template with {analysis.ImplicitDirectives} implicit directives...");
+//        recipe.UpdateTemplateWithImplicitDirectives();
+//    }
 
-Console.WriteLine("Program completed. Press any key to exit...");
-Console.ReadKey();
+//    // Create generation plan and log it
+//    var plan = recipe.CreatePlan();
+//    var summary = plan.GetSummary();
+//    Console.WriteLine($"Generated plan: Total: {summary.TotalSlides}, " +
+//                     $"Included: {summary.TotalIncludedSlides} ({summary.KeptSlides} kept, {summary.ClonedSlides} cloned), " +
+//                     $"Skipped: {summary.SkippedSlides} skipped");
 
-// Product item class
-public class Item
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public decimal Price { get; set; }
-    public string ImageUrl { get; set; }
-}
+//    // Generate document
+//    Console.WriteLine("Generating document...");
+//    var document = recipe.Generate();
+
+//    // Save document
+//    Console.WriteLine($"Saving document: {outputPath}");
+//    document.SaveAs(outputPath);
+//    Console.WriteLine("Document generation completed!");
+
+//    // Automatically open the generated document
+//    Console.WriteLine("Opening the generated document...");
+//    Process.Start(new ProcessStartInfo
+//    {
+//        FileName = outputPath,
+//        UseShellExecute = true
+//    });
+//}
+//catch (Exception ex)
+//{
+//    Console.WriteLine($"Error occurred: {ex.Message}");
+//    Console.WriteLine(ex.StackTrace);
+//}
+
+//Console.WriteLine("Program completed. Press any key to exit...");
+//Console.ReadKey();
+
+//// Product item class
+//public class Item
+//{
+//    public int Id { get; set; }
+//    public string Name { get; set; }
+//    public string Description { get; set; }
+//    public decimal Price { get; set; }
+//    public string ImageUrl { get; set; }
+//}

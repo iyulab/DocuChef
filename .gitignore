@@ -363,3 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 /src/DocuChef/BOT_RULE.md
 /src/DocuChef/AI_RULE.md
+/src/DocuChef/AI_RULE.md
+/src/DocuChef.TestApp/template.zip

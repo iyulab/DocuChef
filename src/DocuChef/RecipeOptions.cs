@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
+using ClosedXML.Report.XLCustom;
 using DocuChef.Excel;
-using DocuChef.PowerPoint;
+using DocuChef.Presentation;
 
 namespace DocuChef;
 
@@ -17,12 +18,12 @@ public class RecipeOptions
     /// <summary>
     /// Excel-specific options
     /// </summary>
-    public ExcelOptions Excel { get; set; } = new ExcelOptions();
+    public ExcelOptions? Excel { get; set; }
 
     /// <summary>
     /// PowerPoint-specific options
     /// </summary>
-    public PowerPointOptions PowerPoint { get; set; } = new PowerPointOptions();
+    public PowerPointOptions? PowerPoint { get; set; }
 
     /// <summary>
     /// Word-specific options (TBD)
@@ -43,4 +44,24 @@ public class RecipeOptions
     /// Maximum number of items to process in iterations (like foreach)
     /// </summary>
     public int MaxIterationItems { get; set; } = 1000;
+
+    internal ExcelOptions GetExcelOptions()
+    {
+        Excel ??= new ExcelOptions()
+        {
+            EnableVerboseLogging = EnableVerboseLogging,
+            ThrowOnMissingVariable = ThrowOnMissingVariable
+        };
+        return Excel;
+    }
+
+    internal PowerPointOptions GetPowerPointOptions()
+    {
+        PowerPoint ??= new PowerPointOptions()
+        {
+            EnableVerboseLogging = EnableVerboseLogging,
+            ThrowOnMissingVariable = ThrowOnMissingVariable
+        };
+        return PowerPoint;
+    }
 }

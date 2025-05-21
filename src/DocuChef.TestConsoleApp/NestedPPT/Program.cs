@@ -1,120 +1,92 @@
-﻿using DocuChef.PowerPoint;
+﻿/*
+# 템플릿 엔진 동작 설명
+
+## 템플릿 구조
+```
+[template.pptx]
+* 슬라이드 1: #foreach: Categories, max: 1
+  - ${Categories[0].Name}
+* 슬라이드 2: #foreach: Categories>Products, max: 2
+  - ${Categories>Products[0].Name}
+  - ${Categories>Products[1].Name}
+```
+
+## 데이터 소스
+```
+Categories = [
+  { "Food", Products: [ "Bibimbap", "Bulgogi" ] }
+  { "Drinks", Products: [ "Americano", "Green Tea", "Milk" ] }
+  { "Desserts", Products: [ "Tiramisu", "Chocolate Cake", "Fruit Salad", "Macaron", "Pudding" ] }
+]
+```
+
+## 예상되는 슬라이드 생성 결과와 바인딩
+
+### 슬라이드 1: 카테고리 "Food" (Categories, offset: 0)
+- **바인딩 출력**: 
+  - `${Categories[0].Name}` → "Food"
+
+### 슬라이드 2: Food의 제품들 (Categories>Products, offset: 0)
+- **바인딩 출력**: 
+  - `${Categories>Products[0].Name}` → "Bibimbap"
+  - `${Categories>Products[1].Name}` → "Bulgogi"
+
+### 슬라이드 3: 카테고리 "Drinks" (Categories, offset: 1)
+- **바인딩 출력**: 
+  - `${Categories[0].Name}` → "Drinks"
+
+### 슬라이드 4: Drinks의 제품들 (Categories>Products, offset: 0)
+- **바인딩 출력**: 
+  - `${Categories>Products[0].Name}` → "Americano"
+  - `${Categories>Products[1].Name}` → "Green Tea"
+
+### 슬라이드 5: Drinks의 제품들(추가) (Categories>Products, offset: 2)
+- **바인딩 출력**: 
+  - `${Categories>Products[0].Name}` → "Milk"
+  - `${Categories>Products[1].Name}` → "" (비어있음 - 세 번째 항목만 존재)
+
+### 슬라이드 6: 카테고리 "Desserts" (Categories, offset: 2)
+- **바인딩 출력**: 
+  - `${Categories[0].Name}` → "Desserts"
+
+### 슬라이드 7: Desserts의 제품들 (Categories>Products, offset: 0)
+- **바인딩 출력**: 
+  - `${Categories>Products[0].Name}` → "Tiramisu"
+  - `${Categories>Products[1].Name}` → "Chocolate Cake"
+
+### 슬라이드 8: Desserts의 제품들(추가) (Categories>Products, offset: 2)
+- **바인딩 출력**: 
+  - `${Categories>Products[0].Name}` → "Fruit Salad"
+  - `${Categories>Products[1].Name}` → "Macaron"
+
+### 슬라이드 9: Desserts의 제품들(추가) (Categories>Products, offset: 4)
+- **바인딩 출력**: 
+  - `${Categories>Products[0].Name}` → "Pudding"
+  - `${Categories>Products[1].Name}` → "" (비어있음 - 다섯 번째 항목만 존재)
+
+## 동작 설명
+
+1. **부모-자식 관계 처리**: 
+   - 시스템은 각 카테고리와 그에 속한 제품들 사이의 부모-자식 관계를 인식합니다.
+   - 카테고리 슬라이드 다음에 해당 카테고리의 제품 슬라이드들이 배치됩니다.
+
+2. **바인딩 표현식 해석**:
+   - `${Categories[0].Name}`는 현재 카테고리 컨텍스트에서 이름을 가져옵니다.
+   - `${Categories>Products[0].Name}`, `${Categories>Products[1].Name}`는 현재 제품 슬라이드에서 표시될 제품들의 이름을 가져옵니다.
+
+3. **그룹화 처리**:
+   - `max: 2` 설정으로 인해 각 제품 슬라이드는 최대 2개의 제품만 표시합니다.
+   - 두 개 이상의 제품이 있는 경우(Drinks, Desserts) 추가 슬라이드가 생성됩니다.
+   - 제품 수가 홀수인 경우(Drinks: 3개, Desserts: 5개) 마지막 슬라이드에서 두 번째 바인딩(`${Categories>Products[1].Name}`)은 빈 값이 됩니다.
+
+4. **컨텍스트 관리**:
+   - 각 슬라이드는 자신의 특정 컨텍스트(카테고리 또는 제품 그룹)를 가지고 있습니다.
+   - 중첩된 컬렉션(Categories>Products)에서는 부모 컨텍스트(현재 카테고리)도 유지되어 슬라이드 간의 관계가 보존됩니다.
+ */
+
+using DocuChef.Presentation;
+using DocuChef.Presentation.Models;
 using System.Diagnostics;
-
-/*
-# Template Structure: nested_template.pptx
-
-## Template Slide 1: Title Slide
-- Top Center: ${ppt.Image(LogoPath)} - Company logo image
-- Center: ${PresentationTitle} - Main presentation title
-- Below Title: ${PresentationSubtitle} - Presentation subtitle
-- Below Subtitle: Created At: ${Date:yyyy년 MM월 dd일} - Formatted date
-- Below Date: ${CompanyName} Company - Company name
-
-## Template Slide 2: Category Detail Slide
-- Top: ${Categories[0].Name} - Category name (will be repeated for each category)
-- Right: ${ppt.Image(Categories[0].ImageUrl)} - Category image
-- Center: ${Categories[0].Description} - Category description
-- Bottom Right: ${ppt.Image(LogoPath)} - Company logo
-- Slide Notes: #foreach: Categories - This directive is used for automatic slide duplication (Should work without this option.)
-
-## Template Slide 3: Products List Slide
-- Top: ${Categories_Name} - Current category name
-- Item 1:
-  * Left: ${ppt.Image(Categories_Products[0].ImageUrl)} - Product image
-  * Center: ${Categories_Products[0].Name}${Categories_Products[0].Description} - Product name and description
-  * Right: ${Categories_Products[0].Price:C2} - Formatted product price
-- Item 2: 
-  * Left: ${ppt.Image(Categories_Products[1].ImageUrl)} - Product image
-  * Center: ${Categories_Products[1].Name}${Categories_Products[1].Description} - Product name and description
-  * Right: ${Categories_Products[1].Price:C2} - Formatted product price
-- Item 3:
-  * Left: ${ppt.Image(Categories_Products[2].ImageUrl)} - Product image
-  * Center: ${Categories_Products[2].Name}${Categories_Products[2].Description} - Product name and description
-  * Right: ${Categories_Products[2].Price:C2} - Formatted product price
-- Slide Notes: 
-  #foreach: Categories_Products, max: 3  (Should work without this option.)
-
-# Expected Results
-
-Slide 1: Title Slide
-- Top Center: Company logo (from ${ppt.Image(LogoPath)})
-- Center: "Product Catalog 2025" (from ${PresentationTitle})
-- Below Title: "Cutting-Edge Technology for Modern Life" (from ${PresentationSubtitle})
-- Below Subtitle: "Created At: 2025년 05월 15일" (from ${Date:yyyy년 MM월 dd일})
-- Below Date: "Global Electronics Inc. Company" (from ${CompanyName} Company)
-
-Slide 2: Category Detail Slide (Smartphones)
-- Top: "Smartphones" (from ${Categories[0].Name})
-- Right: Smartphone image (from ${ppt.Image(Categories[0].ImageUrl)})
-- Center: "Latest mobile devices with cutting-edge technology" (from ${Categories[0].Description})
-- Bottom Right: Company logo (from ${ppt.Image(LogoPath)})
-
-Slide 3: Products List Slide (Smartphones Products 1-3)
-- Top: "Smartphones" (from ${Categories_Name})
-- Item 1 Left: S25 image (from ${ppt.Image(Categories_Products[0].ImageUrl)})
-- Item 1 Center: "Ultra Galaxy S25" + "Flagship smartphone with 8K video and AI assistant" (from ${Categories_Products[0].Name}${Categories_Products[0].Description})
-- Item 1 Right: "$1,299.99" (from ${Categories_Products[0].Price:C2})
-- Item 2 Left: iPhone16 image (from ${ppt.Image(Categories_Products[1].ImageUrl)})
-- Item 2 Center: "iPhone 16 Pro" + "Premium smartphone with advanced camera system" (from ${Categories_Products[1].Name}${Categories_Products[1].Description})
-- Item 2 Right: "$1,399.99" (from ${Categories_Products[1].Price:C2})
-- Item 3 Left: Pixel9 image (from ${ppt.Image(Categories_Products[2].ImageUrl)})
-- Item 3 Center: "Pixel 9" + "Pure Android experience with exceptional photography" (from ${Categories_Products[2].Name}${Categories_Products[2].Description})
-- Item 3 Right: "$999.99" (from ${Categories_Products[2].Price:C2})
-
-Slide 4: Products List Slide (Smartphones Product 4)
-- Top: "Smartphones" (from ${Categories_Name})
-- Item 1 Left: FlipZ5 image (from ${ppt.Image(Categories_Products[0].ImageUrl)}) - note index has auto-adjusted to Categories_Products[3]
-- Item 1 Center: "Flip Z5" + "Foldable smartphone with flexible display" (from ${Categories_Products[0].Name}${Categories_Products[0].Description})
-- Item 1 Right: "$1,099.99" (from ${Categories_Products[0].Price:C2})
-- Item 2: Hidden (not enough products in this category)
-- Item 3: Hidden (not enough products in this category)
-
-Slide 5: Category Detail Slide (Laptops)
-- Top: "Laptops" (from ${Categories[0].Name}) - note index has auto-adjusted to Categories[1]
-- Right: Laptops image (from ${ppt.Image(Categories[0].ImageUrl)})
-- Center: "Powerful computing devices for work and play" (from ${Categories[0].Description})
-- Bottom Right: Company logo (from ${ppt.Image(LogoPath)})
-
-Slide 6: Products List Slide (Laptops Products 1-3)
-- Top: "Laptops" (from ${Categories_Name})
-- All 3 product items visible showing the 3 laptop products
-- Item 1: UltraBook Pro - $1,799.99
-- Item 2: MacBook Air M4 - $1,499.99
-- Item 3: Gaming Titan X - $2,499.99
-
-Slide 7: Category Detail Slide (Smart Home)
-- Top: "Smart Home" (from ${Categories[0].Name}) - index auto-adjusted to Categories[2]
-- Right: Smart Home image
-- Center: "Connected devices for the modern home"
-- Bottom Right: Company logo
-
-Slide 8: Products List Slide (Smart Home Products 1-3)
-- Top: "Smart Home"
-- All 3 product items showing the first 3 smart home products
-- Item 1: Smart Hub Pro - $249.99
-- Item 2: AI Security Camera - $199.99
-- Item 3: Smart Thermostat - $129.99
-
-Slide 9: Products List Slide (Smart Home Products 4-5)
-- Top: "Smart Home"
-- Item 1: Voice Assistant Speaker - $89.99
-- Item 2: Smart Lighting Kit - $149.99
-- Item 3: Hidden (not enough products in this category)
-
-Slide 10: Category Detail Slide (Wearables)
-- Top: "Wearables" (from ${Categories[0].Name}) - index auto-adjusted to Categories[3]
-- Right: Wearables image
-- Center: "Wearable technology for fitness and productivity"
-- Bottom Right: Company logo
-
-Slide 11: Products List Slide (Wearables Products 1-3)
-- Top: "Wearables"
-- All 3 product items showing all wearable products
-- Item 1: Fitness Watch Pro - $299.99
-- Item 2: Smart Glasses - $499.99
-- Item 3: Health Monitor Band - $179.99
-*/
 
 namespace DocuChef.TestConsoleApp.NestedPPT
 {
@@ -122,174 +94,212 @@ namespace DocuChef.TestConsoleApp.NestedPPT
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("DocuChef PowerPoint Template Test - Nested Data Structure");
-            Console.WriteLine("=======================================================");
+            Console.WriteLine("DocuChef Presentation Generator Test App");
 
-            // File path setup
+            // Create sample data
+            var data = CreateSampleData();
+
+            // Print data
+            PrintSampleData(data);
+
+            // Set PowerPoint presentation generation parameters
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
             string templatePath = Path.Combine(basePath, "files", "ppt", "nested_template.pptx");
             string logoPath = Path.Combine(basePath, "files", "logo.png");
-            string outputPath = Path.Combine(basePath, "output_nested_test.pptx");
+            string outputPath = Path.Combine(basePath, "output_nested_template.pptx");
 
-            // Check if template file exists
-            if (!File.Exists(templatePath))
-            {
-                Console.WriteLine($"Template file not found: {templatePath}");
-                Console.WriteLine($"Expected path: {templatePath}");
-                Console.WriteLine("Please ensure 'nested_template.pptx' exists in the 'files/ppt' directory.");
-                return;
-            }
-
-            // Check if logo file exists
-            if (!File.Exists(logoPath))
-            {
-                Console.WriteLine($"Logo file not found: {logoPath}");
-                Console.WriteLine("Continuing, but the logo may not be displayed.");
-            }
-
-            Console.WriteLine($"Template file: {templatePath}");
-            Console.WriteLine($"Logo file: {logoPath}");
+            Console.WriteLine($"\nTemplate file: {templatePath}");
+            Console.WriteLine($"Output file: {outputPath}");
 
             try
             {
-                // Create Chef instance with verbose logging
-                using var chef = new Chef(new RecipeOptions()
-                {
-                    EnableVerboseLogging = true,
-                    PowerPoint = new PowerPointOptions()
-                    {
-                        // Enable automatic slide creation for array items
-                        CreateNewSlidesWhenNeeded = true,
-                        MaxSlidesFromTemplate = 50 // Allow up to 50 slides to be generated
-                    }
-                });
+                // Initialize DocuChef engine
+                var chef = new Chef(new RecipeOptions() { EnableVerboseLogging = true });
+                var recipe = chef.LoadRecipe(templatePath);
+                recipe.AddVariable(data);
+                recipe.Cook(outputPath);
 
-                // Load PowerPoint template
-                Console.WriteLine("Loading template...");
-                var recipe = chef.LoadPowerPointTemplate(templatePath);
+                Console.WriteLine("\nPowerPoint presentation generated successfully!");
 
-                // Add basic variables
-                Console.WriteLine("Adding main variables...");
-                recipe.AddVariable("CompanyName", "Global Electronics Inc.");
-                recipe.AddVariable("PresentationTitle", "Product Catalog 2025");
-                recipe.AddVariable("PresentationSubtitle", "Cutting-Edge Technology for Modern Life");
-                recipe.AddVariable("Date", DateTime.Now);
-                recipe.AddVariable("LogoPath", logoPath);
-
-                // Create nested data structure - Categories with Products
-                var categories = CreateSampleCategoryData();
-                recipe.AddVariable("Categories", categories);
-                Console.WriteLine($"Added {categories.Count} categories with their products.");
-
-                // Generate document
-                Console.WriteLine("Generating document...");
-                var document = recipe.Generate();
-
-                // Save document
-                Console.WriteLine($"Saving document: {outputPath}");
-                document.SaveAs(outputPath);
-                Console.WriteLine("Document generation completed!");
-
-                // Automatically open the generated document
-                Console.WriteLine("Opening the generated document...");
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = outputPath,
-                    UseShellExecute = true
-                });
+                //Open the generated presentation
+                OpenPresentationFile(outputPath);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error occurred: {ex.Message}");
+                Console.WriteLine($"\nError: {ex.Message}");
                 Console.WriteLine(ex.StackTrace);
             }
 
-            Console.WriteLine("Program completed. Press any key to exit...");
+            Console.WriteLine("\nPress any key to exit...");
             Console.ReadKey();
         }
 
         /// <summary>
-        /// Creates sample data with nested structure (Categories -> Products)
+        /// Creates sample data for testing
         /// </summary>
-        static List<Category> CreateSampleCategoryData()
+        private static DataModel CreateSampleData()
         {
-            return new List<Category>
+            // Create categories
+            var categories = new List<Category>
             {
-                new Category
+                new Category(1, "Food"),
+                new Category(2, "Drinks"),
+                new Category(3, "Desserts")
+            };
+
+            // Add products to categories
+            categories[0].AddProduct(new Product(1, "Bibimbap", 8000, "Traditional Korean dish"));
+            categories[0].AddProduct(new Product(2, "Bulgogi", 12000, "Korean BBQ"));
+
+            categories[1].AddProduct(new Product(3, "Americano", 4500, "Espresso with water"));
+            categories[1].AddProduct(new Product(4, "Green Tea", 3500, "Hot green tea"));
+            categories[1].AddProduct(new Product(5, "Milk", 2000, "Fresh milk"));
+
+            categories[2].AddProduct(new Product(6, "Tiramisu", 6000, "Italian dessert"));
+            categories[2].AddProduct(new Product(7, "Chocolate Cake", 5500, "Sweet chocolate cake"));
+            categories[2].AddProduct(new Product(8, "Fruit Salad", 5000, "Fresh fruit mix"));
+            categories[2].AddProduct(new Product(9, "Macaron", 3000, "French dessert"));
+            categories[2].AddProduct(new Product(10, "Pudding", 4000, "Soft pudding"));
+
+            return new DataModel
+            {
+                Title = "Delicious Menu Introduction",
+                Date = DateTime.Now.ToString("yyyy-MM-dd"),
+                Author = "John Doe",
+                Categories = categories,
+                CompanyInfo = new CompanyInfo
                 {
-                    Id = 1,
-                    Name = "Smartphones",
-                    Description = "Latest mobile devices with cutting-edge technology",
-                    ImageUrl = "https://placehold.co/100x100?text=Smartphones",
-                    Products = new List<Product>
-                    {
-                        new Product { Id = 101, Name = "Ultra Galaxy S25", Price = 1299.99m, Description = "Flagship smartphone with 8K video and AI assistant", ImageUrl = "https://placehold.co/60x60?text=S25" },
-                        new Product { Id = 102, Name = "iPhone 16 Pro", Price = 1399.99m, Description = "Premium smartphone with advanced camera system", ImageUrl = "https://placehold.co/60x60?text=iPhone16" },
-                        new Product { Id = 103, Name = "Pixel 9", Price = 999.99m, Description = "Pure Android experience with exceptional photography", ImageUrl = "https://placehold.co/60x60?text=Pixel9" },
-                        new Product { Id = 104, Name = "Flip Z5", Price = 1099.99m, Description = "Foldable smartphone with flexible display", ImageUrl = "https://placehold.co/60x60?text=FlipZ5" }
-                    }
-                },
-                new Category
-                {
-                    Id = 2,
-                    Name = "Laptops",
-                    Description = "Powerful computing devices for work and play",
-                    ImageUrl = "https://placehold.co/100x100?text=Laptops",
-                    Products = new List<Product>
-                    {
-                        new Product { Id = 201, Name = "UltraBook Pro", Price = 1799.99m, Description = "Ultra-thin laptop with 24-hour battery life", ImageUrl = "https://placehold.co/60x60?text=UltraBook" },
-                        new Product { Id = 202, Name = "MacBook Air M4", Price = 1499.99m, Description = "Lightweight laptop with powerful performance", ImageUrl = "https://placehold.co/60x60?text=MacBookAir" },
-                        new Product { Id = 203, Name = "Gaming Titan X", Price = 2499.99m, Description = "High-performance gaming laptop with RTX 5080", ImageUrl = "https://placehold.co/60x60?text=GamingTitan" }
-                    }
-                },
-                new Category
-                {
-                    Id = 3,
-                    Name = "Smart Home",
-                    Description = "Connected devices for the modern home",
-                    ImageUrl = "https://placehold.co/100x100?text=SmartHome",
-                    Products = new List<Product>
-                    {
-                        new Product { Id = 301, Name = "Smart Hub Pro", Price = 249.99m, Description = "Central control system for all smart home devices", ImageUrl = "https://placehold.co/60x60?text=SmartHub" },
-                        new Product { Id = 302, Name = "AI Security Camera", Price = 199.99m, Description = "Intelligent security camera with facial recognition", ImageUrl = "https://placehold.co/60x60?text=AICam" },
-                        new Product { Id = 303, Name = "Smart Thermostat", Price = 129.99m, Description = "Energy-saving temperature control with learning capability", ImageUrl = "https://placehold.co/60x60?text=Thermostat" },
-                        new Product { Id = 304, Name = "Voice Assistant Speaker", Price = 89.99m, Description = "Premium speaker with integrated voice assistant", ImageUrl = "https://placehold.co/60x60?text=Speaker" },
-                        new Product { Id = 305, Name = "Smart Lighting Kit", Price = 149.99m, Description = "Customizable lighting system with app control", ImageUrl = "https://placehold.co/60x60?text=Lighting" }
-                    }
-                },
-                new Category
-                {
-                    Id = 4,
-                    Name = "Wearables",
-                    Description = "Wearable technology for fitness and productivity",
-                    ImageUrl = "https://placehold.co/100x100?text=Wearables",
-                    Products = new List<Product>
-                    {
-                        new Product { Id = 401, Name = "Fitness Watch Pro", Price = 299.99m, Description = "Advanced fitness tracking with health monitoring", ImageUrl = "https://placehold.co/60x60?text=FitnessWatch" },
-                        new Product { Id = 402, Name = "Smart Glasses", Price = 499.99m, Description = "AR-enabled glasses with voice control", ImageUrl = "https://placehold.co/60x60?text=SmartGlasses" },
-                        new Product { Id = 403, Name = "Health Monitor Band", Price = 179.99m, Description = "24/7 health monitoring wristband with ECG", ImageUrl = "https://placehold.co/60x60?text=HealthBand" }
-                    }
+                    Name = "Delicious Restaurant",
+                    Address = "123-45 Gangnam, Seoul",
+                    Phone = "02-123-4567",
+                    Website = "www.delicious-restaurant.com"
                 }
             };
         }
+
+        /// <summary>
+        /// Prints sample data to console
+        /// </summary>
+        private static void PrintSampleData(DataModel data)
+        {
+            Console.WriteLine("\n===== Sample Data =====");
+            Console.WriteLine($"Title: {data.Title}");
+            Console.WriteLine($"Date: {data.Date}");
+            Console.WriteLine($"Author: {data.Author}");
+
+            Console.WriteLine("\n----- Categories and Products -----");
+            foreach (var category in data.Categories)
+            {
+                Console.WriteLine($"Category: {category.Name} (ID: {category.Id})");
+                foreach (var product in category.Products)
+                {
+                    Console.WriteLine($"  - {product.Name}: {product.Price:C} - {product.Description}");
+                }
+            }
+
+            Console.WriteLine("\n----- Company Info -----");
+            Console.WriteLine($"Company: {data.CompanyInfo.Name}");
+            Console.WriteLine($"Address: {data.CompanyInfo.Address}");
+            Console.WriteLine($"Phone: {data.CompanyInfo.Phone}");
+            Console.WriteLine($"Website: {data.CompanyInfo.Website}");
+        }
+
+        /// <summary>
+        /// Opens the generated presentation file
+        /// </summary>
+        private static void OpenPresentationFile(string filePath)
+        {
+            try
+            {
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = filePath,
+                    UseShellExecute = true
+                };
+
+                Process.Start(processStartInfo);
+                Console.WriteLine("Presentation opened.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Cannot open presentation: {ex.Message}");
+            }
+        }
     }
 
-    // Data models for nested structure
+    /// <summary>
+    /// Main data model class
+    /// </summary>
+    public class DataModel
+    {
+        public string Title { get; set; }
+        public string Date { get; set; }
+        public string Author { get; set; }
+        public List<Category> Categories { get; set; }
+        public CompanyInfo CompanyInfo { get; set; }
+    }
+
+    /// <summary>
+    /// Company information class
+    /// </summary>
+    public class CompanyInfo
+    {
+        public string Name { get; set; }
+        public string Address { get; set; }
+        public string Phone { get; set; }
+        public string Website { get; set; }
+    }
+
+    /// <summary>
+    /// Category class
+    /// </summary>  
     public class Category
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
-        public string ImageUrl { get; set; }
-        public List<Product> Products { get; set; } = new List<Product>();
+        public List<Product> Products { get; set; }
+
+        public Category(int id, string name)
+        {
+            Id = id;
+            Name = name;
+            Products = new List<Product>();
+        }
+
+        public void AddProduct(Product product)
+        {
+            Products.Add(product);
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} (ID: {Id})";
+        }
     }
 
+    /// <summary>
+    /// Product class
+    /// </summary>
     public class Product
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
         public decimal Price { get; set; }
-        public string ImageUrl { get; set; }
+        public string Description { get; set; }
+        public string Url { get; set; }
+
+        public Product(int id, string name, decimal price, string description)
+        {
+            Id = id;
+            Name = name;
+            Price = price;
+            Description = description;
+            Url = $"https://placehold.co/60x60?text={name}";
+        }
+
+        public override string ToString()
+        {
+            return $"{Name}: {Price:C} - {Description}";
+        }
     }
 }

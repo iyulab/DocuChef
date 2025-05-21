@@ -13,6 +13,7 @@ public class ExcelRecipe : RecipeBase
     private readonly ExcelOptions _options;
     private readonly XLCustomTemplate _template;
     private bool _isGenerated;
+    private readonly string _templatePath;
 
     /// <summary>
     /// Creates a new Excel template from a file
@@ -26,6 +27,7 @@ public class ExcelRecipe : RecipeBase
             throw new FileNotFoundException("Template file not found", templatePath);
 
         _options = options ?? new ExcelOptions();
+        _templatePath = templatePath;
 
         try
         {
@@ -53,15 +55,25 @@ public class ExcelRecipe : RecipeBase
 
         try
         {
+            // Save to a temporary file to preserve the template content
+            _templatePath = Path.Combine(Path.GetTempPath(), $"DocuChef_{Guid.NewGuid():N}.xlsx");
+            Logger.Debug($"Saving template stream to temporary file: {_templatePath}");
+
+            using (var fileStream = new FileStream(_templatePath, FileMode.Create, FileAccess.Write))
+            {
+                templateStream.Position = 0;
+                templateStream.CopyTo(fileStream);
+            }
+
             Logger.Debug("Initializing Excel template from stream");
-            _template = new XLCustomTemplate(templateStream, _options.TemplateOptions);
+            _template = new XLCustomTemplate(_templatePath, _options.TemplateOptions);
 
             InitializeTemplate();
         }
         catch (Exception ex)
         {
             Logger.Error("Failed to initialize Excel template from stream", ex);
-            throw new DocuChefException($"Failed to initialize Excel template: {ex.Message}", ex);
+            throw new DocuChefException($"Failed to initialize Excel template from stream: {ex.Message}", ex);
         }
     }
 
@@ -153,12 +165,56 @@ public class ExcelRecipe : RecipeBase
                 throw new DocuChefException("Failed to retrieve workbook from template after generation.");
             }
 
+            // Create a temporary file path for the generated workbook if needed
+            string outputPath = Path.Combine(Path.GetTempPath(), $"DocuChef_{Guid.NewGuid():N}.xlsx");
+
+            // Create document with file path reference
+            var document = new ExcelDocument(workbook, outputPath);
+
+            // Save to the temporary file so it can be opened later
+            workbook.SaveAs(outputPath);
+
             Logger.Info("Excel document generated successfully");
-            return new ExcelDocument(workbook);
+            return document;
         }
         catch (Exception ex)
         {
             Logger.Error("Failed to generate Excel document", ex);
+            throw new DocuChefException($"Failed to generate Excel document: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Generates the document directly to a file path
+    /// </summary>
+    public void GenerateToFile(string outputPath)
+    {
+        ThrowIfDisposed();
+
+        try
+        {
+            // Create directory if it doesn't exist
+            FileExtensions.EnsureDirectoryExists(outputPath);
+
+            Logger.Debug($"Generating Excel document directly to: {outputPath}");
+            _template.Generate();
+            _isGenerated = true;
+
+            // Get the workbook from the template
+            var workbook = _template.Workbook;
+            if (workbook == null)
+            {
+                throw new DocuChefException("Failed to retrieve workbook from template after generation.");
+            }
+
+            // Save directly to the output path
+            workbook.SaveAs(outputPath);
+
+            Logger.Info($"Excel document generated successfully to: {outputPath}");
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Failed to generate Excel document to {outputPath}", ex);
             throw new DocuChefException($"Failed to generate Excel document: {ex.Message}", ex);
         }
     }
@@ -173,6 +229,23 @@ public class ExcelRecipe : RecipeBase
         if (disposing)
         {
             _template?.Dispose();
+
+            // Delete temporary template file if it was created from a stream
+            if (!string.IsNullOrEmpty(_templatePath) &&
+                _templatePath.StartsWith(Path.GetTempPath()) &&
+                File.Exists(_templatePath))
+            {
+                try
+                {
+                    File.Delete(_templatePath);
+                    Logger.Debug($"Deleted temporary template file: {_templatePath}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning($"Failed to delete temporary template file: {ex.Message}");
+                }
+            }
+
             Logger.Debug("Excel template disposed");
         }
 

@@ -5,19 +5,31 @@ namespace DocuChef.Excel;
 /// <summary>
 /// Represents a generated Excel document
 /// </summary>
-public class ExcelDocument : IDisposable
+public class ExcelDocument : IDish, IDisposable
 {
     private readonly IXLWorkbook _workbook;
     private bool _isDisposed;
+    private string _filePath;
 
     /// <summary>
     /// The underlying XLWorkbook instance
     /// </summary>
     public IXLWorkbook Workbook => _workbook;
 
+    /// <summary>
+    /// Gets the file path of the document
+    /// </summary>
+    public string FilePath => _filePath;
+
     internal ExcelDocument(IXLWorkbook workbook)
     {
         _workbook = workbook ?? throw new ArgumentNullException(nameof(workbook));
+        _filePath = null;
+    }
+
+    internal ExcelDocument(IXLWorkbook workbook, string filePath) : this(workbook)
+    {
+        _filePath = filePath;
     }
 
     /// <summary>
@@ -33,9 +45,10 @@ public class ExcelDocument : IDisposable
         try
         {
             // Ensure directory exists
-            filePath.EnsureDirectoryExists();
+            FileExtensions.EnsureDirectoryExists(filePath);
 
             _workbook.SaveAs(filePath);
+            _filePath = filePath; // Update the file path
             Logger.Info($"Excel document saved to {filePath}");
         }
         catch (Exception ex)
@@ -64,6 +77,38 @@ public class ExcelDocument : IDisposable
         {
             Logger.Error("Failed to save Excel document to stream", ex);
             throw new DocuChefException($"Failed to save Excel document to stream: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Opens the document with the default application
+    /// </summary>
+    public void Open()
+    {
+        ThrowIfDisposed();
+
+        if (string.IsNullOrEmpty(_filePath))
+        {
+            // If no file path is set, save to a temporary file first
+            string tempPath = Path.Combine(Path.GetTempPath(), $"DocuChef_{Guid.NewGuid():N}.xlsx");
+            SaveAs(tempPath);
+        }
+
+        try
+        {
+            // Use ProcessStartInfo to launch default Excel viewer
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = _filePath,
+                UseShellExecute = true
+            };
+            System.Diagnostics.Process.Start(psi);
+            Logger.Info("Excel document opened with default application");
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Failed to open Excel document: {ex.Message}", ex);
+            throw new DocuChefException($"Failed to open Excel document: {ex.Message}", ex);
         }
     }
 
