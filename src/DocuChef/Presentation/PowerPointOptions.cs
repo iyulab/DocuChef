@@ -5,6 +5,10 @@
 /// </summary>
 public class PowerPointOptions
 {
+    // Private static instance with thread safety
+    private static readonly object _lock = new object();
+    private static PowerPointOptions _current = new PowerPointOptions();
+
     /// <summary>
     /// Whether to analyze the template immediately upon initialization
     /// </summary>
@@ -47,18 +51,54 @@ public class PowerPointOptions
 
     /// <summary>
     /// The delimiter character(s) used to define collection hierarchy relationships
-    /// Default is underscore (>) for backward compatibility
+    /// Default is greater than (>) for nested collections
     /// </summary>
     public string HierarchyDelimiter { get; set; } = ">";
 
-    // Static current instance for global access
-    internal static PowerPointOptions Current { get; private set; } = new PowerPointOptions();
+    /// <summary>
+    /// Gets the current global options instance
+    /// </summary>
+    internal static PowerPointOptions Current => _current;
 
     /// <summary>
-    /// Sets the current options instance for global access
+    /// Sets the current options instance for global access in a thread-safe manner
     /// </summary>
     internal static void SetCurrentOptions(PowerPointOptions options)
     {
-        Current = options ?? new PowerPointOptions();
+        if (options == null)
+            throw new ArgumentNullException(nameof(options));
+
+        lock (_lock)
+        {
+            _current = options;
+        }
     }
+
+    /// <summary>
+    /// Creates a new instance with default values
+    /// </summary>
+    public PowerPointOptions() { }
+
+    /// <summary>
+    /// Creates a deep copy of the specified options
+    /// </summary>
+    public PowerPointOptions(PowerPointOptions source)
+    {
+        if (source == null) return;
+
+        AnalyzeOnInit = source.AnalyzeOnInit;
+        RegisterGlobalVariables = source.RegisterGlobalVariables;
+        EnableVerboseLogging = source.EnableVerboseLogging;
+        ThrowOnMissingVariable = source.ThrowOnMissingVariable;
+        UpdateImplicitDirectives = source.UpdateImplicitDirectives;
+        EnableSlideNotes = source.EnableSlideNotes;
+        OnlyCreateDirectiveNotes = source.OnlyCreateDirectiveNotes;
+        MaxIterationItems = source.MaxIterationItems;
+        HierarchyDelimiter = source.HierarchyDelimiter;
+    }
+
+    /// <summary>
+    /// Creates a copy of the current options
+    /// </summary>
+    public PowerPointOptions Clone() => new PowerPointOptions(this);
 }

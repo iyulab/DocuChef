@@ -5,8 +5,14 @@ namespace DocuChef.Presentation.Core;
 /// <summary>
 /// Provides extension methods for accessing object properties dynamically
 /// </summary>
-public static class ObjectExtensions
+internal static class ObjectExtensions
 {
+    // Cache for property info lookup to improve performance
+    private static readonly Dictionary<Type, Dictionary<string, PropertyInfo>> _propertyCache =
+        new Dictionary<Type, Dictionary<string, PropertyInfo>>();
+
+    private static readonly object _cacheLock = new object();
+
     /// <summary>
     /// Gets a property value from an object by property path
     /// </summary>
@@ -34,8 +40,8 @@ public static class ObjectExtensions
                 if (currentObj == null)
                     return string.Empty;
 
-                // Get property using reflection with case-insensitive lookup
-                PropertyInfo property = GetPropertyInfo(currentObj, propertyName);
+                // Get property using reflection with case-insensitive lookup and caching
+                PropertyInfo property = GetCachedPropertyInfo(currentObj, propertyName);
 
                 if (property == null)
                 {
@@ -57,15 +63,51 @@ public static class ObjectExtensions
     }
 
     /// <summary>
-    /// Gets a property info by name with case-insensitive lookup
+    /// Gets a property info by name with case-insensitive lookup and caching
     /// </summary>
-    private static PropertyInfo GetPropertyInfo(object obj, string propertyName)
+    private static PropertyInfo GetCachedPropertyInfo(object obj, string propertyName)
     {
-        return obj.GetType().GetProperty(
-            propertyName,
-            BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-    }
+        if (obj == null || string.IsNullOrEmpty(propertyName))
+            return null;
 
+        Type objType = obj.GetType();
+
+        // Check cache first
+        Dictionary<string, PropertyInfo> typeCache;
+        lock (_cacheLock)
+        {
+            if (!_propertyCache.TryGetValue(objType, out typeCache))
+            {
+                typeCache = new Dictionary<string, PropertyInfo>(StringComparer.OrdinalIgnoreCase);
+                _propertyCache[objType] = typeCache;
+            }
+        }
+
+        // Try to get from cache using thread-safe approach
+        PropertyInfo result = null;
+        bool cacheHit;
+
+        lock (_cacheLock)
+        {
+            cacheHit = typeCache.TryGetValue(propertyName, out result);
+        }
+
+        if (!cacheHit)
+        {
+            // Not in cache, get using reflection
+            result = objType.GetProperty(
+                propertyName,
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+
+            // Cache the result (even if null)
+            lock (_cacheLock)
+            {
+                typeCache[propertyName] = result;
+            }
+        }
+
+        return result;
+    }
 
     /// <summary>
     /// Gets a collection from an object by property path, supporting multi-level nested collections
@@ -105,7 +147,6 @@ public static class ObjectExtensions
         }
     }
 
-
     /// <summary>
     /// Gets a multi-level nested collection using the underscore notation (e.g., "Categories_Products")
     /// </summary>
@@ -120,20 +161,7 @@ public static class ObjectExtensions
 
         // Get the top-level collection
         string topLevelCollectionName = segments[0];
-
-        // Special case: if obj is a Dictionary<string, object> and topLevelCollectionName is a key
-        IEnumerable topCollection = null;
-        if (obj is IDictionary<string, object> dict && dict.ContainsKey(topLevelCollectionName))
-        {
-            var value = dict[topLevelCollectionName];
-            if (value is IEnumerable && !(value is string))
-                topCollection = value as IEnumerable;
-        }
-        else
-        {
-            // Try regular collection method
-            topCollection = GetRegularCollection(obj, topLevelCollectionName);
-        }
+        IEnumerable topCollection = GetCollectionFromObject(obj, topLevelCollectionName);
 
         if (topCollection == null)
         {
@@ -150,6 +178,24 @@ public static class ObjectExtensions
         Logger.Debug($"Processed {result.Count} items in multi-level nested collection");
 
         return result.Count > 0 ? result : null;
+    }
+
+    /// <summary>
+    /// Gets a collection from an object using various methods
+    /// </summary>
+    private static IEnumerable GetCollectionFromObject(object obj, string collectionName)
+    {
+        // Special case: if obj is a Dictionary<string, object> and collectionName is a key
+        if (obj is IDictionary<string, object> dict && dict.ContainsKey(collectionName))
+        {
+            var value = dict[collectionName];
+            if (value is IEnumerable && !(value is string))
+                return value as IEnumerable;
+            return null;
+        }
+
+        // Try regular collection method
+        return GetRegularCollection(obj, collectionName);
     }
 
     /// <summary>
@@ -191,7 +237,7 @@ public static class ObjectExtensions
                 string childPropertyName = segments[currentLevel + 1];
 
                 // Try to get the child collection property
-                var childProp = GetPropertyInfo(item, childPropertyName);
+                PropertyInfo childProp = GetCachedPropertyInfo(item, childPropertyName);
 
                 if (childProp == null)
                 {
@@ -233,8 +279,8 @@ public static class ObjectExtensions
             if (currentObj == null)
                 return null;
 
-            // Get property using reflection
-            var property = GetPropertyInfo(currentObj, propertyName);
+            // Get property using reflection with caching
+            var property = GetCachedPropertyInfo(currentObj, propertyName);
 
             if (property == null)
             {
@@ -251,7 +297,6 @@ public static class ObjectExtensions
 
         return null;
     }
-
 
     /// <summary>
     /// Counts items in a collection

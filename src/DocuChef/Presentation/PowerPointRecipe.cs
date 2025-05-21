@@ -109,12 +109,12 @@ public class PowerPointRecipe : RecipeBase
     /// </summary>
     private string CreateWorkingCopy(string sourcePath)
     {
-        string tempPath = Path.Combine(Path.GetTempPath(), $"DocuChef_Working_{Guid.NewGuid().ToString("N")}.pptx");
+        string tempPath = Path.Combine(Path.GetTempPath(), $"DocuChef_Working_{Guid.NewGuid():N}.pptx");
 
         try
         {
             // Copy with retry in case of file access conflicts
-            CopyFileWithRetry(sourcePath, tempPath, 3);
+            FileUtility.CopyFileWithRetry(sourcePath, tempPath, 3);
             Logger.Debug($"Created working copy at: {tempPath}");
             return tempPath;
         }
@@ -123,6 +123,37 @@ public class PowerPointRecipe : RecipeBase
             Logger.Error($"Failed to create working copy: {ex.Message}", ex);
             throw new DocuChefException($"Failed to create working copy of template: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Cleans up the working copy if it exists
+    /// </summary>
+    private void CleanupWorkingCopy()
+    {
+        if (!string.IsNullOrEmpty(_workingTemplatePath) && File.Exists(_workingTemplatePath))
+        {
+            try
+            {
+                File.Delete(_workingTemplatePath);
+                Logger.Debug($"Cleaned up working copy: {_workingTemplatePath}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"Failed to clean up working copy: {ex.Message}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Opens a PowerPoint document with retry logic for handling access conflicts
+    /// </summary>
+    private PresentationDocument OpenDocumentWithRetry(string path, bool isEditable, int maxRetries = 3)
+    {
+        return FileUtility.RetryOperation(
+            () => PresentationDocument.Open(path, isEditable),
+            maxRetries,
+            (attempt, ex) => Logger.Warning($"Retry {attempt}/{maxRetries} - File access conflict: {ex.Message}"),
+            "Failed to open PowerPoint document");
     }
 
     /// <summary>
@@ -153,25 +184,6 @@ public class PowerPointRecipe : RecipeBase
                 // Wait a bit before retrying
                 Logger.Warning($"Retry {retryCount}/{maxRetries} - File access conflict, waiting before retry...");
                 System.Threading.Thread.Sleep(500 * retryCount); // Incremental backoff
-            }
-        }
-    }
-
-    /// <summary>
-    /// Cleans up the working copy if it exists
-    /// </summary>
-    private void CleanupWorkingCopy()
-    {
-        if (!string.IsNullOrEmpty(_workingTemplatePath) && File.Exists(_workingTemplatePath))
-        {
-            try
-            {
-                File.Delete(_workingTemplatePath);
-                Logger.Debug($"Cleaned up working copy: {_workingTemplatePath}");
-            }
-            catch (Exception ex)
-            {
-                Logger.Warning($"Failed to clean up working copy: {ex.Message}");
             }
         }
     }
@@ -484,36 +496,6 @@ public class PowerPointRecipe : RecipeBase
         {
             Logger.Error("Failed to generate PowerPoint document", ex);
             throw new DocuChefException($"Failed to generate PowerPoint document: {ex.Message}", ex);
-        }
-    }
-
-    /// <summary>
-    /// Opens a PowerPoint document with retry logic for handling access conflicts
-    /// </summary>
-    private PresentationDocument OpenDocumentWithRetry(string path, bool isEditable, int maxRetries = 3)
-    {
-        int retryCount = 0;
-
-        while (true)
-        {
-            try
-            {
-                return PresentationDocument.Open(path, isEditable);
-            }
-            catch (IOException ex)
-            {
-                retryCount++;
-
-                if (retryCount >= maxRetries)
-                {
-                    Logger.Error($"Failed to open PowerPoint document after {maxRetries} attempts: {ex.Message}");
-                    throw;
-                }
-
-                // Wait a bit before retrying
-                Logger.Warning($"Retry {retryCount}/{maxRetries} - File access conflict, waiting before retry...");
-                System.Threading.Thread.Sleep(500 * retryCount); // Incremental backoff
-            }
         }
     }
 

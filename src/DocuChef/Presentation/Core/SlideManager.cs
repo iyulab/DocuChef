@@ -253,39 +253,6 @@ public static partial class SlideManager
     }
 
     /// <summary>
-    /// Creates a new notes slide with proper OpenXML structure
-    /// </summary>
-    private static P.NotesSlide CreateNewNotesSlide()
-    {
-        // Create the shape tree with required elements according to OpenXML spec
-        var shapeTree = new P.ShapeTree(
-            new P.NonVisualGroupShapeProperties(
-                new P.NonVisualDrawingProperties() { Id = 1U, Name = "Notes" },
-                new P.NonVisualGroupShapeDrawingProperties(),
-                new P.ApplicationNonVisualDrawingProperties()
-            ),
-            new P.GroupShapeProperties(
-                new D.TransformGroup(
-                    new D.Offset() { X = 0L, Y = 0L },
-                    new D.Extents() { Cx = 0L, Cy = 0L },
-                    new D.ChildOffset() { X = 0L, Y = 0L },
-                    new D.ChildExtents() { Cx = 0L, Cy = 0L }
-                )
-            )
-        );
-
-        // Create the notes slide with required elements
-        var notesSlide = new P.NotesSlide(
-            new P.CommonSlideData(shapeTree)
-        );
-
-        // Add color mapping
-        notesSlide.AppendChild(new P.ColorMapOverride(new D.MasterColorMapping()));
-
-        return notesSlide;
-    }
-
-    /// <summary>
     /// Updates the note content with proper OpenXML structure
     /// </summary>
     private static void UpdateNoteContent(P.NotesSlide notesSlide, string content)
@@ -391,63 +358,5 @@ public static partial class SlideManager
         newRun.AppendChild(newText);
         newParagraph.AppendChild(newRun);
         textBody.AppendChild(newParagraph);
-    }
-
-    /// <summary>
-    /// Creates a TextBody element with the specified content with proper OpenXML structure
-    /// </summary>
-    private static P.TextBody CreateTextBody(string content)
-    {
-        var textBody = new P.TextBody();
-
-        // Add required properties to TextBody based on standard PowerPoint defaults
-        textBody.AppendChild(new D.BodyProperties() { Anchor = D.TextAnchoringTypeValues.Top });
-        textBody.AppendChild(new D.ListStyle());
-
-        // Create paragraph with text
-        var paragraph = new D.Paragraph();
-        var run = new D.Run();
-        var text = new D.Text() { Text = content };
-
-        run.AppendChild(text);
-        paragraph.AppendChild(run);
-        textBody.AppendChild(paragraph);
-
-        return textBody;
-    }
-
-    /// <summary>
-    /// Gets the next available shape ID from the shape tree
-    /// </summary>
-    private static uint GetNextShapeId(P.ShapeTree shapeTree)
-    {
-        uint maxId = 0;
-
-        // Find the highest Id in use
-        foreach (var element in shapeTree.Descendants<P.NonVisualDrawingProperties>())
-        {
-            if (element.Id != null && element.Id.Value > maxId)
-            {
-                maxId = element.Id.Value;
-            }
-        }
-
-        // Start with ID 2 at minimum (1 is typically used by the shapeTree itself)
-        return Math.Max(maxId + 1, 2);
-    }
-
-    /// <summary>
-    /// Updates image references in the slide
-    /// </summary>
-    private static void UpdateImageReferences(P.Slide slide, string oldId, string newId)
-    {
-        // Update blip elements (images)
-        foreach (var blip in slide.Descendants<D.Blip>())
-        {
-            if (blip.Embed != null && blip.Embed.Value == oldId)
-            {
-                blip.Embed.Value = newId;
-            }
-        }
     }
 }

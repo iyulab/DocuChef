@@ -27,7 +27,7 @@ internal class PresentationProcessor
             return;
         }
 
-        // Process slides according to plan
+        // Process slides according to plan and get new slide list
         List<SlideId> newSlideIds = ProcessPlan(presentationPart, plan);
 
         // Replace the slide list
@@ -47,10 +47,16 @@ internal class PresentationProcessor
         var slideIndex = 0;
         foreach (var slideId in slideIds)
         {
-            var slidePart = presentationPart.GetPartById(slideId.RelationshipId!) as SlidePart;
-            var context = plan.Slides[slideIndex++].Context;
+            // Skip if we've reached the end of the plan
+            if (slideIndex >= plan.Slides.Count)
+                break;
 
-            DataBinder.BindDataWithContext(slidePart!, context, data);
+            var slidePart = presentationPart.GetPartById(slideId.RelationshipId!) as SlidePart;
+            if (slidePart == null)
+                continue;
+
+            var context = plan.Slides[slideIndex++].Context;
+            DataBinder.BindDataWithContext(slidePart, context, data);
         }
     }
 
@@ -63,16 +69,20 @@ internal class PresentationProcessor
         List<SlideId> originalSlides = new List<SlideId>(
             presentationPart.Presentation.SlideIdList.Elements<SlideId>());
 
-        // Create a mapping from relationship ID to SlideId
-        Dictionary<string, SlideId> relIdToSlideId = CreateRelationshipMapping(originalSlides);
+        // Create a mapping from relationship ID to SlideId for quick lookup
+        Dictionary<string, SlideId> relIdToSlideId = originalSlides
+            .Where(s => s.RelationshipId != null)
+            .ToDictionary(s => s.RelationshipId.Value);
 
         // Create a new slide list
         List<SlideId> newSlideIds = new List<SlideId>();
 
         // Calculate next available slide ID
-        uint nextSlideId = CalculateNextSlideId(originalSlides);
+        uint nextSlideId = originalSlides.Count > 0
+            ? originalSlides.Max(s => s.Id.Value) + 1
+            : 256; // Start with a reasonable ID if no slides exist
 
-        // Track slides that have been processed
+        // Track slides that have been processed to avoid duplicates
         HashSet<string> processedRelIds = new HashSet<string>();
 
         // Log plan summary
@@ -111,32 +121,6 @@ internal class PresentationProcessor
     }
 
     /// <summary>
-    /// Calculates the next available slide ID
-    /// </summary>
-    private uint CalculateNextSlideId(List<SlideId> originalSlides)
-    {
-        return originalSlides.Count > 0
-            ? originalSlides.Max(s => s.Id.Value) + 1
-            : 256; // Start with a reasonable ID if no slides exist
-    }
-
-    /// <summary>
-    /// Creates a mapping from relationship ID to SlideId
-    /// </summary>
-    private Dictionary<string, SlideId> CreateRelationshipMapping(List<SlideId> originalSlides)
-    {
-        var relIdToSlideId = new Dictionary<string, SlideId>();
-        foreach (var slide in originalSlides)
-        {
-            if (slide.RelationshipId != null)
-            {
-                relIdToSlideId[slide.RelationshipId.Value] = slide;
-            }
-        }
-        return relIdToSlideId;
-    }
-
-    /// <summary>
     /// Processes a single planned slide
     /// </summary>
     private void ProcessPlannedSlide(
@@ -157,9 +141,10 @@ internal class PresentationProcessor
         Logger.Debug($"Processing planned slide: {plannedSlide.Operation}, context: {plannedSlide.Context?.GetContextDescription() ?? "No context"}");
 
         // Find the original slide ID
-        if (!relIdToSlideId.TryGetValue(plannedSlide.Source.RelationshipId, out SlideId originalSlideId))
+        string relId = plannedSlide.Source.RelationshipId;
+        if (!relIdToSlideId.TryGetValue(relId, out SlideId originalSlideId))
         {
-            Logger.Warning($"Cannot find slide with relationship ID: {plannedSlide.Source.RelationshipId}");
+            Logger.Warning($"Cannot find slide with relationship ID: {relId}");
             return;
         }
 
@@ -233,11 +218,13 @@ internal class PresentationProcessor
         List<SlideId> newSlideIds,
         HashSet<string> processedRelIds)
     {
+        string relId = originalSlideId.RelationshipId.Value;
+
         // Only add original slide if not already processed
-        if (!processedRelIds.Contains(originalSlideId.RelationshipId.Value))
+        if (!processedRelIds.Contains(relId))
         {
             newSlideIds.Add(originalSlideId);
-            processedRelIds.Add(originalSlideId.RelationshipId.Value);
+            processedRelIds.Add(relId);
 
             // Update slide notes with context
             SlideManager.UpdateSlideNote(originalSlidePart, plannedSlide.Context);

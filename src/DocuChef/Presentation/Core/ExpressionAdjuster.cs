@@ -51,44 +51,15 @@ internal class ExpressionAdjuster
             string fullExpr = originalText.Substring(nextExprStart, exprEnd - nextExprStart + 1);
             bool expressionAdjusted = false;
 
-            // Check for direct collection name match
-            string searchKey = context.CollectionName + "[";
-            if (fullExpr.Contains(searchKey))
+            // Process expression based on its type and context
+            (bool isAdjusted, string adjustedExpr) = ProcessExpression(fullExpr, context, segments, isNestedContext);
+
+            if (isAdjusted)
             {
-                string adjustedExpr = AdjustDirectCollectionIndices(fullExpr, searchKey, context);
                 result.Append(adjustedExpr);
                 expressionAdjusted = true;
             }
-            // If this is a hierarchical context, check for segment matches
-            else if (isNestedContext)
-            {
-                string adjustedExpr = fullExpr;
-
-                // Check each segment separately, starting from the most specific (last)
-                for (int i = segments.Length - 1; i >= 0; i--)
-                {
-                    string segmentKey = segments[i] + "[";
-                    if (fullExpr.Contains(segmentKey))
-                    {
-                        adjustedExpr = AdjustHierarchicalSegmentIndices(fullExpr, segmentKey, context, i);
-                        expressionAdjusted = true;
-                        break;
-                    }
-                }
-
-                result.Append(adjustedExpr);
-            }
-
-            // If no adjustment was made yet, try Item[index] for group contexts
-            if (!expressionAdjusted && context.IsGroupContext && fullExpr.Contains("Item["))
-            {
-                string adjustedExpr = AdjustGroupItemIndices(fullExpr, context);
-                result.Append(adjustedExpr);
-                expressionAdjusted = true;
-            }
-
-            // If still not adjusted, use the original expression
-            if (!expressionAdjusted)
+            else
             {
                 result.Append(fullExpr);
             }
@@ -104,6 +75,46 @@ internal class ExpressionAdjuster
         }
 
         return result.ToString();
+    }
+
+    /// <summary>
+    /// Processes an expression and adjusts it based on the context
+    /// </summary>
+    private static (bool isAdjusted, string adjustedExpr) ProcessExpression(
+        string expression, Models.SlideContext context, string[] segments, bool isNestedContext)
+    {
+        // Check for direct collection name match
+        string searchKey = context.CollectionName + "[";
+        if (expression.Contains(searchKey))
+        {
+            string adjustedExpr = AdjustDirectCollectionIndices(expression, searchKey, context);
+            return (true, adjustedExpr);
+        }
+
+        // If this is a hierarchical context, check for segment matches
+        if (isNestedContext)
+        {
+            // Check each segment separately, starting from the most specific (last)
+            for (int i = segments.Length - 1; i >= 0; i--)
+            {
+                string segmentKey = segments[i] + "[";
+                if (expression.Contains(segmentKey))
+                {
+                    string adjustedExpr = AdjustHierarchicalSegmentIndices(expression, segmentKey, context, i);
+                    return (true, adjustedExpr);
+                }
+            }
+        }
+
+        // Check for Item[index] in group contexts
+        if (context.IsGroupContext && expression.Contains("Item["))
+        {
+            string adjustedExpr = AdjustGroupItemIndices(expression, context);
+            return (true, adjustedExpr);
+        }
+
+        // No adjustment needed
+        return (false, expression);
     }
 
     /// <summary>
@@ -159,17 +170,7 @@ internal class ExpressionAdjuster
             if (int.TryParse(indexStr, out int originalIndex))
             {
                 // Get the offset for this segment level
-                int segmentOffset = context.Offset;
-
-                // For parent segments, use parent context offsets if available
-                if (segmentIndex < context.HierarchyLevel && context.ParentContext != null)
-                {
-                    segmentOffset = context.ParentContext.Offset;
-                }
-                else if (context.LevelOffsets.TryGetValue(segmentIndex, out int levelOffset))
-                {
-                    segmentOffset = levelOffset;
-                }
+                int segmentOffset = GetSegmentOffset(context, segmentIndex);
 
                 // Apply the offset
                 int adjustedIndex = originalIndex + segmentOffset;
@@ -185,6 +186,25 @@ internal class ExpressionAdjuster
 
         // Return original if no adjustment was made
         return expression;
+    }
+
+    /// <summary>
+    /// Gets the appropriate offset for a segment level
+    /// </summary>
+    private static int GetSegmentOffset(Models.SlideContext context, int segmentIndex)
+    {
+        // For parent segments, use parent context offsets if available
+        if (segmentIndex < context.HierarchyLevel && context.ParentContext != null)
+        {
+            return context.ParentContext.Offset;
+        }
+        else if (context.LevelOffsets.TryGetValue(segmentIndex, out int levelOffset))
+        {
+            return levelOffset;
+        }
+
+        // Default to current context offset
+        return context.Offset;
     }
 
     /// <summary>
@@ -205,31 +225,26 @@ internal class ExpressionAdjuster
         // Create detailed debug log to aid in troubleshooting
         Logger.Debug($"Adjusting index {originalIndex} for context: {context.CollectionName}, offset: {context.Offset}, isGroup: {context.IsGroupContext}, itemsInGroup: {context.ItemsInGroup}");
 
-        // For grouped contexts (multiple items per slide), special handling is needed
         if (context.IsGroupContext)
         {
             // If original index is within the range of items that could be shown on a single slide
-            // For example, with max: 5, indices 0-4 could appear on a single slide
             if (originalIndex < context.ItemsInGroup)
             {
-                // This is a fixed position within the group (e.g., Items[0], Items[1], etc.)
-                // So we adjust it by the offset of the current group
+                // Adjust it by the offset of the current group
                 int adjustedIndex = originalIndex + context.Offset;
                 Logger.Debug($"Group context adjustment: {originalIndex} -> {adjustedIndex} (adding offset {context.Offset})");
                 return adjustedIndex;
             }
             else
             {
-                // The index is outside the range of what this group can show
-                // For safety, we still adjust it, but this should generally not occur
-                // unless the template has expressions for items that won't be displayed
+                // Handle index outside the group range
                 int adjustedIndex = originalIndex + context.Offset;
                 Logger.Debug($"Group context adjustment (out of group range): {originalIndex} -> {adjustedIndex} (adding offset {context.Offset})");
                 return adjustedIndex;
             }
         }
 
-        // Simple offset adjustment for exact collection name matches (non-group contexts)
+        // Simple offset adjustment for non-group contexts
         int simpleAdjustedIndex = originalIndex + context.Offset;
         Logger.Debug($"Direct context adjustment: {originalIndex} + {context.Offset} = {simpleAdjustedIndex}");
         return simpleAdjustedIndex;

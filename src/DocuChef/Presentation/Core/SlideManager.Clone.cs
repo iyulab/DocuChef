@@ -186,43 +186,6 @@ public static partial class SlideManager
     }
 
     /// <summary>
-    /// Checks if a text element contains a complete expression (${...})
-    /// </summary>
-    private static bool ContainsCompleteExpression(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-            return false;
-
-        // Check for ${...} pattern
-        int openIndex = text.IndexOf("${");
-        if (openIndex >= 0)
-        {
-            int closeIndex = text.IndexOf("}", openIndex);
-            if (closeIndex > openIndex)
-            {
-                // Make sure there's no other ${ before the closing }
-                string between = text.Substring(openIndex + 2, closeIndex - openIndex - 2);
-                return !between.Contains("${");
-            }
-        }
-
-        // Check for $..$ pattern
-        openIndex = text.IndexOf("$");
-        if (openIndex >= 0 && openIndex < text.Length - 1)
-        {
-            int closeIndex = text.IndexOf("$", openIndex + 1);
-            if (closeIndex > openIndex)
-            {
-                // Make sure there's no other $ in between
-                string between = text.Substring(openIndex + 1, closeIndex - openIndex - 1);
-                return !between.Contains("$");
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>
     /// Adjusts expressions at the Paragraph level for split expressions
     /// </summary>
     private static void AdjustParagraphLevelExpressions(SlidePart slidePart, SlideContext context)
@@ -394,37 +357,6 @@ public static partial class SlideManager
     }
 
     /// <summary>
-    /// Finds all expression ranges in a text string
-    /// </summary>
-    private static List<ExpressionRange> FindExpressionRanges(string text)
-    {
-        var result = new List<ExpressionRange>();
-        int pos = 0;
-
-        while (pos < text.Length)
-        {
-            int startPos = text.IndexOf("${", pos);
-            if (startPos == -1)
-                break;
-
-            int endPos = text.IndexOf("}", startPos);
-            if (endPos == -1)
-                break;
-
-            result.Add(new ExpressionRange
-            {
-                Start = startPos,
-                End = endPos,
-                Expression = text.Substring(startPos, endPos - startPos + 1)
-            });
-
-            pos = endPos + 1;
-        }
-
-        return result;
-    }
-
-    /// <summary>
     /// Distributes text containing expressions across run elements
     /// </summary>
     private static void DistributeTextWithExpressions(List<RunInfo> runMap, string text, List<ExpressionRange> expressionRanges)
@@ -511,54 +443,4 @@ public static partial class SlideManager
             }
         }
     }
-
-    /// <summary>
-    /// Helper class for tracking run information
-    /// </summary>
-    private class RunInfo
-    {
-        public D.Text TextElement { get; set; }
-        public int StartPosition { get; set; }
-        public int EndPosition { get; set; }
-        public D.Run Run { get; set; }
-    }
-
-    /// <summary>
-    /// Helper class for tracking expression ranges
-    /// </summary>
-    private class ExpressionRange
-    {
-        public int Start { get; set; }
-        public int End { get; set; }
-        public string Expression { get; set; }
-    }
-
-    /// <summary>
-    /// Helper class for tracking text segments
-    /// </summary>
-    private class TextSegment
-    {
-        public int Start { get; set; }
-        public int End { get; set; }
-        public string Text { get; set; }
-        public bool IsExpression { get; set; }
-    }
-
-    /// <summary>
-    /// Checks if the specified text is a directive
-    /// </summary>
-    private static bool IsDirective(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-            return false;
-
-        text = text.Trim();
-
-        // Check for directive markers
-        return text.StartsWith("#foreach") ||
-               text.StartsWith("#if") ||
-               text.Contains("#foreach:") ||
-               text.Contains("#if:");
-    }
-
 }
