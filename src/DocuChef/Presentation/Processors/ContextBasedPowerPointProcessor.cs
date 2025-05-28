@@ -201,7 +201,7 @@ public class ContextBasedPowerPointProcessor
 
         // 작업용 문서 생성
         context.WorkingDocument = CreateWorkingDocument(context.TemplateDocument);        // 슬라이드 생성 및 표현식 변환
-        _slideGenerator.GenerateSlides(context.WorkingDocument, context.GenerationPlan, context.SlideInfos);
+        _slideGenerator.GenerateSlides(context.WorkingDocument, context.GenerationPlan, context.SlideInfos, context.Variables);
 
         if (context.Options.EnableVerboseLogging)
         {

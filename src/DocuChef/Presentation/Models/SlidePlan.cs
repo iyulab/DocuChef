@@ -66,8 +66,7 @@ public class SlideInstance
     /// Context information for data binding
     /// </summary>
     public List<string> ContextPath { get; set; } = new List<string>();
-    
-    /// <summary>
+      /// <summary>
     /// Index offset for array references in this slide
     /// </summary>
     public int IndexOffset { get; set; }
@@ -91,6 +90,11 @@ public class SlideInstance
     /// Whether this instance represents empty data
     /// </summary>
     public bool IsEmpty { get; set; }
+    
+    /// <summary>
+    /// Parent index for nested collections (used for Products>Items scenarios)
+    /// </summary>
+    public int? ParentIndex { get; set; }
     
     /// <summary>
     /// Context path as a joined string

@@ -1,4 +1,4 @@
-﻿using DocuChef.TestConsoleApp;
+using DocuChef.TestConsoleApp;
 
 /* 
 # template_1.pptx
@@ -32,7 +32,7 @@ Price: ${Items[3].Price:C0} USD
 - ${Items[4].Id}. ${Items[4].Name} - ${Items[4].Description}
 Price: ${Items[4].Price:C0} USD
 */
-TestTemplate.Run("template_2.pptx");
+// TestTemplate.Run("template_2.pptx");
 
 /* 
 # template_3.pptx
@@ -64,4 +64,7 @@ Price: ${Items[4].Price:C0} USD
 ## 슬라이드3: 바인딩 없음
 - END
 */
-// TestTemplate.Run("template_3.pptx");
+TestTemplate.Run("template_3.pptx");
+
+
+Test1.Run();

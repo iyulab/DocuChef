@@ -10,8 +10,7 @@ namespace DocuChef.Presentation.Processors;
 /// Generates a plan for slide creation based on the template analysis and data
 /// </summary>
 public class SlidePlanGenerator
-{
-    /// <summary>
+{    /// <summary>
     /// Generates a slide plan based on slide infos and data
     /// </summary>
     /// <param name="slideInfos">The analyzed slide information</param>
@@ -23,13 +22,48 @@ public class SlidePlanGenerator
             return new SlidePlan();
 
         var slidePlan = new SlidePlan();
-        var aliasMap = BuildAliasMap(slideInfos);
+        var aliasMap = BuildAliasMap(slideInfos);        // Check if we have nested context (Products>Items pattern)
+        // Look for binding expressions that contain nested paths (with ">")
+        var hasNestedContext = slideInfos.Any(si => 
+            si.BindingExpressions.Any(expr => expr.DataPath.Contains(">")));
 
-        // Process slides with range directives
-        ProcessRangeDirectives(slideInfos, slidePlan, data, aliasMap);
+        if (hasNestedContext)
+        {
+            Logger.Debug("GeneratePlan: Detected nested context, using nested range processing");
+              // Process static slides first (before ranges)
+            var staticSlides = slideInfos.Where(si => si.Type == SlideType.Static && si.SlideId < slideInfos.Where(s => s.Type == SlideType.Source).Min(s => s.SlideId)).ToList();            foreach (var staticSlide in staticSlides)
+            {
+                slidePlan.AddSlideInstance(new SlideInstance
+                {
+                    SourceSlideId = staticSlide.SlideId,
+                    Position = GetNextPosition(slidePlan),
+                    ContextPath = new List<string>(),
+                    IndexOffset = 0
+                });
+            }
 
-        // Process slides with foreach directives that are not part of a range
-        ProcessStandaloneSlides(slideInfos, slidePlan, data, aliasMap);
+            // Process nested ranges in correct order
+            ProcessNestedRangeSlides(slideInfos, slidePlan, data, aliasMap);            // Process static slides after ranges (END slide)
+            var endSlides = slideInfos.Where(si => si.Type == SlideType.Static && si.SlideId > slideInfos.Where(s => s.Type == SlideType.Source).Max(s => s.SlideId)).ToList();
+            foreach (var endSlide in endSlides)            {
+                slidePlan.AddSlideInstance(new SlideInstance
+                {
+                    SourceSlideId = endSlide.SlideId,
+                    Position = GetNextPosition(slidePlan),
+                    ContextPath = new List<string>(),
+                    IndexOffset = 0
+                });
+            }
+        }
+        else
+        {
+            // Original processing for non-nested scenarios
+            // Process slides with range directives
+            ProcessRangeDirectives(slideInfos, slidePlan, data, aliasMap);
+
+            // Process slides with foreach directives that are not part of a range
+            ProcessStandaloneSlides(slideInfos, slidePlan, data, aliasMap);
+        }
 
         return slidePlan;
     }
@@ -213,9 +247,15 @@ public class SlidePlanGenerator
                 .ToList();
 
             Logger.Debug($"ProcessStandaloneSlides: Found {foreachDirectives.Count} foreach directives for slide {slideInfo.SlideId}");
-            Logger.Debug($"ProcessStandaloneSlides: Total directives: {slideInfo.Directives.Count} - Types: {string.Join(", ", slideInfo.Directives.Select(d => d.Type))}");
+            Logger.Debug($"ProcessStandaloneSlides: Total directives: {slideInfo.Directives.Count} - Types: {string.Join(", ", slideInfo.Directives.Select(d => d.Type))}");            // Check if this slide has nested context expressions (Products>Items) first
+            bool hasNestedContext = slideInfo.BindingExpressions.Any(e => e.DataPath.Contains(">"));
 
-            if (foreachDirectives.Any())
+            if (hasNestedContext)
+            {
+                Logger.Debug($"ProcessStandaloneSlides: Processing nested context for slide {slideInfo.SlideId}");
+                ProcessNestedContextSlide(slideInfo, slidePlan, data, aliasMap);
+            }
+            else if (foreachDirectives.Any())
             {
                 // This slide has foreach directives, we need to create clones
                 Logger.Debug($"ProcessStandaloneSlides: Processing explicit foreach directives for slide {slideInfo.SlideId}");
@@ -226,15 +266,23 @@ public class SlidePlanGenerator
             }
             else if (slideInfo.Type == SlideType.Source && !string.IsNullOrEmpty(slideInfo.CollectionName))
             {
-                // This is a source slide with collection binding - infer foreach directive
-                Logger.Debug($"ProcessStandaloneSlides: Inferring foreach directive for slide {slideInfo.SlideId}, Collection='{slideInfo.CollectionName}', MaxItems={slideInfo.MaxArrayIndex + 1}");
-                var inferredDirective = new Directive
+                if (hasNestedContext)
                 {
-                    Type = DirectiveType.Foreach,
-                    SourcePath = slideInfo.CollectionName,
-                    MaxItems = slideInfo.MaxArrayIndex + 1
-                };
-                ProcessForeachDirective(slideInfo, slidePlan, data, inferredDirective, aliasMap);
+                    Logger.Debug($"ProcessStandaloneSlides: Processing nested context for slide {slideInfo.SlideId}");
+                    ProcessNestedContextSlide(slideInfo, slidePlan, data, aliasMap);
+                }
+                else
+                {
+                    // This is a source slide with collection binding - infer foreach directive
+                    Logger.Debug($"ProcessStandaloneSlides: Inferring foreach directive for slide {slideInfo.SlideId}, Collection='{slideInfo.CollectionName}', MaxItems={slideInfo.MaxArrayIndex + 1}");
+                    var inferredDirective = new Directive
+                    {
+                        Type = DirectiveType.Foreach,
+                        SourcePath = slideInfo.CollectionName,
+                        MaxItems = slideInfo.MaxArrayIndex + 1
+                    };
+                    ProcessForeachDirective(slideInfo, slidePlan, data, inferredDirective, aliasMap);
+                }
             }
             else
             {
@@ -503,5 +551,221 @@ public class SlidePlanGenerator
             SlideType.Cloned => SlideInstanceType.Generated,
             _ => SlideInstanceType.Static
         };
+    }    /// <summary>
+    /// Processes a slide with nested context expressions (e.g., Products>Items)
+    /// This handles cases where we need to iterate over parent collections and their nested collections
+    /// </summary>
+    private void ProcessNestedContextSlide(SlideInfo slideInfo, SlidePlan slidePlan, object data, Dictionary<string, string> aliasMap)
+    {
+        Logger.Debug($"ProcessNestedContextSlide: Processing slide {slideInfo.SlideId} with nested context");
+
+        // Find nested context expressions in the slide
+        var nestedExpressions = slideInfo.BindingExpressions
+            .Where(e => e.DataPath.Contains(">"))
+            .ToList();
+
+        if (!nestedExpressions.Any())
+        {
+            Logger.Debug($"ProcessNestedContextSlide: No nested expressions found in slide {slideInfo.SlideId}");
+            return;
+        }
+
+        // Extract the nested context pattern (e.g., "Products>Items")
+        var firstNestedExpression = nestedExpressions.First();
+        var contextParts = firstNestedExpression.DataPath.Split('>');
+
+        if (contextParts.Length < 2)
+        {
+            Logger.Debug($"ProcessNestedContextSlide: Invalid nested context pattern: {firstNestedExpression.DataPath}");
+            return;
+        }
+
+        string parentPath = contextParts[0]; // "Products"
+        string childPath = contextParts[1]; // "Items[0]" or "Items"
+
+        // Extract the child collection name and array index pattern
+        var childMatch = Regex.Match(childPath, @"(\w+)(?:\[(\d+)\])?");
+        if (!childMatch.Success)
+        {
+            Logger.Debug($"ProcessNestedContextSlide: Invalid child path pattern: {childPath}");
+            return;
+        }
+
+        string childCollectionName = childMatch.Groups[1].Value; // "Items"
+
+        // Determine items per slide from the max array index in expressions
+        int itemsPerSlide = slideInfo.MaxArrayIndex + 1;
+        Logger.Debug($"ProcessNestedContextSlide: Detected {itemsPerSlide} items per slide from max array index {slideInfo.MaxArrayIndex}");
+
+        // Resolve the parent collection (e.g., Products)
+        var parentCollection = ResolveCollection(data, parentPath);
+        if (parentCollection == null || !parentCollection.Any())
+        {
+            Logger.Debug($"ProcessNestedContextSlide: Parent collection '{parentPath}' is empty or null");
+            return;
+        }
+
+        Logger.Debug($"ProcessNestedContextSlide: Found {parentCollection.Count()} items in parent collection '{parentPath}'");        // Check if there's a parent slide that needs to be processed first
+        // TODO: Implement range-based nested processing structure
+        // This should be handled by ProcessRangeDirectives method instead
+        
+        // For each parent item, create parent slide first, then child slides
+        int parentIndex = 0;
+        foreach (var parentItem in parentCollection)        {
+            Logger.Debug($"ProcessNestedContextSlide: Processing parent item {parentIndex} of {parentCollection.Count()}");
+
+            // TODO: Implement range-based parent slide creation
+            // This functionality should be moved to ProcessRangeDirectives method
+
+            // Resolve the child collection from the parent item
+            var childCollection = ResolveCollection(parentItem, childCollectionName);
+            if (childCollection == null || !childCollection.Any())
+            {
+                Logger.Debug($"ProcessNestedContextSlide: Child collection '{childCollectionName}' is empty in parent item {parentIndex}");
+                parentIndex++;
+                continue;
+            }
+
+            int childItemCount = childCollection.Count();
+            int requiredSlides = CalculateRequiredSlides(childItemCount, itemsPerSlide);
+
+            Logger.Debug($"ProcessNestedContextSlide: Parent {parentIndex} has {childItemCount} child items, requiring {requiredSlides} slides with {itemsPerSlide} items per slide");
+
+            // Create slide instances for this parent's child collection
+            for (int slideIndex = 0; slideIndex < requiredSlides; slideIndex++)
+            {
+                int offset = slideIndex * itemsPerSlide;
+                Logger.Debug($"ProcessNestedContextSlide: Creating child slide {slideIndex + 1}/{requiredSlides} for parent {parentIndex} with offset {offset}");
+                slidePlan.AddSlideInstance(new SlideInstance
+                {
+                    SourceSlideId = slideInfo.SlideId,
+                    Position = GetNextPosition(slidePlan),
+                    IndexOffset = offset,
+                    Type = SlideInstanceType.Generated,
+                    ContextPath = new List<string> { parentPath, childCollectionName },
+                    ParentIndex = parentIndex
+                });
+            }
+
+            parentIndex++;
+        }
+
+        Logger.Debug($"ProcessNestedContextSlide: Completed processing nested context for slide {slideInfo.SlideId}");
+    }/// <summary>
+         /// Processes nested range slides in correct hierarchical order
+         /// </summary>
+    private void ProcessNestedRangeSlides(List<SlideInfo> slideInfos, SlidePlan slidePlan, object data, Dictionary<string, string> aliasMap)
+    {
+        // Find parent and child slides for nested context
+        var parentSlides = slideInfos.Where(si => 
+            si.Type == SlideType.Source && 
+            si.HasArrayReferences && 
+            !si.BindingExpressions.Any(e => e.DataPath.Contains(">"))
+        ).ToList();
+
+        var childSlides = slideInfos.Where(si => 
+            si.Type == SlideType.Source && 
+            si.BindingExpressions.Any(e => e.DataPath.Contains(">"))
+        ).ToList();
+
+        if (!parentSlides.Any() || !childSlides.Any())
+        {
+            Logger.Debug("ProcessNestedRangeSlides: No nested parent-child relationship found");
+            return;
+        }
+
+        var parentSlide = parentSlides.First();
+        var childSlide = childSlides.First();
+        
+        Logger.Debug($"ProcessNestedRangeSlides: Found parent slide {parentSlide.SlideId} and child slide {childSlide.SlideId}");
+
+        // Get parent collection path
+        var parentCollectionName = parentSlide.CollectionName;
+        if (string.IsNullOrEmpty(parentCollectionName))
+        {
+            Logger.Debug("ProcessNestedRangeSlides: Parent collection name is empty");
+            return;
+        }
+
+        // Resolve parent collection
+        var parentCollection = ResolveCollection(data, parentCollectionName);
+        if (parentCollection == null || !parentCollection.Any())
+        {
+            Logger.Debug($"ProcessNestedRangeSlides: Parent collection '{parentCollectionName}' is empty or null");
+            return;
+        }
+
+        Logger.Debug($"ProcessNestedRangeSlides: Processing {parentCollection.Count()} parent items");
+
+        // Process each parent item with its child items
+        int parentIndex = 0;
+        foreach (var parentItem in parentCollection)
+        {
+            Logger.Debug($"ProcessNestedRangeSlides: Processing parent {parentIndex}");            // Add parent slide instance
+            slidePlan.AddSlideInstance(new SlideInstance
+            {
+                SourceSlideId = parentSlide.SlideId,
+                Position = GetNextPosition(slidePlan),
+                ContextPath = new List<string> { parentCollectionName },
+                IndexOffset = parentIndex
+            });
+
+            // Process child items for this parent
+            ProcessNestedChildItems(childSlide, slidePlan, parentItem, parentIndex, $"{parentCollectionName}[{parentIndex}]");
+
+            parentIndex++;
+        }
+
+        Logger.Debug("ProcessNestedRangeSlides: Completed nested range processing");
+    }
+
+    /// <summary>
+    /// Processes child items for a specific parent
+    /// </summary>
+    private void ProcessNestedChildItems(SlideInfo childSlide, SlidePlan slidePlan, object parentItem, int parentIndex, string parentContextPath)
+    {
+        // Get child collection name from nested expression
+        var nestedExpression = childSlide.BindingExpressions.FirstOrDefault(e => e.DataPath.Contains(">"));
+        if (nestedExpression == null)
+        {
+            Logger.Debug("ProcessNestedChildItems: No nested expression found");
+            return;
+        }
+
+        var parts = nestedExpression.DataPath.Split('>');
+        if (parts.Length != 2)
+        {
+            Logger.Debug($"ProcessNestedChildItems: Invalid nested expression: {nestedExpression.DataPath}");
+            return;
+        }
+
+        var childCollectionName = parts[1].Split('[')[0]; // Get "Items" from "Items[0]"
+        
+        // Resolve child collection from parent item
+        var childCollection = ResolveCollection(parentItem, childCollectionName);
+        if (childCollection == null || !childCollection.Any())
+        {
+            Logger.Debug($"ProcessNestedChildItems: Child collection '{childCollectionName}' is empty for parent {parentIndex}");
+            return;
+        }
+
+        var childItems = childCollection.ToList();
+        var itemsPerSlide = childSlide.MaxArrayIndex + 1; // 0-based to count
+        var requiredSlides = CalculateRequiredSlides(childItems.Count, itemsPerSlide);
+
+        Logger.Debug($"ProcessNestedChildItems: Parent {parentIndex} has {childItems.Count} child items, requiring {requiredSlides} slides with {itemsPerSlide} items per slide");
+
+        // Create child slides
+        for (int slideIndex = 0; slideIndex < requiredSlides; slideIndex++)
+        {
+            int offset = slideIndex * itemsPerSlide;
+            Logger.Debug($"ProcessNestedChildItems: Creating child slide {slideIndex + 1}/{requiredSlides} for parent {parentIndex} with offset {offset}");            slidePlan.AddSlideInstance(new SlideInstance
+            {
+                SourceSlideId = childSlide.SlideId,
+                Position = GetNextPosition(slidePlan),
+                ContextPath = new List<string> { $"{parts[0]}>{childCollectionName}" },
+                IndexOffset = offset
+            });
+        }
     }
 }
