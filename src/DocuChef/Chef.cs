@@ -1,4 +1,5 @@
 using DocuChef.Excel;
+using DocuChef.Logging;
 using DocuChef.Presentation;
 
 namespace DocuChef;
@@ -31,6 +32,16 @@ public class Chef : IDisposable
             Logger.LogLevel.Debug : Logger.LogLevel.Warning;
 
         Logger.IsEnabled = true;
+
+        // Set up console logging for verbose mode
+        if (_options.EnableVerboseLogging)
+        {
+            Logger.SetLogHandler((message, level) =>
+            {
+                string prefix = $"[DocuChef:{level}] ";
+                Console.WriteLine($"{prefix}{message}");
+            });
+        }
 
         Logger.Debug("DocuChef initialized");
     }

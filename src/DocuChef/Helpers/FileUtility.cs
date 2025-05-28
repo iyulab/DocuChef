@@ -57,15 +57,13 @@ public static class FileUtility
                 Logger.Warning($"Could not delete temporary file {sourcePath}: {ex.Message}");
             }
         }
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Generic retry operation with configurable handler
     /// </summary>
     public static T RetryOperation<T>(Func<T> operation, int maxRetries,
-        Action<int, Exception> onRetry = null,
-        string failureMessage = null,
-        Func<T> cleanupOnFailure = null)
+        Action<int, Exception>? onRetry = null,
+        string? failureMessage = null,
+        Func<T>? cleanupOnFailure = null)
     {
         int retryCount = 0;
 
@@ -95,6 +93,33 @@ public static class FileUtility
                 // Wait a bit before retrying with exponential backoff
                 System.Threading.Thread.Sleep(500 * retryCount);
             }
+        }
+    }
+
+    /// <summary>
+    /// Opens a file with the default application registered for its file type
+    /// </summary>
+    /// <param name="filePath">Path to the file to open</param>
+    public static void OpenWithDefaultApplication(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath))
+            throw new ArgumentNullException(nameof(filePath));
+
+        if (!File.Exists(filePath))
+            throw new FileNotFoundException("File not found", filePath);
+
+        try
+        {
+            // Use ProcessStartInfo to open the file with default application
+            using var process = new System.Diagnostics.Process();
+            process.StartInfo.FileName = filePath;
+            process.StartInfo.UseShellExecute = true;
+            process.Start();
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't throw
+            Logger.Error($"Failed to open file {filePath}: {ex.Message}");
         }
     }
 }

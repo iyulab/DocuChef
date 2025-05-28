@@ -69,23 +69,25 @@ internal static class Logger
             return;
 
         _logAction(message, LogLevel.Info);
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Logs a warning message
     /// </summary>
-    public static void Warning(string message, Exception ex)
+    public static void Warning(string message, Exception? ex = null)
     {
         if (!_isEnabled || _minimumLevel > LogLevel.Warning)
             return;
 
-        _logAction(message, LogLevel.Warning);
+        string fullMessage = message;
+        if (ex != null)
+            fullMessage += $" Exception: {ex.Message}";
+
+        _logAction(fullMessage, LogLevel.Warning);
     }
 
     /// <summary>
     /// Logs an error message
     /// </summary>
-    public static void Error(string message, Exception exception = null)
+    public static void Error(string message, Exception? exception = null)
     {
         if (!_isEnabled || _minimumLevel > LogLevel.Error)
             return;
@@ -95,9 +97,7 @@ internal static class Logger
             fullMessage += $" Exception: {exception.Message}";
 
         _logAction(fullMessage, LogLevel.Error);
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Default logging implementation
     /// </summary>
     private static void DefaultLogAction(string message, LogLevel level)
@@ -108,10 +108,5 @@ internal static class Logger
         // For Error level, also write to trace
         if (level == LogLevel.Error)
             Trace.TraceError($"{prefix}{message}");
-    }
-
-    internal static void Warning(string v)
-    {
-        throw new NotImplementedException();
     }
 }
