@@ -14,16 +14,27 @@ namespace DocuChef.Presentation.Processors;
 /// <summary>
 /// Generates slides based on the slide plan
 /// Note: Data binding is handled exclusively in DataBinder.cs
+/// Refactored to improve code organization and maintainability
 /// </summary>
 public class SlideGenerator
 {
-    // Note: All data binding related fields removed - binding handled exclusively in DataBinder.cs
-    private readonly TemplateAnalyzer _templateAnalyzer = new TemplateAnalyzer();    /// <summary>
-                                                                                     /// Generates slides according to the slide plan
-                                                                                     /// </summary>
-                                                                                     /// <param name="presentationDocument">The presentation document</param>
-                                                                                     /// <param name="slidePlan">The slide plan to use for generation</param>
-                                                                                     /// <param name="slideInfos">The analyzed slide information for auto-generating notes</param>
+    private readonly TemplateAnalyzer _templateAnalyzer;
+    private readonly SlideCloner _slideCloner;
+    private readonly ExpressionUpdater _expressionUpdater;
+    private readonly SlideRemover _slideRemover;
+
+    public SlideGenerator()
+    {
+        _templateAnalyzer = new TemplateAnalyzer();
+        _slideCloner = new SlideCloner();
+        _expressionUpdater = new ExpressionUpdater();
+        _slideRemover = new SlideRemover();
+    }/// <summary>
+     /// Generates slides according to the slide plan
+     /// </summary>
+     /// <param name="presentationDocument">The presentation document</param>
+     /// <param name="slidePlan">The slide plan to use for generation</param>
+     /// <param name="slideInfos">The analyzed slide information for auto-generating notes</param>
     public void GenerateSlides(PresentationDocument presentationDocument, SlidePlan slidePlan, List<SlideInfo>? slideInfos = null, object? data = null)
     {
         Logger.Debug($"SlideGenerator: Starting generation with {slidePlan?.SlideInstances?.Count ?? 0} slide instances");
@@ -53,14 +64,15 @@ public class SlideGenerator
 
         Logger.Debug($"SlideGenerator: Found {sourceSlides.Count} source slides");        // Collect all slides to clone based on their planned position
         var slidesToClone = new List<(SlideInstance instance, int insertPosition)>();
-        
+
         // Track which original template slides are being repositioned and should be removed
         var originalSlidesToRemove = new HashSet<int>();
         var originalSlidesToKeep = new HashSet<int>();
 
         // Process slide instances in their planned order
         foreach (var slideInstance in slidePlan.SlideInstances)
-        {            Logger.Debug($"SlideGenerator: Processing slide instance from template {slideInstance.SourceSlideId} with offset {slideInstance.IndexOffset}");
+        {
+            Logger.Debug($"SlideGenerator: Processing slide instance from template {slideInstance.SourceSlideId} with offset {slideInstance.IndexOffset}");
 
             // Check if this is an original slide at its original position
             if (slideInstance.Position == slideInstance.SourceSlideId)
@@ -112,11 +124,10 @@ public class SlideGenerator
                 Logger.Warning($"SlideGenerator: Template slide part for slide {slideInstance.SourceSlideId} is invalid, skipping");
                 continue;
             }
-
             Logger.Debug($"SlideGenerator: Cloning slide from template {slideInstance.SourceSlideId} for additional instance with offset {slideInstance.IndexOffset} at position {insertPosition}");
 
             // Clone the slide for the new instance
-            var newSlidePart = CloneSlideFromTemplate(presentationPart, templateSlidePart, insertPosition);
+            var newSlidePart = _slideCloner.CloneSlideFromTemplate(presentationPart, templateSlidePart, insertPosition);
 
             if (newSlidePart != null)
             {
@@ -129,93 +140,16 @@ public class SlideGenerator
 
                 // Update expressions with index offset - but don't bind data here
                 // Data binding will be handled later in DataBinder.cs
-                UpdateExpressionsWithIndexOffset(newSlidePart, slideInstance.IndexOffset, data);
+                _expressionUpdater.UpdateExpressionsWithIndexOffset(newSlidePart, slideInstance.IndexOffset, data);
 
                 Logger.Debug($"SlideGenerator: Successfully generated additional slide from template {slideInstance.SourceSlideId}");
             }
             else
             {
                 Logger.Warning($"SlideGenerator: Failed to clone slide from template {slideInstance.SourceSlideId}");
-            }        }
-
-        // Remove original slides that have been repositioned
-        RemoveOriginalSlides(presentationPart, sourceSlides, originalSlidesToRemove);
-
-        Logger.Debug("SlideGenerator: Slide generation completed");
-    }    /// <summary>
-    /// Updates expressions in the slide with the given index offset and hides elements that exceed data bounds
-    /// Note: This only adjusts array indices, actual data binding happens in DataBinder.cs
-    /// </summary>
-    private void UpdateExpressionsWithIndexOffset(SlidePart slidePart, int indexOffset, object? data)    {
-        if (slidePart?.Slide == null || indexOffset <= 0)
-            return;
-
-        Logger.Debug($"SlideGenerator: Updating expressions with index offset {indexOffset}");
-
-        try
-        {
-            // Find all text elements in the slide
-            var textElements = slidePart.Slide.Descendants<DocumentFormat.OpenXml.Drawing.Text>().ToList();
-            var elementsToHide = new List<OpenXmlElement>();
-
-            foreach (var textElement in textElements)
-            {
-                if (string.IsNullOrEmpty(textElement.Text))
-                    continue;
-
-                // Check if this element contains expressions that exceed data bounds
-                if (ShouldHideElement(textElement.Text, indexOffset, data))
-                {
-                    // Find the parent shape to hide
-                    var parentShape = FindParentShape(textElement);
-                    if (parentShape != null && !elementsToHide.Contains(parentShape))
-                    {
-                        elementsToHide.Add(parentShape);
-                        Logger.Debug($"SlideGenerator: Marking shape for hiding due to data overflow in expression: '{textElement.Text}'");
-                    }
-                    continue;
-                }
-
-                // Only adjust array indices in expressions, don't evaluate them
-                var updatedText = AdjustArrayIndicesInText(textElement.Text, indexOffset);
-                if (updatedText != textElement.Text)
-                {
-                    Logger.Debug($"SlideGenerator: Updated expression from '{textElement.Text}' to '{updatedText}'");
-                    textElement.Text = updatedText;
-                }
             }
-
-            // Hide elements that contain data overflow
-            foreach (var element in elementsToHide)
-            {
-                HideElement(element);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.Warning($"SlideGenerator: Error updating expressions with index offset: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Adjusts array indices in text expressions
-    /// Example: "${Items[0].Name}" becomes "${Items[2].Name}" with offset 2
-    /// </summary>
-    private string AdjustArrayIndicesInText(string text, int indexOffset)
-    {
-        if (string.IsNullOrEmpty(text) || indexOffset <= 0)
-            return text;
-
-        // Pattern to match array indices in expressions like ${Items[0].Name} or Items[1].Property
-        var arrayIndexPattern = new Regex(@"(\w+)\[(\d+)\]", RegexOptions.Compiled);
-
-        return arrayIndexPattern.Replace(text, match =>
-        {
-            var arrayName = match.Groups[1].Value;
-            var currentIndex = int.Parse(match.Groups[2].Value);
-            var newIndex = currentIndex + indexOffset;
-            return $"{arrayName}[{newIndex}]";
-        });
+        }        // Remove original slides that have been repositioned
+        _slideRemover.RemoveOriginalSlides(presentationPart, sourceSlides, originalSlidesToRemove); Logger.Debug("SlideGenerator: Slide generation completed");
     }
 
     /// <summary>
@@ -246,51 +180,6 @@ public class SlideGenerator
         var sourceSlides = slideIdList!.ChildElements.OfType<SlideId>().ToList();
         if (!sourceSlides.Any(s => s.Id?.Value == sourceSlideId))
             throw new SlideGenerationException($"Source slide with ID {sourceSlideId} does not exist.");
-    }    /// <summary>
-         /// Clones a slide from the template
-         /// </summary>
-    private SlidePart CloneSlideFromTemplate(PresentationPart presentationPart, SlidePart templateSlidePart, int insertPosition = -1)
-    {
-        // Create a new slide part
-        var newSlidePart = presentationPart.AddNewPart<SlidePart>();
-
-        // Clone the slide content
-        newSlidePart.Slide = (Slide)templateSlidePart.Slide.CloneNode(true);
-
-        // Add the new slide to the slide ID list at the specified position
-        var slideIdList = presentationPart.Presentation.SlideIdList;
-        var maxSlideId = slideIdList!.ChildElements.OfType<SlideId>().Max(s => s.Id?.Value) ?? 255;
-        var newSlideId = new SlideId { Id = maxSlideId + 1, RelationshipId = presentationPart.GetIdOfPart(newSlidePart) };
-
-        if (insertPosition >= 0 && insertPosition < slideIdList.ChildElements.Count)
-        {
-            // Insert at the specified position
-            var existingSlides = slideIdList.ChildElements.OfType<SlideId>().ToList();
-            if (insertPosition < existingSlides.Count)
-            {
-                slideIdList.InsertBefore(newSlideId, existingSlides[insertPosition]);
-                Logger.Debug($"SlideGenerator: Inserted slide at position {insertPosition}, new slide ID: {newSlideId.Id?.Value}");
-            }
-            else
-            {
-                slideIdList.Append(newSlideId);
-                Logger.Debug($"SlideGenerator: Appended slide at end, new slide ID: {newSlideId.Id?.Value}");
-            }
-        }
-        else
-        {
-            // Append at the end if no valid position specified
-            slideIdList.Append(newSlideId);
-            Logger.Debug($"SlideGenerator: Cloned slide, new slide ID: {newSlideId.Id?.Value}");
-        }
-
-        // Clone slide layout relationship if it exists
-        if (templateSlidePart.SlideLayoutPart != null)
-        {
-            newSlidePart.AddPart(templateSlidePart.SlideLayoutPart);
-        }
-
-        return newSlidePart;
     }
 
     /// <summary>
@@ -329,284 +218,7 @@ public class SlideGenerator
         }
         catch (Exception ex)
         {
-            Logger.Warning($"SlideGenerator: Error generating auto notes: {ex.Message}");        }
-    }
-
-    /// <summary>
-    /// Removes original template slides that have been repositioned
-    /// </summary>
-    private static void RemoveOriginalSlides(PresentationPart presentationPart, List<SlideId> sourceSlides, HashSet<int> slidesToRemove)
-    {
-        if (!slidesToRemove.Any()) return;
-
-        var slideIdList = presentationPart.Presentation.SlideIdList;
-        if (slideIdList == null) return;
-
-        Logger.Debug($"SlideGenerator: Removing {slidesToRemove.Count} original slides that were repositioned");
-
-        // Remove slides in reverse order to maintain indices
-        foreach (var slideIndex in slidesToRemove.OrderByDescending(x => x))
-        {
-            if (slideIndex >= 0 && slideIndex < sourceSlides.Count)
-            {
-                var slideToRemove = sourceSlides[slideIndex];
-                Logger.Debug($"SlideGenerator: Removing original slide {slideIndex} with RelationshipId {slideToRemove.RelationshipId?.Value}");
-                
-                // Remove the slide from the presentation
-                slideToRemove.Remove();
-                
-                // Also remove the corresponding slide part
-                if (slideToRemove.RelationshipId?.Value != null)
-                {
-                    try
-                    {
-                        var slidePart = (SlidePart)presentationPart.GetPartById(slideToRemove.RelationshipId.Value);
-                        presentationPart.DeletePart(slidePart);
-                        Logger.Debug($"SlideGenerator: Deleted slide part for original slide {slideIndex}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Warning($"SlideGenerator: Failed to delete slide part for slide {slideIndex}: {ex.Message}");
-                    }
-                }
-            }
-        }
-    }    /// <summary>
-    /// Checks if an element should be hidden due to data index overflow
-    /// </summary>
-    private bool ShouldHideElement(string text, int indexOffset, object? data)
-    {
-        if (string.IsNullOrEmpty(text) || data == null)
-            return false;
-
-        // Pattern to match array indices in expressions like ${Items[0].Name} or ${ppt.Image(Items[7].ImageUrl)}
-        var arrayIndexPattern = new Regex(@"(\w+)\[(\d+)\]", RegexOptions.Compiled);
-        var matches = arrayIndexPattern.Matches(text);
-
-        foreach (Match match in matches)
-        {
-            var arrayName = match.Groups[1].Value;
-            var currentIndex = int.Parse(match.Groups[2].Value);
-            var finalIndex = currentIndex + indexOffset;
-
-            Logger.Debug($"SlideGenerator: Checking array bounds for {arrayName}[{finalIndex}] (original: {arrayName}[{currentIndex}] + offset {indexOffset})");
-
-            if (!IsIndexValid(arrayName, finalIndex, data))
-            {
-                Logger.Debug($"SlideGenerator: Array index {arrayName}[{finalIndex}] is out of bounds, should hide element");
-                return true; // Should hide this element
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Checks if the specified array index is valid for the given data
-    /// </summary>
-    private bool IsIndexValid(string arrayName, int index, object data)
-    {
-        try
-        {
-            if (data is Dictionary<string, object> dict && dict.TryGetValue(arrayName, out var arrayValue))
-            {
-                if (arrayValue is System.Collections.IList list)
-                {
-                    return index >= 0 && index < list.Count;
-                }
-                else if (arrayValue is System.Collections.IEnumerable enumerable)
-                {
-                    var count = enumerable.Cast<object>().Count();
-                    return index >= 0 && index < count;
-                }
-            }
-            
-            // Use reflection to check properties
-            var property = data.GetType().GetProperty(arrayName);
-            if (property != null)
-            {
-                var value = property.GetValue(data);
-                if (value is System.Collections.IList list)
-                {
-                    return index >= 0 && index < list.Count;
-                }
-                else if (value is System.Collections.IEnumerable enumerable)
-                {
-                    var count = enumerable.Cast<object>().Count();
-                    return index >= 0 && index < count;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.Warning($"SlideGenerator: Error checking array bounds for {arrayName}[{index}]: {ex.Message}");
-        }
-
-        return true; // Default to not hiding if we can't determine bounds
-    }
-
-    /// <summary>
-    /// Finds the parent shape element for a text element
-    /// </summary>
-    private OpenXmlElement? FindParentShape(OpenXmlElement element)
-    {
-        var current = element.Parent;
-        while (current != null)
-        {
-            if (current is DocumentFormat.OpenXml.Presentation.Shape ||
-                current is DocumentFormat.OpenXml.Presentation.Picture ||
-                current is DocumentFormat.OpenXml.Presentation.GraphicFrame)
-            {
-                return current;
-            }
-            current = current.Parent;
-        }
-        return null;
-    }    /// <summary>
-    /// Hides an element by completely removing it or setting it to be invisible
-    /// </summary>
-    private void HideElement(OpenXmlElement element)
-    {
-        try
-        {
-            // The most effective way to hide an element is to remove it completely
-            if (element.Parent != null)
-            {
-                element.Remove();
-                Logger.Debug($"SlideGenerator: Completely removed element from slide");
-            }
-            else
-            {
-                // If we can't remove it, try to make it invisible
-                MakeElementInvisible(element);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.Warning($"SlideGenerator: Error hiding element: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Makes an element invisible by setting various properties
-    /// </summary>
-    private void MakeElementInvisible(OpenXmlElement element)
-    {
-        try
-        {
-            // For shapes, set them to be hidden
-            if (element is DocumentFormat.OpenXml.Presentation.Shape shape)
-            {
-                // Try to set the shape to be hidden using NonVisualDrawingProperties
-                var nvSpPr = shape.NonVisualShapeProperties;
-                if (nvSpPr?.NonVisualDrawingProperties != null)
-                {
-                    // Set the shape to be hidden
-                    nvSpPr.NonVisualDrawingProperties.Hidden = true;
-                    Logger.Debug($"SlideGenerator: Set shape Hidden property to true");
-                }                else
-                {
-                    // Fallback: Set dimensions to 0
-                    SetShapeDimensionsToZero(shape);
-                }
-            }
-            else if (element is DocumentFormat.OpenXml.Presentation.Picture picture)
-            {
-                // Similar logic for pictures
-                var nvPicPr = picture.NonVisualPictureProperties;
-                if (nvPicPr?.NonVisualDrawingProperties != null)
-                {
-                    nvPicPr.NonVisualDrawingProperties.Hidden = true;
-                    Logger.Debug($"SlideGenerator: Set picture Hidden property to true");
-                }                else
-                {
-                    SetPictureDimensionsToZero(picture);
-                }
-            }
-            else if (element is DocumentFormat.OpenXml.Presentation.ConnectionShape connectionShape)
-            {
-                var nvCxnSpPr = connectionShape.NonVisualConnectionShapeProperties;
-                if (nvCxnSpPr?.NonVisualDrawingProperties != null)
-                {
-                    nvCxnSpPr.NonVisualDrawingProperties.Hidden = true;
-                    Logger.Debug($"SlideGenerator: Set connection shape Hidden property to true");
-                }
-            }
-            else
-            {
-                Logger.Debug($"SlideGenerator: Unknown element type {element.GetType().Name}, trying to remove");
-                // For unknown element types, try to remove them
-                if (element.Parent != null)
-                {
-                    element.Remove();
-                    Logger.Debug($"SlideGenerator: Removed unknown element type {element.GetType().Name}");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.Warning($"SlideGenerator: Error making element invisible: {ex.Message}");
-        }
-    }    /// <summary>
-    /// Fallback method: Set shape dimensions to zero
-    /// </summary>
-    private void SetDimensionsToZero(DocumentFormat.OpenXml.Drawing.ShapeProperties? spPr)
-    {
-        if (spPr != null)
-        {
-            var transform = spPr.Transform2D;
-            if (transform != null)
-            {
-                var extents = transform.Extents;
-                if (extents != null)
-                {
-                    extents.Cx = 0; // Width = 0
-                    extents.Cy = 0; // Height = 0
-                    Logger.Debug($"SlideGenerator: Set shape dimensions to 0 as fallback");
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Set shape dimensions to zero for presentation shapes
-    /// </summary>
-    private void SetShapeDimensionsToZero(DocumentFormat.OpenXml.Presentation.Shape shape)
-    {
-        try
-        {
-            var spPr = shape.ShapeProperties;
-            if (spPr?.Transform2D?.Extents != null)
-            {
-                spPr.Transform2D.Extents.Cx = 0;
-                spPr.Transform2D.Extents.Cy = 0;
-                Logger.Debug($"SlideGenerator: Set shape dimensions to 0 as fallback");
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.Warning($"SlideGenerator: Error setting shape dimensions to zero: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Set picture dimensions to zero for presentation pictures
-    /// </summary>
-    private void SetPictureDimensionsToZero(DocumentFormat.OpenXml.Presentation.Picture picture)
-    {
-        try
-        {
-            var spPr = picture.ShapeProperties;
-            if (spPr?.Transform2D?.Extents != null)
-            {
-                spPr.Transform2D.Extents.Cx = 0;
-                spPr.Transform2D.Extents.Cy = 0;
-                Logger.Debug($"SlideGenerator: Set picture dimensions to 0 as fallback");
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.Warning($"SlideGenerator: Error setting picture dimensions to zero: {ex.Message}");
+            Logger.Warning($"SlideGenerator: Error generating auto notes: {ex.Message}");
         }
     }
 }
