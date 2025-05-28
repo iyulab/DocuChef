@@ -21,7 +21,7 @@ public class TemplateAnalyzer
     private static readonly Regex RangeOptionsRegex = new Regex(@"(?:(begin|end)\s*,\s*)?(.+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex AliasOptionsRegex = new Regex(@"(.+?)\s+as\s+(.+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex ContextOperatorRegex = new Regex(@"(.+?)>(.+)", RegexOptions.Compiled);
-    
+
     /// <summary>
     /// Analyzes a slide and extracts its binding expressions and directives
     /// </summary>
@@ -29,7 +29,8 @@ public class TemplateAnalyzer
     /// <param name="slideNotes">The notes content of the slide</param>
     /// <param name="slideId">The unique identifier of the slide</param>
     /// <returns>A SlideInfo object containing analysis results</returns>
-    public SlideInfo Analyze(object slide, string slideNotes, int slideId)    {
+    public SlideInfo Analyze(object slide, string slideNotes, int slideId)
+    {
         var slideInfo = new SlideInfo
         {
             SlideId = slideId,
@@ -79,19 +80,19 @@ public class TemplateAnalyzer
     public List<Directive> ParseSlideNotes(string notes)
     {
         var directives = new List<Directive>();
-        
+
         // Split notes by line and process each line
         var lines = notes.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-        
+
         foreach (var line in lines)
         {
             var match = DirectiveRegex.Match(line.Trim());
-            if (!match.Success) 
+            if (!match.Success)
                 continue;
-                
+
             string directiveType = match.Groups[1].Value.ToLowerInvariant();
             string options = match.Groups[2].Value.Trim();
-            
+
             try
             {
                 var directive = ParseDirective(directiveType, options);
@@ -103,7 +104,7 @@ public class TemplateAnalyzer
                 // Skip invalid directives
             }
         }
-        
+
         return directives;
     }
 
@@ -165,7 +166,7 @@ public class TemplateAnalyzer
         {
             Type = DirectiveType.Range,
             CollectionPath = match.Groups[2].Value.Trim()
-        };        if (match.Groups[1].Success)
+        }; if (match.Groups[1].Success)
         {
             string rangeType = match.Groups[1].Value.ToLowerInvariant();
             directive.RangeBoundary = rangeType == "begin" ? RangeBoundary.Begin : RangeBoundary.End;
@@ -181,13 +182,15 @@ public class TemplateAnalyzer
     {
         var match = AliasOptionsRegex.Match(options);
         if (!match.Success)
-            throw new ArgumentException($"Invalid alias directive options: {options}");        return new Directive
-        {
-            Type = DirectiveType.Alias,
-            CollectionPath = match.Groups[1].Value.Trim(),
-            AliasName = match.Groups[2].Value.Trim()
-        };
-    }    /// <summary>
+            throw new ArgumentException($"Invalid alias directive options: {options}"); return new Directive
+            {
+                Type = DirectiveType.Alias,
+                CollectionPath = match.Groups[1].Value.Trim(),
+                AliasName = match.Groups[2].Value.Trim()
+            };
+    }
+
+    /// <summary>
     /// Extracts binding expressions from slide content
     /// </summary>
     /// <param name="slide">The slide object to extract expressions from</param>
@@ -196,15 +199,29 @@ public class TemplateAnalyzer
     {
         // Extract text from slide using SlideTextExtractor utility
         var slideText = SlideTextExtractor.GetText(slide);
-        
+
+        // Debug logging
+        DocuChef.Logging.Logger.Debug($"TemplateAnalyzer: Extracted slide text: '{slideText}'");
+
         // Find all binding expressions in the text
         var matches = BindingExpressionRegex.Matches(slideText);
-        
-        return matches.Cast<Match>()
+
+        DocuChef.Logging.Logger.Debug($"TemplateAnalyzer: Found {matches.Count} binding expression matches");
+
+        var expressions = matches.Cast<Match>()
                      .Select(m => m.Value) // Use the full match (including ${})
                      .Distinct()
                      .ToList();
-    }    /// <summary>
+
+        foreach (var expr in expressions)
+        {
+            DocuChef.Logging.Logger.Debug($"TemplateAnalyzer: Found expression: '{expr}'");
+        }
+
+        return expressions;
+    }
+
+    /// <summary>
     /// Parses a binding expression string into a BindingExpression object
     /// </summary>
     /// <param name="expressionText">The expression text to parse</param>
@@ -273,17 +290,17 @@ public class TemplateAnalyzer
                     var parts = arrayPath.Split('>');
                     arrayName = parts[0]; // Use the first part as the collection name
                 }
-                
+
                 expression.ArrayIndices[arrayName] = index;
                 // Keep the full path for data binding
-                expression.DataPath = currentPath; 
+                expression.DataPath = currentPath;
             }
         }
 
         return expression;
     }    /// <summary>
-    /// Auto-generates directives for slides with array expressions but no explicit directives
-    /// </summary>
+         /// Auto-generates directives for slides with array expressions but no explicit directives
+         /// </summary>
     private void AutoGenerateDirectives(SlideInfo slideInfo)
     {
         var arrayExpressions = slideInfo.BindingExpressions
@@ -294,19 +311,19 @@ public class TemplateAnalyzer
         foreach (var group in arrayExpressions)
         {
             var maxIndex = group.SelectMany(expr => expr.ArrayIndices.Values).Max();
-            
             var directive = new Directive
             {
                 Type = DirectiveType.Foreach,
                 CollectionPath = group.Key,
+                SourcePath = group.Key,  // ProcessForeachDirective uses SourcePath
                 MaxItems = maxIndex + 1 // Convert from 0-based to count
             };
-            
+
             slideInfo.Directives.Add(directive);
         }
     }/// <summary>
-    /// Determines slide type and additional properties based on directives and expressions
-    /// </summary>
+     /// Determines slide type and additional properties based on directives and expressions
+     /// </summary>
     private void DetermineSlideProperties(SlideInfo slideInfo)
     {
         // Calculate max array index first
@@ -406,6 +423,187 @@ public class TemplateAnalyzer
         {
             if (string.IsNullOrWhiteSpace(alias.AliasName))
                 return false;
-        }        return true;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Generates automatic slide notes based on slide content and binding expressions
+    /// </summary>
+    /// <param name="slideInfo">The analyzed slide information</param>
+    /// <param name="slide">The slide object to analyze content from</param>
+    /// <returns>Generated slide notes content</returns>
+    public string GenerateSlideNotes(SlideInfo slideInfo, object slide)
+    {
+        var notesBuilder = new System.Text.StringBuilder();
+
+        // Add a header for auto-generated notes
+        notesBuilder.AppendLine("# Auto-Generated Slide Notes");
+        notesBuilder.AppendLine();
+
+        // Add slide type information
+        notesBuilder.AppendLine($"**Slide Type:** {slideInfo.Type}");
+        notesBuilder.AppendLine();
+
+        // Add directive information
+        if (slideInfo.Directives.Any())
+        {
+            notesBuilder.AppendLine("**Directives:**");
+            foreach (var directive in slideInfo.Directives)
+            {
+                switch (directive.Type)
+                {
+                    case DirectiveType.Foreach:
+                        notesBuilder.AppendLine($"- Foreach: {directive.CollectionPath}");
+                        if (directive.MaxItems > 0)
+                            notesBuilder.AppendLine($"  - Max Items: {directive.MaxItems}");
+                        if (directive.Offset > 0)
+                            notesBuilder.AppendLine($"  - Offset: {directive.Offset}");
+                        break;
+                    case DirectiveType.Range:
+                        notesBuilder.AppendLine($"- Range: {directive.CollectionPath} ({directive.RangeBoundary})");
+                        break;
+                    case DirectiveType.Alias:
+                        notesBuilder.AppendLine($"- Alias: {directive.CollectionPath} as {directive.AliasName}");
+                        break;
+                }
+            }
+            notesBuilder.AppendLine();
+        }
+
+        // Add data binding information
+        if (slideInfo.BindingExpressions.Any())
+        {
+            notesBuilder.AppendLine("**Data Bindings:**");
+            var groupedExpressions = slideInfo.BindingExpressions
+                .GroupBy(expr => GetDataSource(expr.DataPath))
+                .OrderBy(g => g.Key);
+
+            foreach (var group in groupedExpressions)
+            {
+                notesBuilder.AppendLine($"- **{group.Key}:**");
+                foreach (var expression in group.OrderBy(e => e.DataPath))
+                {
+                    var description = GetBindingDescription(expression);
+                    notesBuilder.AppendLine($"  - {expression.DataPath}: {description}");
+                }
+            }
+            notesBuilder.AppendLine();
+        }
+
+        // Add content summary
+        var slideText = SlideTextExtractor.GetText(slide);
+        if (!string.IsNullOrWhiteSpace(slideText))
+        {
+            var contentSummary = GenerateContentSummary(slideText);
+            if (!string.IsNullOrWhiteSpace(contentSummary))
+            {
+                notesBuilder.AppendLine("**Content Summary:**");
+                notesBuilder.AppendLine(contentSummary);
+                notesBuilder.AppendLine();
+            }
+        }
+
+        return notesBuilder.ToString().Trim();
+    }
+
+    /// <summary>
+    /// Extracts the data source from a data path
+    /// </summary>
+    private string GetDataSource(string dataPath)
+    {
+        if (string.IsNullOrWhiteSpace(dataPath))
+            return "Unknown";
+
+        // Handle context operator
+        if (dataPath.Contains('>'))
+        {
+            var parts = dataPath.Split('>');
+            return parts[0].Trim();
+        }
+
+        // Handle array access
+        var arrayMatch = ArrayIndexRegex.Match(dataPath);
+        if (arrayMatch.Success)
+        {
+            return arrayMatch.Groups[1].Value;
+        }
+
+        // Handle property access
+        var dotIndex = dataPath.IndexOf('.');
+        if (dotIndex > 0)
+        {
+            return dataPath.Substring(0, dotIndex);
+        }
+
+        return dataPath;
+    }
+
+    /// <summary>
+    /// Generates a description for a binding expression
+    /// </summary>
+    private string GetBindingDescription(BindingExpression expression)
+    {
+        var dataPath = expression.DataPath;
+
+        // Handle conditional expressions
+        var conditionalMatch = ConditionalRegex.Match(dataPath);
+        if (conditionalMatch.Success)
+        {
+            return "Conditional value display";
+        }
+
+        // Handle method calls
+        var methodMatch = MethodCallRegex.Match(dataPath);
+        if (methodMatch.Success)
+        {
+            return $"Method call result from {methodMatch.Groups[1].Value}";
+        }
+
+        // Handle array access
+        var arrayMatch = ArrayIndexRegex.Match(dataPath);
+        if (arrayMatch.Success)
+        {
+            var index = arrayMatch.Groups[2].Value;
+            return $"Item #{int.Parse(index) + 1} from collection";
+        }
+
+        // Handle context operator
+        if (dataPath.Contains('>'))
+        {
+            return "Contextual data binding";
+        }
+
+        // Handle property paths
+        if (dataPath.Contains('.'))
+        {
+            var parts = dataPath.Split('.');
+            return $"Property '{parts.Last()}' value";
+        }
+
+        return "Data value";
+    }
+
+    /// <summary>
+    /// Generates a content summary based on slide text
+    /// </summary>
+    private string GenerateContentSummary(string slideText)
+    {
+        if (string.IsNullOrWhiteSpace(slideText))
+            return string.Empty;
+
+        // Remove binding expressions for summary
+        var cleanText = BindingExpressionRegex.Replace(slideText, "[Data]");
+
+        // Split into sentences and take key information
+        var sentences = cleanText.Split(new[] { '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .Where(s => !string.IsNullOrWhiteSpace(s) && s.Length > 5)
+            .Take(3);
+
+        if (!sentences.Any())
+            return "Slide contains data-driven content";
+
+        return string.Join(". ", sentences) + ".";
     }
 }

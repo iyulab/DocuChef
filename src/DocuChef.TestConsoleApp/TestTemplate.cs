@@ -1,15 +1,6 @@
 using DocuChef.Presentation;
 using System.Diagnostics;
 
-/* 
-# template_1.pptx
-## 슬라이드1:
-- ${ppt.Image(LogoPath)}
-- ${Title}
-- BOLD ${Subtitle} Italic
-- Created By: ${Date:yyyy-MM-dd}
-*/
-
 namespace DocuChef.TestConsoleApp;
 
 internal class TestTemplate
@@ -40,7 +31,7 @@ internal class TestTemplate
         }
         Console.WriteLine($"Template file: {templatePath}");
         Console.WriteLine($"Logo file: {logoPath}");
-        
+
         // First, inspect the template to see what we're working with
         Console.WriteLine("\n" + new string('=', 60));
         TemplateInspector.InspectTemplate(templatePath);
@@ -68,7 +59,7 @@ internal class TestTemplate
             recipe.AddVariable("Date", DateTime.Now);
             recipe.AddVariable("LogoPath", logoPath);
             recipe.AddVariable("CompanyName", "DocuChef Technology Lab");
-            
+
             // Create Items array
             var items = new List<Item>();
             for (int i = 1; i <= 7; i++)
@@ -85,7 +76,7 @@ internal class TestTemplate
 
             // Add Items to recipe
             recipe.AddVariable("Items", items);            // Cook the recipe (generate the presentation)
-            Console.WriteLine("Cooking recipe (generating presentation with NEW system)...");            var document = recipe.Cook(outputPath);
+            Console.WriteLine("Cooking recipe (generating presentation with NEW system)..."); var document = recipe.Cook(outputPath);
 
             Console.WriteLine($"Presentation generated successfully: {outputPath}");            // Verify the data binding worked correctly
             Console.WriteLine("\n" + new string('=', 60));
@@ -98,14 +89,14 @@ internal class TestTemplate
         {
             Console.WriteLine($"❌ Error occurred: {ex.Message}");
             Console.WriteLine($"Stack trace: {ex.StackTrace}");
-            
+
             // Print inner exception details if available
             var innerEx = ex.InnerException;
             while (innerEx != null)
             {
                 Console.WriteLine($"Inner exception: {innerEx.Message}");
                 innerEx = innerEx.InnerException;
-            }        
+            }
         }
 
         // Open the generated PowerPoint file

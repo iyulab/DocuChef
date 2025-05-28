@@ -34,7 +34,7 @@ public class PPTFunctions
             // Return a unique placeholder that will be processed later
             var placeholder = $"__PPT_IMAGE_{Guid.NewGuid():N}__{propertyPath}__";
             _imageCache[placeholder] = imageData;
-            
+
             Logger.Debug($"PPTFunctions: Created image placeholder for '{propertyPath}'");
             return placeholder;
         }
@@ -66,7 +66,7 @@ public class PPTFunctions
 
             var placeholder = $"__PPT_IMAGE_{Guid.NewGuid():N}__{propertyPath}__{width}__{height}__{preserveAspectRatio}__";
             _imageCache[placeholder] = imageData;
-            
+
             Logger.Debug($"PPTFunctions: Created image placeholder for '{propertyPath}' with size {width}x{height}");
             return placeholder;
         }
@@ -85,31 +85,58 @@ public class PPTFunctions
     public byte[]? GetCachedImageData(string placeholder)
     {
         return _imageCache.TryGetValue(placeholder, out var data) ? data : null;
-    }
-
-    /// <summary>
-    /// Gets all image placeholders and their data
-    /// </summary>
-    /// <returns>Dictionary of placeholders and image data</returns>
+    }    /// <summary>
+         /// Gets all image placeholders and their data
+         /// </summary>
+         /// <returns>Dictionary of placeholders and image data</returns>
     public Dictionary<string, byte[]> GetAllImageCache()
     {
+        Logger.Debug($"PPTFunctions.GetAllImageCache: Returning {_imageCache.Count} cached items");
+        foreach (var item in _imageCache)
+        {
+            Logger.Debug($"PPTFunctions.GetAllImageCache: Key='{item.Key}', Value length={item.Value.Length}");
+        }
         return new Dictionary<string, byte[]>(_imageCache);
-    }
-
-    /// <summary>
-    /// Retrieves image data from variables using property path
-    /// </summary>
+    }/// <summary>
+     /// Retrieves image data from variables using property path
+     /// </summary>
     private byte[]? GetImageData(string propertyPath)
     {
         try
         {
+            Logger.Debug($"PPTFunctions: GetImageData called with propertyPath='{propertyPath}'");
             var value = GetPropertyValue(_variables, propertyPath);
-            return value switch
+            Logger.Debug($"PPTFunctions: GetPropertyValue returned: {value?.GetType().Name ?? "null"} = '{value}'");
+
+            // If we found a value in variables, process it
+            if (value != null)
             {
-                byte[] bytes => bytes,
-                string path when File.Exists(path) => File.ReadAllBytes(path),
-                _ => null
-            };
+                var result = value switch
+                {
+                    byte[] bytes => bytes,
+                    string filePath when File.Exists(filePath) => File.ReadAllBytes(filePath),
+                    _ => null
+                };
+
+                if (result != null)
+                {
+                    Logger.Debug($"PPTFunctions: GetImageData returning byte array with {result.Length} bytes from variable");
+                    return result;
+                }
+            }
+
+            // If not found in variables, treat propertyPath as a direct file path
+            if (File.Exists(propertyPath))
+            {
+                Logger.Debug($"PPTFunctions: propertyPath '{propertyPath}' is a valid file, reading directly");
+                var fileData = File.ReadAllBytes(propertyPath);
+                Logger.Debug($"PPTFunctions: GetImageData returning byte array with {fileData.Length} bytes from file");
+                return fileData;
+            }
+
+            Logger.Debug($"PPTFunctions: File.Exists('{propertyPath}') = false");
+            Logger.Debug($"PPTFunctions: GetImageData returning null");
+            return null;
         }
         catch (Exception ex)
         {
@@ -136,16 +163,32 @@ public class PPTFunctions
         }
 
         var current = variables.TryGetValue(parts[0], out var rootValue) ? rootValue : null;
-        
+
         for (int i = 1; i < parts.Length && current != null; i++)
         {
             var property = current.GetType().GetProperty(parts[i]);
             if (property == null)
                 return null;
-            
+
             current = property.GetValue(current);
         }
 
         return current;
+    }
+
+    /// <summary>
+    /// Restores image cache from another PPTFunctions instance
+    /// </summary>
+    /// <param name="imageCache">Image cache to restore</param>
+    public void RestoreImageCache(Dictionary<string, byte[]> imageCache)
+    {
+        if (imageCache == null) return;
+
+        foreach (var item in imageCache)
+        {
+            _imageCache[item.Key] = item.Value;
+        }
+
+        Logger.Debug($"PPTFunctions: Restored {imageCache.Count} cached images");
     }
 }
