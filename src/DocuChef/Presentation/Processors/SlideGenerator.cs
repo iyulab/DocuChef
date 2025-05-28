@@ -371,9 +371,7 @@ public class SlideGenerator
                 }
             }
         }
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Checks if an element should be hidden due to data index overflow
     /// </summary>
     private bool ShouldHideElement(string text, int indexOffset, object? data)
@@ -381,8 +379,8 @@ public class SlideGenerator
         if (string.IsNullOrEmpty(text) || data == null)
             return false;
 
-        // Pattern to match array indices in expressions like ${Items[0].Name}
-        var arrayIndexPattern = new Regex(@"\$\{(\w+)\[(\d+)\]", RegexOptions.Compiled);
+        // Pattern to match array indices in expressions like ${Items[0].Name} or ${ppt.Image(Items[7].ImageUrl)}
+        var arrayIndexPattern = new Regex(@"(\w+)\[(\d+)\]", RegexOptions.Compiled);
         var matches = arrayIndexPattern.Matches(text);
 
         foreach (Match match in matches)
@@ -391,8 +389,11 @@ public class SlideGenerator
             var currentIndex = int.Parse(match.Groups[2].Value);
             var finalIndex = currentIndex + indexOffset;
 
+            Logger.Debug($"SlideGenerator: Checking array bounds for {arrayName}[{finalIndex}] (original: {arrayName}[{currentIndex}] + offset {indexOffset})");
+
             if (!IsIndexValid(arrayName, finalIndex, data))
             {
+                Logger.Debug($"SlideGenerator: Array index {arrayName}[{finalIndex}] is out of bounds, should hide element");
                 return true; // Should hide this element
             }
         }
@@ -461,59 +462,151 @@ public class SlideGenerator
             current = current.Parent;
         }
         return null;
-    }
-
-    /// <summary>
-    /// Hides an element by setting its visibility to hidden
+    }    /// <summary>
+    /// Hides an element by completely removing it or setting it to be invisible
     /// </summary>
     private void HideElement(OpenXmlElement element)
     {
         try
         {
-            // For shapes, we can set them to be hidden by making them very small or transparent
-            if (element is DocumentFormat.OpenXml.Presentation.Shape shape)
+            // The most effective way to hide an element is to remove it completely
+            if (element.Parent != null)
             {
-                // Find the shape properties
-                var spPr = shape.ShapeProperties;
-                if (spPr != null)
-                {
-                    // Set the shape to be invisible by setting width and height to 0
-                    var transform = spPr.Transform2D;
-                    if (transform != null)
-                    {
-                        var extents = transform.Extents;
-                        if (extents != null)
-                        {
-                            extents.Cx = 0; // Width = 0
-                            extents.Cy = 0; // Height = 0
-                            Logger.Debug($"SlideGenerator: Hidden shape by setting dimensions to 0");
-                        }
-                    }
-                }
+                element.Remove();
+                Logger.Debug($"SlideGenerator: Completely removed element from slide");
             }
-            else if (element is DocumentFormat.OpenXml.Presentation.Picture picture)
+            else
             {
-                // Similar logic for pictures
-                var spPr = picture.ShapeProperties;
-                if (spPr != null)
-                {
-                    var transform = spPr.Transform2D;
-                    if (transform != null)
-                    {
-                        var extents = transform.Extents;
-                        if (extents != null)
-                        {
-                            extents.Cx = 0;
-                            extents.Cy = 0;
-                            Logger.Debug($"SlideGenerator: Hidden picture by setting dimensions to 0");
-                        }
-                    }
-                }
+                // If we can't remove it, try to make it invisible
+                MakeElementInvisible(element);
             }
         }
         catch (Exception ex)
         {
             Logger.Warning($"SlideGenerator: Error hiding element: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Makes an element invisible by setting various properties
+    /// </summary>
+    private void MakeElementInvisible(OpenXmlElement element)
+    {
+        try
+        {
+            // For shapes, set them to be hidden
+            if (element is DocumentFormat.OpenXml.Presentation.Shape shape)
+            {
+                // Try to set the shape to be hidden using NonVisualDrawingProperties
+                var nvSpPr = shape.NonVisualShapeProperties;
+                if (nvSpPr?.NonVisualDrawingProperties != null)
+                {
+                    // Set the shape to be hidden
+                    nvSpPr.NonVisualDrawingProperties.Hidden = true;
+                    Logger.Debug($"SlideGenerator: Set shape Hidden property to true");
+                }                else
+                {
+                    // Fallback: Set dimensions to 0
+                    SetShapeDimensionsToZero(shape);
+                }
+            }
+            else if (element is DocumentFormat.OpenXml.Presentation.Picture picture)
+            {
+                // Similar logic for pictures
+                var nvPicPr = picture.NonVisualPictureProperties;
+                if (nvPicPr?.NonVisualDrawingProperties != null)
+                {
+                    nvPicPr.NonVisualDrawingProperties.Hidden = true;
+                    Logger.Debug($"SlideGenerator: Set picture Hidden property to true");
+                }                else
+                {
+                    SetPictureDimensionsToZero(picture);
+                }
+            }
+            else if (element is DocumentFormat.OpenXml.Presentation.ConnectionShape connectionShape)
+            {
+                var nvCxnSpPr = connectionShape.NonVisualConnectionShapeProperties;
+                if (nvCxnSpPr?.NonVisualDrawingProperties != null)
+                {
+                    nvCxnSpPr.NonVisualDrawingProperties.Hidden = true;
+                    Logger.Debug($"SlideGenerator: Set connection shape Hidden property to true");
+                }
+            }
+            else
+            {
+                Logger.Debug($"SlideGenerator: Unknown element type {element.GetType().Name}, trying to remove");
+                // For unknown element types, try to remove them
+                if (element.Parent != null)
+                {
+                    element.Remove();
+                    Logger.Debug($"SlideGenerator: Removed unknown element type {element.GetType().Name}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warning($"SlideGenerator: Error making element invisible: {ex.Message}");
+        }
+    }    /// <summary>
+    /// Fallback method: Set shape dimensions to zero
+    /// </summary>
+    private void SetDimensionsToZero(DocumentFormat.OpenXml.Drawing.ShapeProperties? spPr)
+    {
+        if (spPr != null)
+        {
+            var transform = spPr.Transform2D;
+            if (transform != null)
+            {
+                var extents = transform.Extents;
+                if (extents != null)
+                {
+                    extents.Cx = 0; // Width = 0
+                    extents.Cy = 0; // Height = 0
+                    Logger.Debug($"SlideGenerator: Set shape dimensions to 0 as fallback");
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Set shape dimensions to zero for presentation shapes
+    /// </summary>
+    private void SetShapeDimensionsToZero(DocumentFormat.OpenXml.Presentation.Shape shape)
+    {
+        try
+        {
+            var spPr = shape.ShapeProperties;
+            if (spPr?.Transform2D?.Extents != null)
+            {
+                spPr.Transform2D.Extents.Cx = 0;
+                spPr.Transform2D.Extents.Cy = 0;
+                Logger.Debug($"SlideGenerator: Set shape dimensions to 0 as fallback");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warning($"SlideGenerator: Error setting shape dimensions to zero: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Set picture dimensions to zero for presentation pictures
+    /// </summary>
+    private void SetPictureDimensionsToZero(DocumentFormat.OpenXml.Presentation.Picture picture)
+    {
+        try
+        {
+            var spPr = picture.ShapeProperties;
+            if (spPr?.Transform2D?.Extents != null)
+            {
+                spPr.Transform2D.Extents.Cx = 0;
+                spPr.Transform2D.Extents.Cy = 0;
+                Logger.Debug($"SlideGenerator: Set picture dimensions to 0 as fallback");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warning($"SlideGenerator: Error setting picture dimensions to zero: {ex.Message}");
         }
     }
 }
