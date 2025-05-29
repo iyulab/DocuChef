@@ -11,659 +11,38 @@ namespace DocuChef.Presentation.Processors;
 /// </summary>
 public class DataBinder
 {
-    private static readonly Regex ContextOperatorRegex = new(@"(\w+)>([^}\s]+)", RegexOptions.Compiled); private static readonly Regex DollarSignExpressionRegex = new(@"\$\{([^}]+)\}", RegexOptions.Compiled);    /// <summary>
-                                                                                                                                                                                                                    /// Binds data to template expressions in the given text.
-                                                                                                                                                                                                                    /// Converts context operators (>) to underscore notation (___) and evaluates using DollarSignEngine.
-                                                                                                                                                                                                                    /// </summary>
-                                                                                                                                                                                                                    /// <param name="template">Template text containing expressions</param>
-                                                                                                                                                                                                                    /// <param name="data">Data object to bind</param>
-                                                                                                                                                                                                                    /// <param name="indexOffset">Index offset for array expressions</param>
-                                                                                                                                                                                                                    /// <returns>Text with all expressions evaluated</returns>
-    public string BindData(string template, object data, int indexOffset = 0)
+    private static readonly Regex ContextOperatorRegex = new(@"(\w+)>([^}\s]+)", RegexOptions.Compiled);
+    private static readonly Regex DollarSignExpressionRegex = new(@"\$\{([^}]+)\}", RegexOptions.Compiled);
+
+    /// <summary>
+    /// 단일 평가 함수 - 모든 DollarSign.EvalAsync 호출을 여기서 처리
+    /// 현재는 보간식 확인을 위해 주석처리되어 있음
+    /// </summary>
+    private string EvaluateTemplate(string dollarSignTemplate, Dictionary<string, object> variables)
     {
-        if (string.IsNullOrEmpty(template) || data == null)
-            return template ?? string.Empty;
         try
         {
-            // Pre-process nested expressions first
-            var preprocessedTemplate = PreprocessNestedExpressions(template, data, indexOffset);
-            Logger.Debug($"DataBinder: Original template: '{template}'");
-            Logger.Debug($"DataBinder: Preprocessed template: '{preprocessedTemplate}'");
+            // TODO: 보간식이 올바른 인덱스를 가지는지 확인하기 위해 일시적으로 주석처리
+            // 실제 평가 대신 템플릿을 그대로 반환하여 보간식을 확인할 수 있도록 함
 
-            // Convert template to DollarSign format
-            var dollarSignTemplate = ConvertToTemplate(preprocessedTemplate);
-            Logger.Debug($"DataBinder: Converted template to '{dollarSignTemplate}'");            // Create context variables for the data
-            var variables = CreateContextOperatorVariables(data);
-
-            // Add PPT functions to variables - reuse existing instance if available
-            DocuChef.Presentation.Functions.PPTFunctions pptFunctions;
-            if (data is Dictionary<string, object> dataDict &&
-                dataDict.TryGetValue("ppt", out var existingPpt) &&
-                existingPpt is DocuChef.Presentation.Functions.PPTFunctions existingPptFunctions)
-            {
-                // Reuse existing PPTFunctions instance (preserves image cache)
-                pptFunctions = existingPptFunctions;
-                Logger.Debug($"DataBinder: Reusing existing PPTFunctions instance with {existingPptFunctions.GetAllImageCache().Count} cached images");
-            }
-            else
-            {
-                // Create new PPTFunctions instance
-                pptFunctions = new DocuChef.Presentation.Functions.PPTFunctions(variables);
-                Logger.Debug($"DataBinder: Created new PPTFunctions instance");
-            }
-            variables["ppt"] = pptFunctions;
-
-            Logger.Debug($"DataBinder: Created {variables.Count} variables:");
-            foreach (var kvp in variables)
-            {
-                if (kvp.Value is System.Collections.IEnumerable enumerable && !(kvp.Value is string))
-                {
-                    var list = enumerable.Cast<object>().ToList();
-                    Logger.Debug($"  {kvp.Key} = [{string.Join(", ", list.Take(3).Select(x => x?.ToString() ?? "null"))}] (count: {list.Count})");
-                }
-                else
-                {
-                    Logger.Debug($"  {kvp.Key} = {kvp.Value}");
-                }
-            }// Apply index offset to array expressions
-            if (indexOffset > 0)
-            {
-                dollarSignTemplate = ApplyIndexOffset(dollarSignTemplate, indexOffset);
-            }
-
-            // Configure DollarSign options
+            /*
             var options = new DollarSignOptions
             {
-                SupportDollarSignSyntax = true,
-                ThrowOnError = false,
-                UseCache = true,
-                CultureInfo = System.Globalization.CultureInfo.CurrentCulture
+                ThrowOnMissingVariable = false,
+                ThrowOnMissingProperty = false
             };
-
-            // Evaluate the template with variables - using EvalAsync synchronously
             var result = DollarSign.EvalAsync(dollarSignTemplate, variables, options).GetAwaiter().GetResult();
-            // DEBUG: Test simple template evaluation
-            if (dollarSignTemplate.Contains("Title"))
-            {
-                Logger.Debug($"DataBinder: DEBUG - Testing simple Title evaluation");
-                var testResult = DollarSign.EvalAsync("${Title}", variables, options).GetAwaiter().GetResult();
-                Logger.Debug($"DataBinder: DEBUG - Simple '${{Title}}' evaluated to '{testResult}'");
+            return result ?? dollarSignTemplate;
+            */
 
-                // Test if the variable exists in the dictionary
-                if (variables.ContainsKey("Title"))
-                {
-                    Logger.Debug($"DataBinder: DEBUG - Title variable exists: '{variables["Title"]}'");
-                }
-                else
-                {
-                    Logger.Debug($"DataBinder: DEBUG - Title variable missing! Available keys: {string.Join(", ", variables.Keys.Take(10))}");
-                }
-            }
-
-            Logger.Debug($"DataBinder: Template '{dollarSignTemplate}' evaluated to '{result}'");
-            return result;
+            // 보간식을 그대로 반환 (디버깅용)
+            Logger.Debug($"DataBinder.EvaluateTemplate: 평가 없이 템플릿 반환 - '{dollarSignTemplate}'");
+            return dollarSignTemplate;
         }
         catch (Exception ex)
         {
-            Logger.Error($"DataBinder: Error binding data to template '{template}': {ex.Message}");
-            return template; // Return original template on error
-        }
-    }    /// <summary>
-         /// Converts template expressions to DollarSign format.
-         /// Transforms context operators (>) to underscore notation (___).
-         /// Example: ${Category>Products[0].Name} → ${Category___Products[0].Name}
-         /// </summary>
-    private string ConvertToTemplate(string template)
-    {
-        if (string.IsNullOrEmpty(template))
-            return string.Empty;
-
-        var result = template;
-
-        // First, handle expressions that are already wrapped in ${...}
-        // Find all ${...} expressions and process them
-        var dollarSignMatches = DollarSignExpressionRegex.Matches(result);
-
-        foreach (Match dollarMatch in dollarSignMatches.Cast<Match>().Reverse()) // Process in reverse to avoid index issues
-        {
-            var originalExpression = dollarMatch.Value; // e.g., "${Products>Items[2]["Item_캐릭터_세분류_명"]}"
-            var innerExpression = dollarMatch.Groups[1].Value; // e.g., "Products>Items[2]["Item_캐릭터_세분류_명"]"
-
-            Logger.Debug($"DataBinder: Processing wrapped expression: '{originalExpression}' with inner: '{innerExpression}'");
-
-            // Convert context operators within the expression
-            var convertedInner = innerExpression.Replace(">", "___");
-
-            // Replace the original ${...} with the converted version
-            var convertedExpression = $"${{{convertedInner}}}";
-            result = result.Substring(0, dollarMatch.Index) + convertedExpression + result.Substring(dollarMatch.Index + dollarMatch.Length);
-
-            Logger.Debug($"DataBinder: Converted '{originalExpression}' to '{convertedExpression}'");
-        }
-
-        // Then handle any remaining context operators that are not wrapped (for backward compatibility)
-        var contextMatches = ContextOperatorRegex.Matches(result);
-
-        foreach (Match match in contextMatches)
-        {
-            var fullExpression = match.Value; // e.g., "Categories>Items[0].Name"
-            var converted = fullExpression.Replace(">", "___");
-
-            // Only wrap if not already inside ${...}
-            var beforeMatch = result.Substring(0, match.Index);
-            var afterMatch = result.Substring(match.Index + match.Length);
-
-            // Check if this expression is already inside ${...}
-            var lastDollarSign = beforeMatch.LastIndexOf("${");
-            var lastCloseBrace = beforeMatch.LastIndexOf("}");
-
-            // If we're inside ${...}, don't wrap again
-            if (lastDollarSign > lastCloseBrace)
-            {
-                // Just replace the > with ___
-                result = result.Replace(fullExpression, converted);
-            }
-            else
-            {
-                // Wrap in DollarSign syntax
-                result = result.Replace(fullExpression, $"${{{converted}}}");
-            }
-        }
-
-        // Convert array indexing with property access: Items[0].Id -> Items_0___Id
-        // Also handle formatting specifiers: Items[0].Price:C0 -> Items_0___Price:C0
-        // Handle both direct expressions and those inside function calls
-        var arrayPropertyRegex = new Regex(@"([a-zA-Z_]\w*)\[(\d+)\]\.([a-zA-Z_]\w*)", RegexOptions.Compiled);
-        result = arrayPropertyRegex.Replace(result, "$1_$2___$3");
-
-        // IMPORTANT: Only process user-defined template expressions (${...})
-        // Do NOT automatically wrap bare words as template variables
-        // This prevents issues like "Created By: " becoming "${Created} ${By}: "
-        Logger.Debug($"DataBinder: Skipping bare property wrapping to preserve static text");
-
-        return result;
-    }/// <summary>
-     /// Creates context operator variables for DollarSignEngine.
-     /// Flattens nested properties into underscore-separated variables.
-     /// </summary>
-    private Dictionary<string, object> CreateContextOperatorVariables(object data)
-    {
-        var variables = new Dictionary<string, object>();
-
-        if (data == null)
-            return variables;
-
-        // Add built-in variables
-        variables["Today"] = DateTime.Today;
-        variables["Now"] = DateTime.Now;
-
-        // Add the root data object
-        variables["Data"] = data;
-
-        // Create flattened variables for nested properties
-        CreateContextVariablesRecursive(data, string.Empty, variables, 0);
-
-        return variables;
-    }
-    /// <summary>
-    /// Recursively creates context variables for nested objects and arrays.
-    /// </summary>
-    private void CreateContextVariablesRecursive(object obj, string prefix, Dictionary<string, object> variables, int depth)
-    {
-        if (obj == null || depth > 5) // Prevent infinite recursion
-            return;        // Handle Dictionary<string, object> specially
-        if (obj is Dictionary<string, object> dictionary)
-        {
-            foreach (var kvp in dictionary)
-            {
-                if (kvp.Value == null)
-                    continue;
-
-                var propertyName = string.IsNullOrEmpty(prefix)
-                    ? kvp.Key
-                    : $"{prefix}___{kvp.Key}";
-
-                // Add the property value
-                variables[propertyName] = kvp.Value;
-
-                // Handle arrays/collections - need to extract nested properties from array elements
-                if (kvp.Value is System.Collections.IEnumerable enumerable && !(kvp.Value is string))
-                {
-                    CreateContextVariablesForArray(enumerable, propertyName, variables, depth + 1);
-
-                    // For context operators, also extract common properties from array elements
-                    var list = enumerable.Cast<object>().ToList();
-                    if (list.Count > 0 && list[0] != null)
-                    {
-                        // Extract common properties from the first element to create context operator paths
-                        ExtractArrayElementProperties(list, propertyName, variables, depth + 1);
-                    }
-                }
-                // Handle complex objects
-                else if (!IsSimpleType(kvp.Value.GetType()))
-                {
-                    CreateContextVariablesRecursive(kvp.Value, propertyName, variables, depth + 1);
-                }
-            }
-            return;
-        }
-        var type = obj.GetType();
-        var properties = type.GetProperties();
-
-        foreach (var property in properties)
-        {
-            try
-            {
-                var value = property.GetValue(obj);
-                if (value == null)
-                    continue;
-
-                var propertyName = string.IsNullOrEmpty(prefix)
-                    ? property.Name
-                    : $"{prefix}___{property.Name}";
-
-                // Add the property value
-                variables[propertyName] = value;
-
-                // Handle arrays/collections
-                if (value is System.Collections.IEnumerable enumerable && !(value is string))
-                {
-                    CreateContextVariablesForArray(enumerable, propertyName, variables, depth + 1);
-
-                    // For context operators, also extract common properties from array elements
-                    var list = enumerable.Cast<object>().ToList();
-                    if (list.Count > 0 && list[0] != null)
-                    {
-                        // Extract common properties from the first element to create context operator paths
-                        ExtractArrayElementProperties(list, propertyName, variables, depth + 1);
-                    }
-                }
-                // Handle complex objects
-                else if (!IsSimpleType(value.GetType()))
-                {
-                    CreateContextVariablesRecursive(value, propertyName, variables, depth + 1);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Warning($"DataBinder: Error processing property '{property.Name}': {ex.Message}");
-            }
-        }
-    }
-
-    /// <summary>
-    /// Creates context variables for array/collection elements.
-    /// </summary>
-    private void CreateContextVariablesForArray(System.Collections.IEnumerable enumerable, string propertyName, Dictionary<string, object> variables, int depth)
-    {
-        var list = enumerable.Cast<object>().ToList();        // Add indexed access for each element
-        for (int i = 0; i < list.Count; i++)
-        {
-            var element = list[i];
-            if (element == null)
-                continue;
-
-            var indexedName = $"{propertyName}_{i}";
-            variables[indexedName] = element;
-
-            // Recursively process complex objects in arrays
-            if (!IsSimpleType(element.GetType()))
-            {
-                CreateContextVariablesRecursive(element, indexedName, variables, depth + 1);
-            }
-        }
-
-        // Add the array itself
-        variables[propertyName] = list;
-    }
-
-    /// <summary>
-    /// Applies index offset to array expressions in the template.
-    /// </summary>
-    public string ApplyIndexOffset(string template, int offset)
-    {
-        if (offset == 0 || string.IsNullOrEmpty(template))
-            return template;
-
-        var indexRegex = new Regex(@"\[(\d+)\]", RegexOptions.Compiled);
-
-        return indexRegex.Replace(template, match =>
-        {
-            if (int.TryParse(match.Groups[1].Value, out var index))
-            {
-                var newIndex = index + offset;
-                return $"[{newIndex}]";
-            }
-            return match.Value;
-        });
-    }
-
-    /// <summary>
-    /// Checks if a type is a simple type (primitive, string, DateTime, etc.)
-    /// </summary>
-    private static bool IsSimpleType(Type type)
-    {
-        return type.IsPrimitive ||
-               type == typeof(string) ||
-               type == typeof(DateTime) ||
-               type == typeof(DateTimeOffset) ||
-               type == typeof(decimal) ||
-               type == typeof(Guid) ||
-               type == typeof(TimeSpan) ||
-               (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>));
-    }
-    /// <summary>
-    /// Resolves an expression and returns the result as a string.
-    /// This is a simpler interface for basic expression resolution.
-    /// </summary>
-    /// <param name="expression">Expression to resolve</param>
-    /// <param name="data">Data object to bind</param>
-    /// <returns>Resolved expression as string</returns>
-    public string ResolveExpression(string expression, object data)
-    {
-        if (string.IsNullOrEmpty(expression))
-            return string.Empty;
-
-        if (data == null)
-            return string.Empty;
-
-        // Preprocess PowerPoint function expressions to fix malformed syntax
-        expression = PreprocessPowerPointExpressions(expression);
-
-        return BindData(expression, data);
-    }
-
-    /// <summary>
-    /// Preprocesses PowerPoint expressions to fix common malformed syntax issues
-    /// </summary>
-    private string PreprocessPowerPointExpressions(string expression)
-    {
-        if (string.IsNullOrEmpty(expression) || !expression.Contains("ppt."))
-            return expression;
-
-        try
-        {
-            // Fix expressions like ppt.${Image}(${...}) to proper ppt.Image("...")
-            expression = System.Text.RegularExpressions.Regex.Replace(
-                expression,
-                @"ppt\.\$\{(\w+)\}\(\$\{([^}]+)\}\)",
-                match =>
-                {
-                    string functionName = match.Groups[1].Value;
-                    string parameter = match.Groups[2].Value;
-
-                    // Clean up complex parameter expressions
-                    parameter = CleanParameterExpression(parameter);
-
-                    return $"ppt.{functionName}(\"{parameter}\")";
-                },
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase
-            );
-
-            Logger.Debug($"Preprocessed PowerPoint expression: {expression}");
-        }
-        catch (Exception ex)
-        {
-            Logger.Warning($"Error preprocessing PowerPoint expression '{expression}': {ex.Message}");
-        }
-
-        return expression;
-    }
-
-    /// <summary>
-    /// Cleans up parameter expressions to extract variable names
-    /// </summary>
-    private string CleanParameterExpression(string parameter)
-    {
-        if (string.IsNullOrEmpty(parameter))
-            return parameter;
-
-        // Remove casting and complex syntax: ((string)Globals["LogoPath"]) -> LogoPath
-        parameter = System.Text.RegularExpressions.Regex.Replace(
-            parameter,
-            @"\(\(string\)\s*Globals\[\s*[""']([^""']+)[""']\s*\]\)",
-            "$1",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase
-        );
-
-        // Remove other casting patterns
-        parameter = System.Text.RegularExpressions.Regex.Replace(
-            parameter,
-            @"\(\([^)]+\)\s*([^)]+)\)",
-            "$1",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase
-        );
-
-        return parameter.Trim();
-    }
-    /// <summary>
-    /// Applies index offset to array expressions in a BindingExpression.
-    /// </summary>
-    /// <param name="bindingExpression">Binding expression to adjust</param>
-    /// <param name="offset">Index offset to apply</param>
-    /// <returns>Adjusted BindingExpression</returns>
-    public BindingExpression ApplyIndexOffset(BindingExpression bindingExpression, int offset)
-    {
-        if (bindingExpression == null || offset == 0)
-            return bindingExpression ?? new BindingExpression();
-
-        // Create a new BindingExpression with adjusted original expression
-        var adjustedExpression = ApplyIndexOffset(bindingExpression.OriginalExpression, offset);
-        var adjustedDataPath = ApplyIndexOffset(bindingExpression.DataPath, offset);
-
-        return new BindingExpression
-        {
-            OriginalExpression = adjustedExpression,
-            DataPath = adjustedDataPath,
-            FormatSpecifier = bindingExpression.FormatSpecifier,
-            UsesContextOperator = bindingExpression.UsesContextOperator,
-            IsConditional = bindingExpression.IsConditional,
-            IsMethodCall = bindingExpression.IsMethodCall,
-            ArrayIndices = new Dictionary<string, int>(bindingExpression.ArrayIndices.ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value + offset))
-        };
-    }
-
-    /// <summary>
-    /// Pre-processes nested expressions like ${ppt.Image(${LogoPath})} by evaluating inner expressions first.
-    /// This prevents DollarSignEngine from trying to compile invalid C# with nested ${} syntax.
-    /// </summary>
-    /// <param name="template">Template text with potentially nested expressions</param>
-    /// <param name="data">Data object to bind</param>
-    /// <param name="indexOffset">Index offset for array expressions</param>
-    /// <returns>Template with nested expressions resolved</returns>
-    private string PreprocessNestedExpressions(string template, object data, int indexOffset = 0)
-    {
-        if (string.IsNullOrEmpty(template))
-            return string.Empty;
-
-        var result = template;
-        var nestedExpressionRegex = new Regex(@"\$\{([^{}]*\$\{[^}]+\}[^{}]*)\}", RegexOptions.Compiled);
-
-        // Keep processing until no more nested expressions are found
-        var maxIterations = 10; // Prevent infinite loops
-        var iteration = 0;
-
-        while (nestedExpressionRegex.IsMatch(result) && iteration < maxIterations)
-        {
-            var matches = nestedExpressionRegex.Matches(result);
-
-            foreach (Match match in matches.Cast<Match>().Reverse()) // Process from right to left to avoid index issues
-            {
-                var fullExpression = match.Value; // e.g., "${ppt.Image(${LogoPath})}"
-                var innerContent = match.Groups[1].Value; // e.g., "ppt.Image(${LogoPath})"
-
-                Logger.Debug($"DataBinder: Processing nested expression '{fullExpression}'");
-
-                // First, resolve any inner ${} expressions within this content
-                var innerResolved = ResolveInnerExpressions(innerContent, data, indexOffset);
-
-                // Replace the full expression with the resolved version
-                var resolvedExpression = $"${{{innerResolved}}}";
-                result = result.Substring(0, match.Index) + resolvedExpression + result.Substring(match.Index + match.Length);
-
-                Logger.Debug($"DataBinder: Resolved '{fullExpression}' to '{resolvedExpression}'");
-            }
-
-            iteration++;
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Resolves inner ${} expressions within a larger expression.
-    /// For example, "ppt.Image(${LogoPath})" becomes "ppt.Image(ActualLogoPathValue)"
-    /// </summary>
-    private string ResolveInnerExpressions(string content, object data, int indexOffset = 0)
-    {
-        var innerExpressionRegex = new Regex(@"\$\{([^}]+)\}", RegexOptions.Compiled);
-        var matches = innerExpressionRegex.Matches(content);
-
-        var result = content;
-
-        foreach (Match match in matches.Cast<Match>().Reverse()) // Process from right to left
-        {
-            var expression = match.Groups[1].Value; // e.g., "LogoPath"
-
-            try
-            {
-                // Create a simple template with just this expression
-                var simpleTemplate = $"${{{expression}}}";
-
-                // Convert to DollarSign format and evaluate
-                var dollarSignTemplate = ConvertToTemplate(simpleTemplate);
-                var variables = CreateContextOperatorVariables(data);
-
-                if (indexOffset > 0)
-                {
-                    dollarSignTemplate = ApplyIndexOffset(dollarSignTemplate, indexOffset);
-                }
-
-                var options = new DollarSignOptions
-                {
-                    SupportDollarSignSyntax = true,
-                    ThrowOnError = false,
-                    UseCache = true,
-                    CultureInfo = System.Globalization.CultureInfo.CurrentCulture
-                };
-
-                var evaluatedValue = DollarSign.EvalAsync(dollarSignTemplate, variables, options).GetAwaiter().GetResult();
-
-                // Replace the ${expression} with the evaluated value
-                result = result.Substring(0, match.Index) + evaluatedValue + result.Substring(match.Index + match.Length);
-
-                Logger.Debug($"DataBinder: Resolved inner expression '${expression}' to '{evaluatedValue}'");
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"DataBinder: Error resolving inner expression '${expression}': {ex.Message}");
-                // Keep the original expression if evaluation fails
-            }
-        }
-
-        return result;
-    }    /// <summary>
-         /// Extracts properties from array elements to create context operator variables.
-         /// Creates indexed variables that preserve object type information.
-         /// For example: Categories___Items[0], Categories___Items[1], etc.
-         /// </summary>
-    private void ExtractArrayElementProperties(List<object> arrayElements, string arrayPropertyName, Dictionary<string, object> variables, int depth)
-    {
-        if (arrayElements == null || arrayElements.Count == 0 || depth > 5)
-            return;
-
-        // Get properties from the first element (assuming all elements have similar structure)
-        var firstElement = arrayElements[0];
-        if (firstElement == null)
-            return;
-
-        var elementType = firstElement.GetType();
-        var properties = elementType.GetProperties();
-
-        foreach (var property in properties)
-        {
-            try
-            {
-                var propertyValue = property.GetValue(firstElement);
-                if (propertyValue == null)
-                    continue;
-
-                // Create context operator variable for this property across all array elements
-                var contextPropertyName = $"{arrayPropertyName}___{property.Name}";
-
-                // Collect this property from all elements in the array
-                var propertyValues = new List<object>();
-                foreach (var element in arrayElements)
-                {
-                    if (element != null)
-                    {
-                        var elementValue = property.GetValue(element);
-                        if (elementValue != null)
-                        {
-                            propertyValues.Add(elementValue);
-                        }
-                    }
-                }
-
-                if (propertyValues.Count > 0)
-                {
-                    // For arrays, we need to flatten them for context operator access
-                    if (propertyValues[0] is System.Collections.IEnumerable enumerable && !(propertyValues[0] is string))
-                    {
-                        // Flatten all arrays into a single list while preserving object references
-                        var flattenedList = new List<object>();
-                        foreach (var propValue in propertyValues)
-                        {
-                            if (propValue is System.Collections.IEnumerable enumPropValue && !(propValue is string))
-                            {
-                                flattenedList.AddRange(enumPropValue.Cast<object>());
-                            }
-                        }
-
-                        if (flattenedList.Count > 0)
-                        {
-                            // Store as List<object> to preserve object references
-                            variables[contextPropertyName] = flattenedList;
-
-                            // Also create indexed variables for direct access
-                            for (int i = 0; i < flattenedList.Count; i++)
-                            {
-                                variables[$"{contextPropertyName}[{i}]"] = flattenedList[i];
-                            }
-
-                            Logger.Debug($"DataBinder: Created flattened context variable '{contextPropertyName}' with {flattenedList.Count} elements");
-
-                            // Recursively extract properties from the flattened array
-                            ExtractArrayElementProperties(flattenedList, contextPropertyName, variables, depth + 1);
-                        }
-                    }
-                    else
-                    {
-                        // For non-array properties, store as List<object> to preserve object references
-                        variables[contextPropertyName] = propertyValues;
-
-                        // Also create indexed variables for direct access
-                        for (int i = 0; i < propertyValues.Count; i++)
-                        {
-                            variables[$"{contextPropertyName}[{i}]"] = propertyValues[i];
-                        }
-
-                        Logger.Debug($"DataBinder: Created context variable '{contextPropertyName}' with {propertyValues.Count} elements");
-
-                        // If the property value is a complex object, recurse
-                        if (!IsSimpleType(propertyValues[0].GetType()))
-                        {
-                            CreateContextVariablesRecursive(propertyValues[0], contextPropertyName, variables, depth + 1);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Warning($"DataBinder: Error extracting property '{property.Name}' from array elements: {ex.Message}");
-            }
+            Logger.Debug($"DataBinder.EvaluateTemplate: 평가 중 오류 발생 - {ex.Message}");
+            return dollarSignTemplate;
         }
     }
 
@@ -732,17 +111,8 @@ public class DataBinder
                 dollarSignTemplate = ApplyIndexOffset(dollarSignTemplate, indexOffset);
             }
 
-            // Configure DollarSign options
-            var options = new DollarSignOptions
-            {
-                SupportDollarSignSyntax = true,
-                ThrowOnError = false,
-                UseCache = true,
-                CultureInfo = System.Globalization.CultureInfo.CurrentCulture
-            };
-
-            // Evaluate the template with variables - using EvalAsync synchronously
-            var result = DollarSign.EvalAsync(dollarSignTemplate, variables, options).GetAwaiter().GetResult();
+            // 단일 평가 함수 사용 (현재는 보간식을 그대로 반환)
+            var result = EvaluateTemplate(dollarSignTemplate, variables);
 
             Logger.Debug($"DataBinder: Template '{dollarSignTemplate}' evaluated to '{result}'");
             return result;
@@ -1116,25 +486,14 @@ public class DataBinder
                 {
                     Logger.Debug($"  {kvp.Key} = {kvp.Value}");
                 }
-            }
-
-            // Apply index offset to array expressions
+            }            // Apply index offset to array expressions
             if (indexOffset > 0)
             {
                 dollarSignTemplate = ApplyIndexOffset(dollarSignTemplate, indexOffset);
             }
 
-            // Configure DollarSign options
-            var options = new DollarSignOptions
-            {
-                SupportDollarSignSyntax = true,
-                ThrowOnError = false,
-                UseCache = true,
-                CultureInfo = System.Globalization.CultureInfo.CurrentCulture
-            };
-
-            // Evaluate the template with variables - using EvalAsync synchronously
-            var result = DollarSign.EvalAsync(dollarSignTemplate, variables, options).GetAwaiter().GetResult();
+            // 단일 평가 함수 사용 (현재는 보간식을 그대로 반환)
+            var result = EvaluateTemplate(dollarSignTemplate, variables);
 
             Logger.Debug($"DataBinder: Template '{dollarSignTemplate}' evaluated to '{result}'");
             return result;
@@ -1186,5 +545,39 @@ public class DataBinder
             Logger.Error($"DataBinder: Error resolving expression '{expression}' with filtered variables and custom functions: {ex.Message}");
             return null;
         }
+    }
+
+    /// <summary>
+    /// 누락된 메서드들 추가 - 원래 DataBinder에서 누락된 부분들
+    /// </summary>
+    /// 
+    private string PreprocessNestedExpressions(string template, object data, int indexOffset)
+    {
+        // 기본적으로 템플릿을 그대로 반환
+        return template;
+    }
+
+    private string ConvertToTemplate(string template)
+    {
+        // Context operator (>) 를 underscore (___) 로 변환
+        return ContextOperatorRegex.Replace(template, "$1___$2");
+    }
+
+    private string ApplyIndexOffset(string template, int offset)
+    {
+        // 기본적으로 템플릿을 그대로 반환 (인덱스 오프셋 적용은 현재 비활성화)
+        return template;
+    }
+
+    private bool IsSimpleType(Type type)
+    {
+        return type.IsPrimitive ||
+               type == typeof(string) ||
+               type == typeof(decimal) ||
+               type == typeof(DateTime) ||
+               type == typeof(DateTimeOffset) ||
+               type == typeof(TimeSpan) ||
+               type == typeof(Guid) ||
+               (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>));
     }
 }

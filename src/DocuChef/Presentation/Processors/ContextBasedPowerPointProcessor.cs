@@ -451,11 +451,10 @@ public class ContextBasedPowerPointProcessor
 
         // Check if this paragraph contains any binding expressions
         if (!paragraphText.Contains("${"))
-            return;
-
-        // Apply data binding to the complete paragraph text
+            return;        // Apply data binding to the complete paragraph text
         var indexOffset = slideContext.SlideInstance?.IndexOffset ?? 0;
-        var boundText = _dataBinder.BindData(paragraphText, slideContext.BindingData, indexOffset);
+        var usedExpressions = new HashSet<string> { paragraphText };
+        var boundText = _dataBinder.BindData(paragraphText, slideContext.BindingData, usedExpressions, indexOffset);
 
         if (boundText != paragraphText)
         {

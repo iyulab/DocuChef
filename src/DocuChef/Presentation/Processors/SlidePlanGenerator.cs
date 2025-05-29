@@ -696,14 +696,16 @@ public class SlidePlanGenerator
             Logger.Debug($"ProcessNestedRangeSlides: Parent collection '{parentCollectionName}' is empty or null");
             return;
         }
-
         Logger.Debug($"ProcessNestedRangeSlides: Processing {parentCollection.Count()} parent items");
 
         // Process each parent item with its child items
         int parentIndex = 0;
+
         foreach (var parentItem in parentCollection)
         {
-            Logger.Debug($"ProcessNestedRangeSlides: Processing parent {parentIndex}");            // Add parent slide instance
+            Logger.Debug($"ProcessNestedRangeSlides: Processing parent {parentIndex}");
+
+            // Add parent slide instance
             slidePlan.AddSlideInstance(new SlideInstance
             {
                 SourceSlideId = parentSlide.SlideId,
@@ -712,19 +714,21 @@ public class SlidePlanGenerator
                 IndexOffset = parentIndex
             });
 
-            // Process child items for this parent
-            ProcessNestedChildItems(childSlide, slidePlan, parentItem, parentIndex, $"{parentCollectionName}[{parentIndex}]");
+            // Process child items for this parent with local indexing
+            var nestedExpression = childSlide.BindingExpressions.FirstOrDefault(e => e.DataPath.Contains(">"));
+            if (nestedExpression != null)
+            {
+                ProcessNestedChildItems(childSlide, slidePlan, parentItem, parentIndex, $"{parentCollectionName}[{parentIndex}]");
+            }
 
             parentIndex++;
         }
 
         Logger.Debug("ProcessNestedRangeSlides: Completed nested range processing");
-    }
-
-    /// <summary>
-    /// Processes child items for a specific parent
-    /// </summary>
-    private void ProcessNestedChildItems(SlideInfo childSlide, SlidePlan slidePlan, object parentItem, int parentIndex, string parentContextPath)
+    }    /// <summary>
+         /// Processes child items for a specific parent
+         /// </summary>
+    private void ProcessNestedChildItems(SlideInfo childSlide, SlidePlan slidePlan, object parentItem, int parentIndex, string parentContextPath, int globalChildOffset = 0)
     {
         // Get child collection name from nested expression
         var nestedExpression = childSlide.BindingExpressions.FirstOrDefault(e => e.DataPath.Contains(">"));
@@ -757,15 +761,18 @@ public class SlidePlanGenerator
 
         Logger.Debug($"ProcessNestedChildItems: Parent {parentIndex} has {childItems.Count} child items, requiring {requiredSlides} slides with {itemsPerSlide} items per slide");
 
-        // Create child slides
+        // Create child slides - use local offset within this parent's collection, not global
         for (int slideIndex = 0; slideIndex < requiredSlides; slideIndex++)
         {
+            // Use local offset within current parent's collection (0-based for each parent)
             int offset = slideIndex * itemsPerSlide;
-            Logger.Debug($"ProcessNestedChildItems: Creating child slide {slideIndex + 1}/{requiredSlides} for parent {parentIndex} with offset {offset}"); slidePlan.AddSlideInstance(new SlideInstance
+            Logger.Debug($"ProcessNestedChildItems: Creating child slide {slideIndex + 1}/{requiredSlides} for parent {parentIndex} with local offset {offset}");
+
+            slidePlan.AddSlideInstance(new SlideInstance
             {
                 SourceSlideId = childSlide.SlideId,
                 Position = GetNextPosition(slidePlan),
-                ContextPath = new List<string> { $"{parts[0]}>{childCollectionName}" },
+                ContextPath = new List<string> { $"{parts[0]}[{parentIndex}]", childCollectionName },
                 IndexOffset = offset
             });
         }
