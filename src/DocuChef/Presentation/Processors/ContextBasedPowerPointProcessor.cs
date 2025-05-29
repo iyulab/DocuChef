@@ -46,17 +46,19 @@ public class ContextBasedPowerPointProcessor
         }
 
         try
-        {
-            // 2. 템플릿 분석 - SlideInfo List 구성
+        {            // 2. 템플릿 분석 - SlideInfo List 구성
             AnalyzeTemplate(context);
 
-            // 3. 슬라이드 계획 생성 - 바인딩할 데이터를 기반으로 range, foreach 복제 고려
+            // 3. Alias 표현식 변환 - 템플릿의 모든 표현식을 원래 경로로 변환
+            ApplyAliasTransformations(context);
+
+            // 4. 슬라이드 계획 생성 - 바인딩할 데이터를 기반으로 range, foreach 복제 고려
             GenerateSlidePlan(context);
 
-            // 4. 슬라이드 생성 및 표현식 변환
+            // 5. 슬라이드 생성
             GenerateSlides(context);
 
-            // 5. 데이터 바인딩 처리
+            // 6. 데이터 바인딩 처리
             ProcessDataBinding(context);
 
             // 6. 함수 처리 (이미지 등)
@@ -139,11 +141,9 @@ public class ContextBasedPowerPointProcessor
         {
             Logger.Debug($"Template analysis complete. Found {context.TemplateSlides.Count} template slides");
         }
-    }
-
-    /// <summary>
-    /// Get slide notes content
-    /// </summary>
+    }    /// <summary>
+         /// Get slide notes content
+         /// </summary>
     private string GetSlideNotes(SlidePart slidePart)
     {
         try
@@ -152,8 +152,17 @@ public class ContextBasedPowerPointProcessor
             if (notesSlidePart?.NotesSlide?.CommonSlideData?.ShapeTree != null)
             {
                 var textElements = notesSlidePart.NotesSlide.CommonSlideData.ShapeTree
-                    .Descendants<DocumentFormat.OpenXml.Drawing.Text>();
-                return string.Join(" ", textElements.Select(t => t.Text ?? ""));
+                    .Descendants<DocumentFormat.OpenXml.Drawing.Text>()
+                    .Select(t => t.Text ?? "")
+                    .Where(text => !string.IsNullOrWhiteSpace(text))
+                    .ToList();
+
+                // Filter out text that looks like slide numbers (single digits)
+                var filteredTexts = textElements
+                    .Where(text => !IsSlideNumber(text.Trim()))
+                    .ToList();
+
+                return string.Join("", filteredTexts); // Join without spaces to preserve original structure
             }
         }
         catch (Exception ex)
@@ -164,15 +173,22 @@ public class ContextBasedPowerPointProcessor
     }
 
     /// <summary>
-    /// 2단계: 슬라이드 계획 생성 - 데이터 기반 복제 계획
+    /// Check if a text element appears to be a slide number
     /// </summary>
+    private static bool IsSlideNumber(string text)
+    {
+        // Check if it's a number (typically 1-3 digits for slide numbers)
+        return text.Length <= 3 && int.TryParse(text, out _);
+    }    /// <summary>
+         /// 4단계: 슬라이드 계획 생성 - 데이터 기반 복제 계획
+         /// </summary>
     private void GenerateSlidePlan(PPTContext context)
     {
         context.CurrentPhase = ProcessingPhase.PlanGeneration;
 
         if (context.Options.EnableVerboseLogging)
         {
-            Logger.Debug("Phase 2: Generating slide plan based on data");
+            Logger.Debug("Phase 4: Generating slide plan based on data");
         }
 
         context.GenerationPlan = _planGenerator.GeneratePlan(context.TemplateSlides, context.Variables);
@@ -186,40 +202,147 @@ public class ContextBasedPowerPointProcessor
                            $"Context: '{instance.ContextPathString}'");
             }
         }
-    }
+    }    /// <summary>
+         /// 3단계: Alias 표현식 변환 - 템플릿의 모든 표현식을 원래 경로로 변환
+         /// </summary>
+    private void ApplyAliasTransformations(PPTContext context)
+    {
+        context.CurrentPhase = ProcessingPhase.AliasTransformation;
 
-    /// <summary>
-    /// 3단계: 슬라이드 생성 및 표현식 변환
-    /// </summary>
+        if (context.Options.EnableVerboseLogging)
+        {
+            Logger.Debug("Phase 3: Applying alias transformations");
+        }
+
+        // Build alias map from all template slides
+        var aliasMap = BuildAliasMap(context.TemplateSlides);
+
+        if (aliasMap.Count == 0)
+        {
+            if (context.Options.EnableVerboseLogging)
+            {
+                Logger.Debug("No aliases found to apply");
+            }
+            return;
+        }
+
+        if (context.Options.EnableVerboseLogging)
+        {
+            Logger.Debug($"Found {aliasMap.Count} aliases to apply:");
+            foreach (var alias in aliasMap)
+            {
+                Logger.Debug($"  {alias.Key} -> {alias.Value}");
+            }
+        }
+
+        // Apply aliases to all slides using ExpressionUpdater
+        var expressionUpdater = new ExpressionUpdater();
+        var totalTransformations = 0;
+
+        // Transform expressions in working document
+        var workingSlides = context.WorkingDocument.PresentationPart?.Presentation?.SlideIdList?.ChildElements
+            .OfType<DocumentFormat.OpenXml.Presentation.SlideId>().ToList();
+
+        if (workingSlides != null)
+        {
+            for (int slideIndex = 0; slideIndex < workingSlides.Count; slideIndex++)
+            {
+                var slideId = workingSlides[slideIndex];
+                string? relationshipId = slideId.RelationshipId?.Value;
+                if (string.IsNullOrEmpty(relationshipId)) continue;
+
+                var slidePart = (SlidePart)context.WorkingDocument.PresentationPart!.GetPartById(relationshipId);
+
+                if (context.Options.EnableVerboseLogging)
+                {
+                    Logger.Debug($"Applying aliases to slide {slideIndex + 1}");
+                }
+
+                var transformedCount = TransformSlideExpressions(slidePart, aliasMap, context.Options.EnableVerboseLogging);
+                totalTransformations += transformedCount;
+
+                if (context.Options.EnableVerboseLogging && transformedCount > 0)
+                {
+                    Logger.Debug($"  Transformed {transformedCount} expressions in slide {slideIndex + 1}");
+                }
+            }
+        }
+
+        // Also update the template slides' BindingExpressions for plan generation
+        foreach (var templateSlide in context.TemplateSlides)
+        {
+            if (templateSlide.BindingExpressions != null)
+            {
+                foreach (var bindingExpression in templateSlide.BindingExpressions)
+                {
+                    if (!string.IsNullOrEmpty(bindingExpression.OriginalExpression))
+                    {
+                        var originalExpression = bindingExpression.OriginalExpression;
+                        var transformedExpression = expressionUpdater.ApplyAliases(originalExpression, aliasMap);
+                        if (originalExpression != transformedExpression)
+                        {
+                            bindingExpression.OriginalExpression = transformedExpression;
+
+                            if (context.Options.EnableVerboseLogging)
+                            {
+                                Logger.Debug($"  Template binding: {originalExpression} -> {transformedExpression}");
+                            }
+                        }
+                    }
+
+                    // Also transform DataPath if it uses aliases
+                    if (!string.IsNullOrEmpty(bindingExpression.DataPath))
+                    {
+                        var originalDataPath = bindingExpression.DataPath;
+                        var transformedDataPath = TransformDataPath(originalDataPath, aliasMap);
+
+                        if (originalDataPath != transformedDataPath)
+                        {
+                            bindingExpression.DataPath = transformedDataPath;
+
+                            if (context.Options.EnableVerboseLogging)
+                            {
+                                Logger.Debug($"  Template DataPath: {originalDataPath} -> {transformedDataPath}");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (context.Options.EnableVerboseLogging)
+        {
+            Logger.Debug($"Alias transformation complete. Total transformations: {totalTransformations}");
+        }
+    }    /// <summary>
+         /// 5단계: 슬라이드 생성
+         /// </summary>
     private void GenerateSlides(PPTContext context)
     {
         context.CurrentPhase = ProcessingPhase.ExpressionBinding;
 
         if (context.Options.EnableVerboseLogging)
         {
-            Logger.Debug("Phase 3: Generating slides and transforming expressions");
+            Logger.Debug("Phase 5: Generating slides");
         }
 
-        // 작업용 문서 생성
-        context.WorkingDocument = CreateWorkingDocument(context.TemplateDocument);        // 슬라이드 생성 및 표현식 변환
-        _slideGenerator.GenerateSlides(context.WorkingDocument, context.GenerationPlan, context.SlideInfos, context.Variables);
+        // 슬라이드 생성 (alias는 이미 이전 단계에서 적용됨)
+        _slideGenerator.GenerateSlides(context.WorkingDocument, context.GenerationPlan, context.SlideInfos, context.Variables, new Dictionary<string, string>());
 
         if (context.Options.EnableVerboseLogging)
         {
             Logger.Debug("Slide generation and expression transformation complete");
         }
-    }
-
-    /// <summary>
-    /// 4단계: 데이터 바인딩 처리
-    /// </summary>
+    }    /// <summary>
+         /// 6단계: 데이터 바인딩 처리
+         /// </summary>
     private void ProcessDataBinding(PPTContext context)
     {
         context.CurrentPhase = ProcessingPhase.DataBinding;
 
         if (context.Options.EnableVerboseLogging)
         {
-            Logger.Debug("Phase 4: Processing data binding");
+            Logger.Debug("Phase 6: Processing data binding");
         }
 
         var presentationPart = context.WorkingDocument.PresentationPart;
@@ -494,12 +617,10 @@ public class ContextBasedPowerPointProcessor
     /// </summary>
     private void ProcessFunctions(PPTContext context)
     {
-        context.CurrentPhase = ProcessingPhase.FunctionProcessing;
-
-        if (context.Options.EnableVerboseLogging)
+        context.CurrentPhase = ProcessingPhase.FunctionProcessing; if (context.Options.EnableVerboseLogging)
         {
-            Logger.Debug("Phase 5: Processing PowerPoint functions");
-        }        // PowerPoint 함수 처리 (이미지 삽입 등)
+            Logger.Debug("Phase 7: Processing PowerPoint functions");
+        }// PowerPoint 함수 처리 (이미지 삽입 등)
         DocuChef.Presentation.Functions.PowerPointFunctionHandler.ProcessFunctions(context.WorkingDocument, context.Functions);
 
         if (context.Options.EnableVerboseLogging)
@@ -563,6 +684,123 @@ public class ContextBasedPowerPointProcessor
         return PresentationDocument.Open(tempPath, true);
     }
 
-    // Note: ExtractExpressionsFromText method removed
-    // All expression extraction and data binding is handled exclusively in DataBinder.cs
+    /// <summary>
+    /// Builds a map of aliases for expression transformation
+    /// </summary>
+    private Dictionary<string, string> BuildAliasMap(List<SlideInfo> slideInfos)
+    {
+        var aliasMap = new Dictionary<string, string>();
+
+        foreach (var slideInfo in slideInfos)
+        {
+            foreach (var directive in slideInfo.Directives)
+            {
+                if (directive.Type == DirectiveType.Alias && !string.IsNullOrEmpty(directive.AliasName))
+                {
+                    aliasMap[directive.AliasName] = directive.CollectionPath;
+                    Logger.Debug($"ContextBasedPowerPointProcessor: Added alias mapping '{directive.AliasName}' -> '{directive.CollectionPath}'");
+                }
+            }
+        }
+
+        if (aliasMap.Count > 0)
+        {
+            Logger.Debug($"ContextBasedPowerPointProcessor: Created alias map with {aliasMap.Count} entries");
+        }
+
+        return aliasMap;
+    }    /// <summary>
+         /// Transform expressions in a single slide
+         /// </summary>
+    private int TransformSlideExpressions(SlidePart slidePart, Dictionary<string, string> aliasMap, bool enableVerboseLogging)
+    {
+        var transformedCount = 0;
+        var expressionUpdater = new ExpressionUpdater();
+
+        // First try to process complete expressions at text element level
+        var textElements = slidePart.Slide.Descendants<DocumentFormat.OpenXml.Drawing.Text>().ToList();
+
+        foreach (var textElement in textElements)
+        {
+            if (!string.IsNullOrEmpty(textElement.Text))
+            {
+                var originalText = textElement.Text;
+                var transformedText = expressionUpdater.ApplyAliases(originalText, aliasMap);
+
+                if (originalText != transformedText)
+                {
+                    textElement.Text = transformedText;
+                    transformedCount++;
+
+                    if (enableVerboseLogging)
+                    {
+                        Logger.Debug($"    Text element: '{originalText}' -> '{transformedText}'");
+                    }
+                }
+            }
+        }
+
+        // If no transformations occurred, try paragraph-level processing for split expressions
+        if (transformedCount == 0)
+        {
+            var paragraphs = slidePart.Slide.Descendants<DocumentFormat.OpenXml.Drawing.Paragraph>().ToList();
+
+            foreach (var paragraph in paragraphs)
+            {
+                var textRuns = paragraph.Descendants<DocumentFormat.OpenXml.Drawing.Text>().ToList();
+                if (textRuns.Count > 1)
+                {
+                    // Combine all text elements in the paragraph
+                    var combinedText = string.Join("", textRuns.Select(t => t.Text));
+                    var transformedCombinedText = expressionUpdater.ApplyAliases(combinedText, aliasMap);
+
+                    if (combinedText != transformedCombinedText && enableVerboseLogging)
+                    {
+                        Logger.Debug($"    Paragraph combined: '{combinedText}' -> '{transformedCombinedText}'");
+                    }
+
+                    if (combinedText != transformedCombinedText)
+                    {
+                        // Update the first text element with the transformed text and clear others
+                        if (textRuns.Count > 0)
+                        {
+                            textRuns[0].Text = transformedCombinedText;
+                            for (int i = 1; i < textRuns.Count; i++)
+                            {
+                                textRuns[i].Text = "";
+                            }
+                            transformedCount++;
+
+                            if (enableVerboseLogging)
+                            {
+                                Logger.Debug($"    Paragraph transformation applied to {textRuns.Count} text elements");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return transformedCount;
+    }
+
+    /// <summary>
+    /// Transform a data path using alias mapping
+    /// </summary>
+    private string TransformDataPath(string dataPath, Dictionary<string, string> aliasMap)
+    {
+        foreach (var alias in aliasMap)
+        {
+            var aliasName = alias.Key;
+            var aliasPath = alias.Value;
+
+            if (dataPath.StartsWith(aliasName))
+            {
+                var remainingPart = dataPath.Substring(aliasName.Length);
+                return aliasPath + remainingPart;
+            }
+        }
+
+        return dataPath;
+    }
 }

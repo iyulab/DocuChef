@@ -116,5 +116,69 @@ internal class ExpressionUpdater
             var newIndex = currentIndex + indexOffset;
             return $"{arrayName}[{newIndex}]";
         });
+    }    /// <summary>
+         /// Applies alias transformations to expressions in text
+         /// Example: "${Items[0]}" becomes "${Products>Items[0]}" when alias "Products>Items as Items" is defined
+         /// </summary>
+    public string ApplyAliases(string text, Dictionary<string, string> aliasMap)
+    {
+        if (string.IsNullOrEmpty(text) || aliasMap == null || aliasMap.Count == 0)
+        {
+            Logger.Debug($"ExpressionUpdater.ApplyAliases: Skipping - text='{text}', aliasMap count={aliasMap?.Count ?? 0}");
+            return text;
+        }
+
+        Logger.Debug($"ExpressionUpdater.ApplyAliases: Processing text '{text}' with {aliasMap.Count} alias mappings");
+
+        var result = text;
+        var expressionPattern = new Regex(@"\$\{([^}]+)\}", RegexOptions.Compiled);
+        var matches = expressionPattern.Matches(text);
+
+        Logger.Debug($"ExpressionUpdater.ApplyAliases: Found {matches.Count} expression matches");
+
+        result = expressionPattern.Replace(result, match =>
+        {
+            var expression = match.Groups[1].Value;
+            Logger.Debug($"ExpressionUpdater.ApplyAliases: Processing expression '{expression}'");
+
+            var transformedExpression = TransformAliasExpression(expression, aliasMap);
+
+            if (transformedExpression != expression)
+            {
+                Logger.Debug($"ExpressionUpdater: Applied alias transformation from '${{{expression}}}' to '${{{transformedExpression}}}'");
+            }
+            else
+            {
+                Logger.Debug($"ExpressionUpdater: No alias transformation for '${{{expression}}}'");
+            }
+
+            return "${" + transformedExpression + "}";
+        });
+
+        Logger.Debug($"ExpressionUpdater.ApplyAliases: Final result '{result}'");
+        return result;
+    }
+
+    /// <summary>
+    /// Transforms a single expression using alias mapping
+    /// </summary>
+    private string TransformAliasExpression(string expression, Dictionary<string, string> aliasMap)
+    {
+        foreach (var alias in aliasMap)
+        {
+            var aliasName = alias.Key;
+            var aliasPath = alias.Value;
+
+            // Check if expression starts with the alias name
+            if (expression.StartsWith(aliasName))
+            {
+                // Replace the alias with the full path
+                // Example: "Items[0]" becomes "Products>Items[0]" when alias is "Products>Items as Items"
+                var remainingPart = expression.Substring(aliasName.Length);
+                return aliasPath + remainingPart;
+            }
+        }
+
+        return expression;
     }
 }

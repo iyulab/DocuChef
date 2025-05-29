@@ -29,13 +29,15 @@ public class SlideGenerator
         _slideCloner = new SlideCloner();
         _expressionUpdater = new ExpressionUpdater();
         _slideRemover = new SlideRemover();
-    }/// <summary>
-     /// Generates slides according to the slide plan
-     /// </summary>
-     /// <param name="presentationDocument">The presentation document</param>
-     /// <param name="slidePlan">The slide plan to use for generation</param>
-     /// <param name="slideInfos">The analyzed slide information for auto-generating notes</param>
-    public void GenerateSlides(PresentationDocument presentationDocument, SlidePlan slidePlan, List<SlideInfo>? slideInfos = null, object? data = null)
+    }    /// <summary>
+         /// Generates slides according to the slide plan
+         /// </summary>
+         /// <param name="presentationDocument">The presentation document</param>
+         /// <param name="slidePlan">The slide plan to use for generation</param>
+         /// <param name="slideInfos">The analyzed slide information for auto-generating notes</param>
+         /// <param name="data">The data object</param>
+         /// <param name="aliasMap">Alias mappings for expression transformation</param>
+    public void GenerateSlides(PresentationDocument presentationDocument, SlidePlan slidePlan, List<SlideInfo>? slideInfos = null, object? data = null, Dictionary<string, string>? aliasMap = null)
     {
         Logger.Debug($"SlideGenerator: Starting generation with {slidePlan?.SlideInstances?.Count ?? 0} slide instances");
 
@@ -72,13 +74,26 @@ public class SlideGenerator
         // Process slide instances in their planned order
         foreach (var slideInstance in slidePlan.SlideInstances)
         {
-            Logger.Debug($"SlideGenerator: Processing slide instance from template {slideInstance.SourceSlideId} with offset {slideInstance.IndexOffset}");
-
-            // Check if this is an original slide at its original position
+            Logger.Debug($"SlideGenerator: Processing slide instance from template {slideInstance.SourceSlideId} with offset {slideInstance.IndexOffset}");            // Check if this is an original slide at its original position
             if (slideInstance.Position == slideInstance.SourceSlideId)
             {
                 Logger.Debug($"SlideGenerator: Keeping original slide {slideInstance.SourceSlideId} at position {slideInstance.Position}");
                 originalSlidesToKeep.Add(slideInstance.SourceSlideId);
+
+                // Apply aliases to original slide if needed
+                if (aliasMap != null && aliasMap.Count > 0)
+                {
+                    // Get the original slide part
+                    var originalSlideId = sourceSlides[slideInstance.SourceSlideId];
+                    if (originalSlideId?.RelationshipId?.Value != null)
+                    {
+                        var originalSlidePart = (SlidePart)presentationPart.GetPartById(originalSlideId.RelationshipId.Value);
+                        if (originalSlidePart != null)
+                        {
+                            ApplyAliasesToSlide(originalSlidePart, aliasMap);
+                        }
+                    }
+                }
                 continue;
             }
             else
@@ -124,13 +139,17 @@ public class SlideGenerator
                 Logger.Warning($"SlideGenerator: Template slide part for slide {slideInstance.SourceSlideId} is invalid, skipping");
                 continue;
             }
-            Logger.Debug($"SlideGenerator: Cloning slide from template {slideInstance.SourceSlideId} for additional instance with offset {slideInstance.IndexOffset} at position {insertPosition}");
-
-            // Clone the slide for the new instance
+            Logger.Debug($"SlideGenerator: Cloning slide from template {slideInstance.SourceSlideId} for additional instance with offset {slideInstance.IndexOffset} at position {insertPosition}");            // Clone the slide for the new instance
             var newSlidePart = _slideCloner.CloneSlideFromTemplate(presentationPart, templateSlidePart, insertPosition);
 
             if (newSlidePart != null)
             {
+                // Apply alias transformations before other operations
+                if (aliasMap != null && aliasMap.Count > 0)
+                {
+                    ApplyAliasesToSlide(newSlidePart, aliasMap);
+                }
+
                 // Generate auto notes if slide info is available
                 var slideInfo = slideInfos?.FirstOrDefault(s => s.SlideId == slideInstance.SourceSlideId);
                 if (slideInfo != null)
@@ -219,6 +238,133 @@ public class SlideGenerator
         catch (Exception ex)
         {
             Logger.Warning($"SlideGenerator: Error generating auto notes: {ex.Message}");
+        }
+    }    /// <summary>
+         /// Applies alias transformations to all text elements in a slide
+         /// </summary>    /// <summary>
+         /// Applies alias transformations to all text elements in a slide using 2-stage processing:
+         /// Stage 1: Process complete expressions at span (text element) level
+         /// Stage 2: Process incomplete expressions at paragraph level by combining text elements
+         /// </summary>
+    private void ApplyAliasesToSlide(SlidePart slidePart, Dictionary<string, string> aliasMap)
+    {
+        if (slidePart?.Slide == null || aliasMap == null || aliasMap.Count == 0)
+            return;
+
+        Logger.Debug($"SlideGenerator: Applying aliases to slide with 2-stage processing, {aliasMap.Count} alias mappings available");
+
+        // Log alias mappings for debugging
+        foreach (var alias in aliasMap)
+        {
+            Logger.Debug($"SlideGenerator: Available alias mapping: '{alias.Key}' -> '{alias.Value}'");
+        }
+
+        // Get all paragraphs in the slide
+        var paragraphs = slidePart.Slide.Descendants<DocumentFormat.OpenXml.Drawing.Paragraph>().ToList();
+        Logger.Debug($"SlideGenerator: Found {paragraphs.Count} paragraphs to process");
+
+        foreach (var paragraph in paragraphs)
+        {
+            ProcessParagraphWithTwoStages(paragraph, aliasMap);
+        }
+    }
+
+    /// <summary>
+    /// Processes a paragraph using 2-stage alias transformation
+    /// </summary>
+    private void ProcessParagraphWithTwoStages(DocumentFormat.OpenXml.Drawing.Paragraph paragraph, Dictionary<string, string> aliasMap)
+    {
+        var textElements = paragraph.Descendants<DocumentFormat.OpenXml.Drawing.Text>().ToList();
+        if (textElements.Count == 0)
+            return;
+
+        Logger.Debug($"SlideGenerator: Processing paragraph with {textElements.Count} text elements");
+
+        // Stage 1: Process complete expressions at span (text element) level
+        bool hasCompleteExpressions = ProcessCompleteExpressionsAtSpanLevel(textElements, aliasMap);
+
+        // Stage 2: Process incomplete expressions at paragraph level if no complete expressions were found
+        if (!hasCompleteExpressions)
+        {
+            ProcessIncompleteExpressionsAtParagraphLevel(textElements, aliasMap);
+        }
+    }
+
+    /// <summary>
+    /// Stage 1: Process complete expressions at individual text element level
+    /// Returns true if any complete expressions were found and processed
+    /// </summary>
+    private bool ProcessCompleteExpressionsAtSpanLevel(List<DocumentFormat.OpenXml.Drawing.Text> textElements, Dictionary<string, string> aliasMap)
+    {
+        bool foundCompleteExpressions = false;
+        var completeExpressionPattern = new Regex(@"\$\{[^}]+\}", RegexOptions.Compiled);
+
+        Logger.Debug($"SlideGenerator: Stage 1 - Processing complete expressions at span level");
+
+        for (int i = 0; i < textElements.Count; i++)
+        {
+            var text = textElements[i].Text;
+            if (string.IsNullOrEmpty(text))
+                continue;
+
+            // Check if this text element contains complete expressions
+            if (completeExpressionPattern.IsMatch(text))
+            {
+                Logger.Debug($"SlideGenerator: Stage 1 - Found complete expression in span {i}: '{text}'");
+
+                var transformedText = _expressionUpdater.ApplyAliases(text, aliasMap);
+                if (transformedText != text)
+                {
+                    Logger.Debug($"SlideGenerator: Stage 1 - Applied alias transformation: '{text}' -> '{transformedText}'");
+                    textElements[i].Text = transformedText;
+                    foundCompleteExpressions = true;
+                }
+            }
+        }
+
+        Logger.Debug($"SlideGenerator: Stage 1 - Found complete expressions: {foundCompleteExpressions}");
+        return foundCompleteExpressions;
+    }
+
+    /// <summary>
+    /// Stage 2: Process incomplete expressions by combining text elements at paragraph level
+    /// </summary>
+    private void ProcessIncompleteExpressionsAtParagraphLevel(List<DocumentFormat.OpenXml.Drawing.Text> textElements, Dictionary<string, string> aliasMap)
+    {
+        Logger.Debug($"SlideGenerator: Stage 2 - Processing incomplete expressions at paragraph level");
+
+        // Combine all text elements in the paragraph to form complete expressions
+        var combinedText = string.Join("", textElements.Select(t => t.Text));
+        Logger.Debug($"SlideGenerator: Stage 2 - Combined text: '{combinedText}'");
+
+        // Check if the combined text contains expressions that need transformation
+        var expressionPattern = new Regex(@"\$\{[^}]+\}", RegexOptions.Compiled);
+        if (!expressionPattern.IsMatch(combinedText))
+        {
+            Logger.Debug($"SlideGenerator: Stage 2 - No expressions found in combined text");
+            return;
+        }
+
+        // Apply alias transformations to the combined text
+        var transformedText = _expressionUpdater.ApplyAliases(combinedText, aliasMap);
+
+        if (transformedText != combinedText)
+        {
+            Logger.Debug($"SlideGenerator: Stage 2 - Applied alias transformation: '{combinedText}' -> '{transformedText}'");
+
+            // Update the first text element with the transformed text and clear others
+            // This preserves the paragraph structure while applying the transformation
+            textElements[0].Text = transformedText;
+
+            // Clear the remaining text elements in this paragraph
+            for (int i = 1; i < textElements.Count; i++)
+            {
+                textElements[i].Text = "";
+            }
+        }
+        else
+        {
+            Logger.Debug($"SlideGenerator: Stage 2 - No alias transformation applied");
         }
     }
 }

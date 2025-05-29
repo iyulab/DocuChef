@@ -64,18 +64,18 @@ internal class Test1
     // Step 2: Prepare test data
     Console.WriteLine("Step 2: Preparing Test Data");
     Console.WriteLine("============================");
-    // var dataPath = Path.Combine(basePath, "test-data.json");
-    // var json = File.ReadAllText(dataPath);
+        //var dataPath = Path.Combine(basePath, "test-data.json");
+        //var json = File.ReadAllText(dataPath);
     var json = @"[
-        { ""Item_IP_대"": ""MININI"", ""Item_캐릭터_세분류_명"": ""BROWN"" },
-        { ""Item_IP_대"": ""MININI"", ""Item_캐릭터_세분류_명"": ""CONY"" },
-        { ""Item_IP_대"": ""BT21"", ""Item_캐릭터_세분류_명"": ""TATA"" },
-        { ""Item_IP_대"": ""BT21"", ""Item_캐릭터_세분류_명"": ""CHIMMY"" },
-        { ""Item_IP_대"": ""BT21"", ""Item_캐릭터_세분류_명"": ""COOKY"" },
-        { ""Item_IP_대"": ""BT21"", ""Item_캐릭터_세분류_명"": ""SHOOKY"" },
-        { ""Item_IP_대"": ""MININI"", ""Item_캐릭터_세분류_명"": ""BROWN"" },
-        { ""Item_IP_대"": ""MININI"", ""Item_캐릭터_세분류_명"": ""FRIENDS"" }
-        ]";
+    { ""Item_IP_대"": ""MININI"", ""Item_캐릭터_세분류_명"": ""BROWN"", ""Hello"": ""World"" },
+    { ""Item_IP_대"": ""MININI"", ""Item_캐릭터_세분류_명"": ""CONY"", ""Hello"": ""World"" },
+    { ""Item_IP_대"": ""BT21"", ""Item_캐릭터_세분류_명"": ""TATA"", ""Hello"": ""World"" },
+    { ""Item_IP_대"": ""BT21"", ""Item_캐릭터_세분류_명"": ""CHIMMY"", ""Hello"": ""World"" },
+    { ""Item_IP_대"": ""BT21"", ""Item_캐릭터_세분류_명"": ""COOKY"", ""Hello"": ""World"" },
+    { ""Item_IP_대"": ""BT21"", ""Item_캐릭터_세분류_명"": ""SHOOKY"", ""Hello"": ""World"" },
+    { ""Item_IP_대"": ""MININI"", ""Item_캐릭터_세분류_명"": ""BROWN"", ""Hello"": ""World"" },
+    { ""Item_IP_대"": ""MININI"", ""Item_캐릭터_세분류_명"": ""FRIENDS"", ""Hello"": ""World"" }
+    ]";
     var items = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json);
 
     var groupedItems = items
@@ -105,12 +105,16 @@ internal class Test1
 
     Console.WriteLine("🍳 Cooking template...");
     recipe.Cook(outputPath);
-    Console.WriteLine($"✅ Template processed successfully! Output: {outputPath}\n");
-
-    // Step 4: Verify output
+    Console.WriteLine($"✅ Template processed successfully! Output: {outputPath}\n");    // Step 4: Verify output
     Console.WriteLine("Step 4: Output Verification");
     Console.WriteLine("============================");
     VerifyOutput.CheckDataBinding(outputPath);
+    Console.WriteLine();
+
+    // Step 4.5: Inspect generated file structure
+    Console.WriteLine("Step 4.5: Generated File Analysis");
+    Console.WriteLine("==================================");
+    TemplateInspector.InspectGeneratedFile(outputPath);
     Console.WriteLine();
 
     // Step 5: Open output file

@@ -114,6 +114,7 @@ public enum ProcessingPhase
 {
     Initialization,      // 초기화
     TemplateAnalysis,    // 템플릿 분석
+    AliasTransformation, // Alias 표현식 변환
     PlanGeneration,      // 슬라이드 계획 생성
     ExpressionBinding,   // 표현식 바인딩
     DataBinding,         // 데이터 바인딩
