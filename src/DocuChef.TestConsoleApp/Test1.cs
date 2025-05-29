@@ -74,7 +74,8 @@ internal class Test1
     { ""Item_IP_대"": ""BT21"", ""Item_캐릭터_세분류_명"": ""COOKY"", ""Hello"": ""World"" },
     { ""Item_IP_대"": ""BT21"", ""Item_캐릭터_세분류_명"": ""SHOOKY"", ""Hello"": ""World"" },
     { ""Item_IP_대"": ""MININI"", ""Item_캐릭터_세분류_명"": ""BROWN"", ""Hello"": ""World"" },
-    { ""Item_IP_대"": ""MININI"", ""Item_캐릭터_세분류_명"": ""FRIENDS"", ""Hello"": ""World"" }
+    { ""Item_IP_대"": ""MININI"", ""Item_캐릭터_세분류_명"": ""FRIENDS"", ""Hello"": ""World"" },
+    { ""Item_IP_대"": ""MININI"", ""Item_캐릭터_세분류_명"": ""HELLO"", ""Hello"": ""World"" }
     ]";
     var items = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json);
 
@@ -102,6 +103,7 @@ internal class Test1
     var chef = new Chef(new RecipeOptions() { EnableVerboseLogging = true });
     var recipe = chef.LoadRecipe(templatePath);
     recipe.AddVariable("Products", groupedItems);
+    recipe.AddVariable("Today", DateTime.Now);
 
     Console.WriteLine("🍳 Cooking template...");
     recipe.Cook(outputPath);
