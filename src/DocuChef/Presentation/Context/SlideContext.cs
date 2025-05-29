@@ -1,5 +1,6 @@
 using DocumentFormat.OpenXml.Packaging;
 using DocuChef.Presentation.Models;
+using DocuChef.Logging;
 
 namespace DocuChef.Presentation.Context;
 
@@ -13,63 +14,72 @@ public class SlideContext
     /// 상위 PPT 컨텍스트 참조
     /// </summary>
     public PPTContext PPTContext { get; }
-    
+
     /// <summary>
     /// 슬라이드 인덱스 (0부터 시작)
     /// </summary>
     public int SlideIndex { get; }
-    
+
     /// <summary>
     /// 슬라이드 인스턴스 정보 (생성 계획에서 가져온)
     /// </summary>
     public SlideInstance SlideInstance { get; }
-    
+
     /// <summary>
     /// 원본 템플릿 슬라이드 정보
     /// </summary>
     public SlideInfo TemplateSlideInfo { get; }
-    
+
     /// <summary>
     /// 실제 슬라이드 파트
     /// </summary>
     public SlidePart? SlidePart { get; set; }
-    
+
     /// <summary>
     /// 이 슬라이드에서 사용할 바인딩 데이터
     /// (컨텍스트 경로, 인덱스 등이 적용된 최종 데이터)
     /// </summary>
     public Dictionary<string, object> BindingData { get; set; } = new();
-    
+
     /// <summary>
     /// 이 슬라이드의 컨텍스트 경로 (예: "Items[0]", "Users[1].Orders[0]")
     /// </summary>
     public string ContextPath { get; }
-    
+
     /// <summary>
     /// 현재 반복문에서의 인덱스 정보
     /// </summary>
     public Dictionary<string, int> IterationIndices { get; set; } = new();
-    
+
     /// <summary>
     /// 현재 반복문에서의 오프셋 정보
     /// </summary>
     public Dictionary<string, int> IterationOffsets { get; set; } = new();
-    
+
     /// <summary>
     /// 이 슬라이드에서 처리된 표현식들
     /// </summary>
-    public List<string> ProcessedExpressions { get; set; } = new();
-
-    public SlideContext(PPTContext pptContext, int slideIndex, SlideInstance slideInstance)
-    {        PPTContext = pptContext ?? throw new ArgumentNullException(nameof(pptContext));
+    public List<string> ProcessedExpressions { get; set; } = new(); public SlideContext(PPTContext pptContext, int slideIndex, SlideInstance slideInstance)
+    {
+        PPTContext = pptContext ?? throw new ArgumentNullException(nameof(pptContext));
         SlideIndex = slideIndex;
         SlideInstance = slideInstance ?? throw new ArgumentNullException(nameof(slideInstance));
+
+        // Debug logging to understand ContextPath issue
+        Logger.Debug($"SlideContext: Creating for slide {slideIndex}, SourceSlideId: {slideInstance.SourceSlideId}");
+        Logger.Debug($"SlideContext: SlideInstance.ContextPath count: {slideInstance.ContextPath?.Count ?? -1}");
+        if (slideInstance.ContextPath != null)
+        {
+            Logger.Debug($"SlideContext: SlideInstance.ContextPath items: [{string.Join(", ", slideInstance.ContextPath)}]");
+        }
+        Logger.Debug($"SlideContext: SlideInstance.ContextPathString: '{slideInstance.ContextPathString}'");
+
         ContextPath = slideInstance.ContextPathString;
-        
+
         // 템플릿 슬라이드 정보 찾기
         TemplateSlideInfo = pptContext.TemplateSlides.FirstOrDefault(s => s.Position == slideInstance.SourceSlideId)
             ?? throw new InvalidOperationException($"Template slide {slideInstance.SourceSlideId} not found");
-        
+
         InitializeBindingData();
     }
 
@@ -84,7 +94,7 @@ public class SlideContext
         {
             BindingData[kvp.Key] = kvp.Value;
         }
-        
+
         // 컨텍스트 경로가 있으면 해당 데이터로 컨텍스트 설정
         if (!string.IsNullOrEmpty(ContextPath))
         {
@@ -124,12 +134,12 @@ public class SlideContext
                 }
             }
         }
-          // 반복 인덱스와 오프셋 정보 추가
+        // 반복 인덱스와 오프셋 정보 추가
         if (!string.IsNullOrEmpty(SlideInstance.CollectionName))
         {
             IterationIndices[SlideInstance.CollectionName] = SlideInstance.StartIndex;
             IterationOffsets[SlideInstance.CollectionName] = SlideInstance.IndexOffset;
-            
+
             // 바인딩 데이터에도 인덱스 정보 추가
             BindingData[$"{SlideInstance.CollectionName}Index"] = SlideInstance.StartIndex;
             BindingData[$"{SlideInstance.CollectionName}Offset"] = SlideInstance.IndexOffset;
@@ -145,7 +155,7 @@ public class SlideContext
         {
             var segments = contextPath.Split('.');
             object? current = null;
-            
+
             foreach (var segment in segments)
             {
                 if (current == null)
@@ -156,7 +166,7 @@ public class SlideContext
                         // 배열 인덱스 처리 (예: "Items[0]")
                         var arrayName = segment.Substring(0, segment.IndexOf('['));
                         var indexStr = segment.Substring(segment.IndexOf('[') + 1, segment.IndexOf(']') - segment.IndexOf('[') - 1);
-                        
+
                         if (variables.TryGetValue(arrayName, out var arrayObj) && int.TryParse(indexStr, out var index))
                         {
                             if (arrayObj is System.Collections.IList list && index < list.Count)
@@ -178,7 +188,7 @@ public class SlideContext
                         // 배열 인덱스 처리
                         var arrayName = segment.Substring(0, segment.IndexOf('['));
                         var indexStr = segment.Substring(segment.IndexOf('[') + 1, segment.IndexOf(']') - segment.IndexOf('[') - 1);
-                        
+
                         var prop = current.GetType().GetProperty(arrayName);
                         if (prop != null && int.TryParse(indexStr, out var index))
                         {
@@ -196,7 +206,7 @@ public class SlideContext
                     }
                 }
             }
-            
+
             return current;
         }
         catch (Exception)
@@ -212,14 +222,14 @@ public class SlideContext
     {
         // 인덱스 및 오프셋 정보를 사용하여 표현식 변환
         var transformed = expression;
-        
+
         foreach (var kvp in IterationIndices)
         {
             // ${Index} -> ${0}, ${Offset} -> ${1} 등으로 변환
             transformed = transformed.Replace($"${{{kvp.Key}Index}}", $"{kvp.Value}");
             transformed = transformed.Replace($"${{{kvp.Key}Offset}}", $"{IterationOffsets[kvp.Key]}");
         }
-        
+
         return transformed;
     }
 

@@ -8,7 +8,7 @@ using DocuChef.TestConsoleApp;
 - BOLD ${Subtitle} Italic
 - Created By: ${Date:yyyy-MM-dd}
 */
-//TestTemplate.Run("template_1.pptx");
+TestTemplate.Run("template_1.pptx");
 
 /* 
 # template_2.pptx
@@ -64,8 +64,8 @@ Price: ${Items[4].Price:C0} USD
 ## 슬라이드3: 바인딩 없음
 - END
 */
-//TestTemplate.Run("template_3.pptx");
+// TestTemplate.Run("template_3.pptx");
 
 // Test1.Run("TEST.pptx");
 
-Test1.Run("TEST2.pptx");
+// Test1.Run("TEST2.pptx");

@@ -24,39 +24,34 @@ public class DataBinder
         {
             // TODO: 보간식이 올바른 인덱스를 가지는지 확인하기 위해 일시적으로 주석처리
             // 실제 평가 대신 템플릿을 그대로 반환하여 보간식을 확인할 수 있도록 함
-
-            /*
             var options = new DollarSignOptions
             {
-                ThrowOnMissingVariable = false,
-                ThrowOnMissingProperty = false
+                SupportDollarSignSyntax = true
             };
-            var result = DollarSign.EvalAsync(dollarSignTemplate, variables, options).GetAwaiter().GetResult();
-            return result ?? dollarSignTemplate;
-            */
+            var result = DollarSign.Eval(dollarSignTemplate, variables, options);
+            return result ?? string.Empty;
 
-            // 보간식을 그대로 반환 (디버깅용)
-            Logger.Debug($"DataBinder.EvaluateTemplate: 평가 없이 템플릿 반환 - '{dollarSignTemplate}'");
-            return dollarSignTemplate;
+            // // 보간식을 그대로 반환 (디버깅용)
+            // Logger.Debug($"DataBinder.EvaluateTemplate: 평가 없이 템플릿 반환 - '{dollarSignTemplate}'");
+            // return dollarSignTemplate;
         }
         catch (Exception ex)
         {
             Logger.Debug($"DataBinder.EvaluateTemplate: 평가 중 오류 발생 - {ex.Message}");
             return dollarSignTemplate;
         }
-    }
-
-    /// <summary>
-    /// Binds data to template expressions in the given text.
-    /// Converts context operators (>) to underscore notation (___) and evaluates using DollarSignEngine.
-    /// This overload only creates variables for expressions that are actually used in the template.
-    /// </summary>
-    /// <param name="template">Template text containing expressions</param>
-    /// <param name="data">Data object to bind</param>
-    /// <param name="usedExpressions">Set of expressions actually used in the template</param>
-    /// <param name="indexOffset">Index offset for array expressions</param>
-    /// <returns>Text with all expressions evaluated</returns>
-    public string BindData(string template, object data, ISet<string> usedExpressions, int indexOffset = 0)
+    }    /// <summary>
+         /// Binds data to template expressions in the given text.
+         /// Converts context operators (>) to underscore notation (___) and evaluates using DollarSignEngine.
+         /// This overload only creates variables for expressions that are actually used in the template.
+         /// </summary>
+         /// <param name="template">Template text containing expressions</param>
+         /// <param name="data">Data object to bind</param>
+         /// <param name="usedExpressions">Set of expressions actually used in the template</param>
+         /// <param name="indexOffset">Index offset for array expressions</param>
+         /// <param name="contextPath">Context path for the current slide (e.g., "Products[0]", "Products[1]")</param>
+         /// <returns>Text with all expressions evaluated</returns>
+    public string BindData(string template, object data, ISet<string> usedExpressions, int indexOffset = 0, string? contextPath = null)
     {
         if (string.IsNullOrEmpty(template) || data == null)
             return template ?? string.Empty;
@@ -66,12 +61,10 @@ public class DataBinder
             // Pre-process nested expressions first
             var preprocessedTemplate = PreprocessNestedExpressions(template, data, indexOffset);
             Logger.Debug($"DataBinder: Original template: '{template}'");
-            Logger.Debug($"DataBinder: Preprocessed template: '{preprocessedTemplate}'");
-
-            // Convert template to DollarSign format
+            Logger.Debug($"DataBinder: Preprocessed template: '{preprocessedTemplate}'");            // Convert template to DollarSign format
             var dollarSignTemplate = ConvertToTemplate(preprocessedTemplate);
             Logger.Debug($"DataBinder: Converted template to '{dollarSignTemplate}'");            // Create context variables for the data - OPTIMIZED VERSION
-            var variables = CreateContextOperatorVariablesFiltered(data, usedExpressions);
+            var variables = CreateContextOperatorVariablesFiltered(data, usedExpressions, contextPath);
 
             // Add PPT functions to variables - reuse existing instance if available
             DocuChef.Presentation.Functions.PPTFunctions pptFunctions;
@@ -122,30 +115,36 @@ public class DataBinder
             Logger.Error($"DataBinder: Error binding data to template '{template}': {ex.Message}");
             return template; // Return original template on error
         }
-    }
-
-    /// <summary>
-    /// Creates context operator variables for only the expressions that are actually used (optimized version).
-    /// Extracts variable names from expressions and only creates variables for those.
-    /// </summary>
-    private Dictionary<string, object> CreateContextOperatorVariablesFiltered(object data, ISet<string> usedExpressions)
+    }    /// <summary>
+         /// Creates context operator variables for only the expressions that are actually used (optimized version).
+         /// Extracts variable names from expressions and only creates variables for those.
+         /// </summary>
+         /// <param name="data">Source data object</param>
+         /// <param name="usedExpressions">Set of expressions actually used in the template</param>
+         /// <param name="contextPath">Context path for the current slide (e.g., "Products[0]", "Products[1]")</param>
+    private Dictionary<string, object> CreateContextOperatorVariablesFiltered(object data, ISet<string> usedExpressions, string? contextPath = null)
     {
         var variables = new Dictionary<string, object>();
 
         if (data == null || usedExpressions == null || usedExpressions.Count == 0)
-            return variables;
-
-        // Extract variable names from the used expressions
+            return variables;        // Extract variable names from the used expressions
         var requiredVariables = ExtractVariableNamesFromExpressions(usedExpressions);
 
         Logger.Debug($"DataBinder: Filtering variables based on {usedExpressions.Count} expressions");
         Logger.Debug($"DataBinder: Required variables: {string.Join(", ", requiredVariables)}");
+        Logger.Debug($"DataBinder: Context path: '{contextPath ?? "null"}'");
 
         // Add the root data object
         variables["Data"] = data;
 
         // Create flattened variables for only the required properties
         CreateContextVariablesRecursiveFiltered(data, string.Empty, variables, 0, requiredVariables);
+
+        // Create context-specific variables based on contextPath
+        if (!string.IsNullOrEmpty(contextPath))
+        {
+            CreateContextSpecificVariables(data, variables, contextPath, requiredVariables);
+        }
 
         return variables;
     }    /// <summary>
@@ -417,19 +416,18 @@ public class DataBinder
                 Logger.Warning($"DataBinder: Error extracting array element property '{prop.Name}': {ex.Message}");
             }
         }
-    }
-
-    /// <summary>
-    /// Binds data to template expressions in the given text with custom functions.
-    /// Converts context operators (>) to underscore notation (___) and evaluates using DollarSignEngine.
-    /// </summary>
-    /// <param name="template">Template text containing expressions</param>
-    /// <param name="data">Data object to bind</param>
-    /// <param name="usedExpressions">Set of expressions actually used for filtering variables</param>
-    /// <param name="customFunctions">Custom functions to register for use in expressions</param>
-    /// <param name="indexOffset">Index offset for array expressions</param>
-    /// <returns>Text with all expressions evaluated</returns>
-    public string BindData(string template, object data, ISet<string> usedExpressions, Dictionary<string, Func<object, object>>? customFunctions, int indexOffset = 0)
+    }    /// <summary>
+         /// Binds data to template expressions in the given text with custom functions.
+         /// Converts context operators (>) to underscore notation (___) and evaluates using DollarSignEngine.
+         /// </summary>
+         /// <param name="template">Template text containing expressions</param>
+         /// <param name="data">Data object to bind</param>
+         /// <param name="usedExpressions">Set of expressions actually used for filtering variables</param>
+         /// <param name="customFunctions">Custom functions to register for use in expressions</param>
+         /// <param name="indexOffset">Index offset for array expressions</param>
+         /// <param name="contextPath">Context path for the current slide (e.g., "Products[0]", "Products[1]")</param>
+         /// <returns>Text with all expressions evaluated</returns>
+    public string BindData(string template, object data, ISet<string> usedExpressions, Dictionary<string, Func<object, object>>? customFunctions, int indexOffset = 0, string? contextPath = null)
     {
         if (string.IsNullOrEmpty(template) || data == null)
             return template ?? string.Empty;
@@ -443,8 +441,8 @@ public class DataBinder
 
             // Convert template to DollarSign format
             var dollarSignTemplate = ConvertToTemplate(preprocessedTemplate);
-            Logger.Debug($"DataBinder: Converted template to '{dollarSignTemplate}'");            // Create context variables for the data - OPTIMIZED VERSION
-            var variables = CreateContextOperatorVariablesFiltered(data, usedExpressions);
+            Logger.Debug($"DataBinder: Converted template to '{dollarSignTemplate}'");            // Create context variables for the data - OPTIMIZED VERSION            // Create context variables for the data - OPTIMIZED VERSION with context support
+            var variables = CreateContextOperatorVariablesFiltered(data, usedExpressions, contextPath);
 
             // Add PPT functions to variables - reuse existing instance if available
             DocuChef.Presentation.Functions.PPTFunctions pptFunctions;
@@ -579,5 +577,148 @@ public class DataBinder
                type == typeof(TimeSpan) ||
                type == typeof(Guid) ||
                (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>));
+    }
+
+    /// <summary>
+    /// Creates context-specific variables based on the provided context path.
+    /// For example, if contextPath is "Products[0]", creates Products___Items variable
+    /// that points to Products[0].Items.
+    /// </summary>
+    private void CreateContextSpecificVariables(object data, Dictionary<string, object> variables, string contextPath, HashSet<string> requiredVariables)
+    {
+        if (string.IsNullOrEmpty(contextPath) || data == null)
+            return;
+
+        Logger.Debug($"DataBinder: Creating context-specific variables for path '{contextPath}'");
+
+        try
+        {
+            // Parse context path (e.g., "Products[0]" -> rootProperty="Products", index=0)
+            var match = System.Text.RegularExpressions.Regex.Match(contextPath, @"^(\w+)\[(\d+)\]$");
+            if (!match.Success)
+            {
+                Logger.Debug($"DataBinder: Context path '{contextPath}' doesn't match expected pattern");
+                return;
+            }
+
+            string rootProperty = match.Groups[1].Value;
+            int contextIndex = int.Parse(match.Groups[2].Value);
+
+            Logger.Debug($"DataBinder: Parsed context - root: '{rootProperty}', index: {contextIndex}");
+
+            // Get the root collection from data
+            object? rootCollection = GetPropertyValue(data, rootProperty);
+            if (rootCollection is not System.Collections.IEnumerable enumerable || rootCollection is string)
+            {
+                Logger.Debug($"DataBinder: Root property '{rootProperty}' is not a collection");
+                return;
+            }
+
+            var list = enumerable.Cast<object>().ToList();
+            if (contextIndex >= list.Count)
+            {
+                Logger.Debug($"DataBinder: Context index {contextIndex} is out of bounds for collection with {list.Count} items");
+                return;
+            }
+
+            // Get the specific context object
+            var contextObject = list[contextIndex];
+            if (contextObject == null)
+            {
+                Logger.Debug($"DataBinder: Context object at index {contextIndex} is null");
+                return;
+            }
+
+            Logger.Debug($"DataBinder: Context object type: {contextObject.GetType().Name}");
+
+            // Create context-specific variables for properties of the context object
+            CreateContextVariablesForObject(contextObject, rootProperty, variables, requiredVariables);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"DataBinder: Error creating context-specific variables for '{contextPath}': {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Creates variables for properties of a context object with the root property prefix.
+    /// For example, if rootProperty is "Products" and object has "Items" property,
+    /// creates "Products___Items" variable.
+    /// </summary>
+    private void CreateContextVariablesForObject(object contextObject, string rootProperty, Dictionary<string, object> variables, HashSet<string> requiredVariables)
+    {
+        if (contextObject == null)
+            return;
+
+        Logger.Debug($"DataBinder: Creating variables for context object properties with prefix '{rootProperty}___'");
+
+        if (contextObject is Dictionary<string, object> dictionary)
+        {
+            foreach (var kvp in dictionary)
+            {
+                var variableName = $"{rootProperty}___{kvp.Key}";
+
+                // Only create if this variable is required
+                if (IsVariableRequired(variableName, kvp.Key, requiredVariables))
+                {
+                    variables[variableName] = kvp.Value;
+                    Logger.Debug($"DataBinder: Created context variable '{variableName}' = {GetValueDescription(kvp.Value)}");
+                }
+            }
+        }
+        else
+        {
+            // Handle regular objects using reflection
+            var properties = contextObject.GetType().GetProperties();
+            foreach (var property in properties)
+            {
+                try
+                {
+                    var variableName = $"{rootProperty}___{property.Name}";
+
+                    // Only create if this variable is required
+                    if (IsVariableRequired(variableName, property.Name, requiredVariables))
+                    {
+                        var value = property.GetValue(contextObject);
+                        variables[variableName] = value ?? new object();
+                        Logger.Debug($"DataBinder: Created context variable '{variableName}' = {GetValueDescription(value)}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug($"DataBinder: Error accessing property '{property.Name}': {ex.Message}");
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets a description of a value for logging purposes.
+    /// </summary>
+    private string GetValueDescription(object? value)
+    {
+        if (value == null) return "null";
+        if (value is System.Collections.IEnumerable enumerable && !(value is string))
+        {
+            var list = enumerable.Cast<object>().ToList();
+            return $"[{list.Count} items]";
+        }
+        return value.ToString() ?? "null";
+    }
+
+    /// <summary>
+    /// Gets property value from an object using property name.
+    /// </summary>
+    private object? GetPropertyValue(object obj, string propertyName)
+    {
+        if (obj == null) return null;
+
+        if (obj is Dictionary<string, object> dictionary)
+        {
+            return dictionary.TryGetValue(propertyName, out var value) ? value : null;
+        }
+
+        var property = obj.GetType().GetProperty(propertyName);
+        return property?.GetValue(obj);
     }
 }

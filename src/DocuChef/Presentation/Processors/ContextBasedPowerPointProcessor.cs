@@ -454,7 +454,11 @@ public class ContextBasedPowerPointProcessor
             return;        // Apply data binding to the complete paragraph text
         var indexOffset = slideContext.SlideInstance?.IndexOffset ?? 0;
         var usedExpressions = new HashSet<string> { paragraphText };
-        var boundText = _dataBinder.BindData(paragraphText, slideContext.BindingData, usedExpressions, indexOffset);
+
+        // Debug logging to track ContextPath issue
+        Logger.Debug($"ContextBasedPowerPointProcessor: About to call DataBinder.BindData with slideContext.ContextPath: '{slideContext.ContextPath}'");
+
+        var boundText = _dataBinder.BindData(paragraphText, slideContext.BindingData, usedExpressions, indexOffset, slideContext.ContextPath);
 
         if (boundText != paragraphText)
         {
