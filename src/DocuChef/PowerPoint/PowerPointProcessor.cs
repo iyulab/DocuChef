@@ -1,8 +1,3 @@
-using DocumentFormat.OpenXml.Packaging;
-using DocuChef.Logging;
-using DocuChef.Presentation.Processors;
-using System.Text.RegularExpressions;
-
 namespace DocuChef.PowerPoint;
 
 /// <summary>

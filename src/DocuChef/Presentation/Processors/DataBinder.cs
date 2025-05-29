@@ -1,7 +1,4 @@
 using DollarSignEngine;
-using System.Linq;
-using System.Reflection;
-
 namespace DocuChef.Presentation.Processors;
 
 /// <summary>
@@ -10,9 +7,6 @@ namespace DocuChef.Presentation.Processors;
 /// </summary>
 public class DataBinder
 {
-    private static readonly Regex ContextOperatorRegex = new(@"(\w+)>([^}\s]+)", RegexOptions.Compiled);
-    private static readonly Regex DollarSignExpressionRegex = new(@"\$\{([^}]+)\}", RegexOptions.Compiled);
-
     /// <summary>
     /// 단일 평가 함수 - 모든 DollarSign.EvalAsync 호출을 여기서 처리
     /// 현재는 보간식 확인을 위해 주석처리되어 있음
