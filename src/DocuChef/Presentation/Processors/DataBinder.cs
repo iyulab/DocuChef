@@ -28,12 +28,7 @@ public class DataBinder
             var options = new DollarSignOptions
             {
                 SupportDollarSignSyntax = true,
-                ThrowOnError = true,
-                ErrorHandler = (expr, ex) =>
-                {
-                    Logger.Debug($"[DollarSignEngine-Error] {ex.Message}");
-                    return "${" + expr + "}"; // Return the original expression on error
-                }
+                ThrowOnError = true
             };
 
             var result = DollarSign.Eval(dollarSignTemplate, variables, options);
