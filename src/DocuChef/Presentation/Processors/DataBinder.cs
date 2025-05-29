@@ -108,13 +108,11 @@ public class DataBinder
             Logger.Error($"DataBinder: Error binding data to template '{template}': {ex.Message}");
             return template; // Return original template on error
         }
-    }
-
-    /// <summary>
-    /// Converts template expressions to DollarSign format.
-    /// Transforms context operators (>) to underscore notation (___).
-    /// Example: Category>Products[0].Name → ${Category___Products[0].Name}
-    /// </summary>
+    }    /// <summary>
+         /// Converts template expressions to DollarSign format.
+         /// Transforms context operators (>) to underscore notation (___).
+         /// Example: ${Category>Products[0].Name} → ${Category___Products[0].Name}
+         /// </summary>
     private string ConvertToTemplate(string template)
     {
         if (string.IsNullOrEmpty(template))
@@ -122,7 +120,28 @@ public class DataBinder
 
         var result = template;
 
-        // Handle context operators - convert the entire expression
+        // First, handle expressions that are already wrapped in ${...}
+        // Find all ${...} expressions and process them
+        var dollarSignMatches = DollarSignExpressionRegex.Matches(result);
+
+        foreach (Match dollarMatch in dollarSignMatches.Cast<Match>().Reverse()) // Process in reverse to avoid index issues
+        {
+            var originalExpression = dollarMatch.Value; // e.g., "${Products>Items[2]["Item_캐릭터_세분류_명"]}"
+            var innerExpression = dollarMatch.Groups[1].Value; // e.g., "Products>Items[2]["Item_캐릭터_세분류_명"]"
+
+            Logger.Debug($"DataBinder: Processing wrapped expression: '{originalExpression}' with inner: '{innerExpression}'");
+
+            // Convert context operators within the expression
+            var convertedInner = innerExpression.Replace(">", "___");
+
+            // Replace the original ${...} with the converted version
+            var convertedExpression = $"${{{convertedInner}}}";
+            result = result.Substring(0, dollarMatch.Index) + convertedExpression + result.Substring(dollarMatch.Index + dollarMatch.Length);
+
+            Logger.Debug($"DataBinder: Converted '{originalExpression}' to '{convertedExpression}'");
+        }
+
+        // Then handle any remaining context operators that are not wrapped (for backward compatibility)
         var contextMatches = ContextOperatorRegex.Matches(result);
 
         foreach (Match match in contextMatches)
@@ -130,33 +149,53 @@ public class DataBinder
             var fullExpression = match.Value; // e.g., "Categories>Items[0].Name"
             var converted = fullExpression.Replace(">", "___");
 
-            // Wrap in DollarSign syntax if not already wrapped
-            if (!result.Contains($"${{{converted}}}"))
+            // Only wrap if not already inside ${...}
+            var beforeMatch = result.Substring(0, match.Index);
+            var afterMatch = result.Substring(match.Index + match.Length);
+
+            // Check if this expression is already inside ${...}
+            var lastDollarSign = beforeMatch.LastIndexOf("${");
+            var lastCloseBrace = beforeMatch.LastIndexOf("}");
+
+            // If we're inside ${...}, don't wrap again
+            if (lastDollarSign > lastCloseBrace)
             {
+                // Just replace the > with ___
+                result = result.Replace(fullExpression, converted);
+            }
+            else
+            {
+                // Wrap in DollarSign syntax
                 result = result.Replace(fullExpression, $"${{{converted}}}");
             }
-        }        // Convert array indexing with property access: Items[0].Id -> Items_0___Id
+        }
+
+        // Convert array indexing with property access: Items[0].Id -> Items_0___Id
         // Also handle formatting specifiers: Items[0].Price:C0 -> Items_0___Price:C0
         // Handle both direct expressions and those inside function calls
         var arrayPropertyRegex = new Regex(@"([a-zA-Z_]\w*)\[(\d+)\]\.([a-zA-Z_]\w*)", RegexOptions.Compiled);
-        result = arrayPropertyRegex.Replace(result, "$1_$2___$3");// IMPORTANT: Only process user-defined template expressions (${...})
+        result = arrayPropertyRegex.Replace(result, "$1_$2___$3");
+
+        // IMPORTANT: Only process user-defined template expressions (${...})
         // Do NOT automatically wrap bare words as template variables
         // This prevents issues like "Created By: " becoming "${Created} ${By}: "
         Logger.Debug($"DataBinder: Skipping bare property wrapping to preserve static text");
 
         return result;
-    }
-
-    /// <summary>
-    /// Creates context operator variables for DollarSignEngine.
-    /// Flattens nested properties into underscore-separated variables.
-    /// </summary>
+    }/// <summary>
+     /// Creates context operator variables for DollarSignEngine.
+     /// Flattens nested properties into underscore-separated variables.
+     /// </summary>
     private Dictionary<string, object> CreateContextOperatorVariables(object data)
     {
         var variables = new Dictionary<string, object>();
 
         if (data == null)
             return variables;
+
+        // Add built-in variables
+        variables["Today"] = DateTime.Today;
+        variables["Now"] = DateTime.Now;
 
         // Add the root data object
         variables["Data"] = data;

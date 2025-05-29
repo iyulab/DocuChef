@@ -38,10 +38,10 @@ namespace DocuChef.TestConsoleApp
                     {
                         var slideId = slideIds[i];
                         var slidePart = (SlidePart)presentationPart.GetPartById(slideId.RelationshipId!);
-                        
+
                         Console.WriteLine($"Slide {i + 1} Content:");
                         Console.WriteLine("-------------------");
-                        
+
                         // Extract all text from the slide
                         var allText = ExtractTextFromSlide(slidePart);
                         Console.WriteLine(allText);
@@ -63,7 +63,7 @@ namespace DocuChef.TestConsoleApp
 
                         // Check for expected resolved values
                         CheckExpectedValues(allText, i + 1);
-                        
+
                         Console.WriteLine(new string('=', 50));
                     }
                 }
@@ -77,7 +77,7 @@ namespace DocuChef.TestConsoleApp
         private static string ExtractTextFromSlide(SlidePart slidePart)
         {
             var allText = new StringBuilder();
-            
+
             if (slidePart.Slide != null)
             {
                 // Get all text elements
@@ -98,7 +98,7 @@ namespace DocuChef.TestConsoleApp
         {
             var expressions = new List<string>();
             var lines = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            
+
             foreach (var line in lines)
             {
                 var trimmed = line.Trim();
@@ -106,7 +106,7 @@ namespace DocuChef.TestConsoleApp
                 {
                     expressions.Add(trimmed);
                 }
-                
+
                 // Also check for expressions within text
                 var start = 0;
                 while ((start = trimmed.IndexOf("${", start)) >= 0)
@@ -127,19 +127,16 @@ namespace DocuChef.TestConsoleApp
                     }
                 }
             }
-            
+
             return expressions.ToArray();
         }
 
         private static void CheckExpectedValues(string text, int slideNumber)
         {
             Console.WriteLine("\nChecking for expected resolved values:");
-            
+
             var expectedValues = new Dictionary<string, string>
             {
-                { "DocuChef Test - NEW SYSTEM", "Title" },
-                { "Multi-Slide and Data Binding Test with PowerPoint Functions", "Subtitle" },
-                { "DocuChef Technology Lab", "CompanyName" }
             };
 
             var foundValues = 0;

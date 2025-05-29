@@ -4,6 +4,7 @@ using DocuChef.Presentation.Context;
 using DocuChef.Presentation.Models;
 using DocuChef.Presentation.Processors;
 using DocuChef.Presentation.Functions;
+using DocuChef.Presentation.Utilities;
 
 namespace DocuChef.Presentation.Processors;
 
@@ -288,51 +289,203 @@ public class ContextBasedPowerPointProcessor
             return;
         }
         var slide = slideContext.SlidePart.Slide;
-        var textElements = slide.Descendants<DocumentFormat.OpenXml.Drawing.Text>().ToList();
+
+        // Process data binding at paragraph level to handle Korean text properly
+        var paragraphs = slide.Descendants<DocumentFormat.OpenXml.Drawing.Paragraph>().ToList();
 
         if (slideContext.PPTContext.Options.EnableVerboseLogging)
         {
-            Logger.Debug($"Processing data binding for slide {slideContext.SlideIndex}: found {textElements.Count} text elements");
-
-            // Debug: Check what elements exist in the slide
-            var allTextElements = slide.Descendants().Where(e => e.InnerText.Contains("$")).ToList();
-            Logger.Debug($"  Found {allTextElements.Count} elements containing '$':");
-            foreach (var element in allTextElements)
-            {
-                Logger.Debug($"    {element.GetType().Name}: '{element.InnerText}'");
-            }
-
-            // Check for other text-like elements
-            var runElements = slide.Descendants<DocumentFormat.OpenXml.Drawing.Run>().ToList();
-            Logger.Debug($"  Found {runElements.Count} Run elements");
-
-            var textBodyElements = slide.Descendants<DocumentFormat.OpenXml.Drawing.TextBody>().ToList();
-            Logger.Debug($"  Found {textBodyElements.Count} TextBody elements");
+            Logger.Debug($"Processing data binding for slide {slideContext.SlideIndex}: found {paragraphs.Count} paragraphs");
         }
-        foreach (var textElement in textElements)
-        {
-            if (string.IsNullOrEmpty(textElement.Text))
-                continue;
 
-            if (slideContext.PPTContext.Options.EnableVerboseLogging)
-            {
-                Logger.Debug($"  Processing text element: '{textElement.Text}'");
-            }            // Apply data binding to this text element
-            var indexOffset = slideContext.SlideInstance?.IndexOffset ?? 0;
-            var boundText = _dataBinder.BindData(textElement.Text, slideContext.BindingData, indexOffset);
-            if (boundText != textElement.Text)
-            {
-                textElement.Text = boundText;
-                if (slideContext.PPTContext.Options.EnableVerboseLogging)
-                {
-                    Logger.Debug($"  Text bound from '{textElement.Text}' to '{boundText}'");
-                }
-            }
+        foreach (var paragraph in paragraphs)
+        {
+            ProcessParagraphDataBinding(paragraph, slideContext);
         }
 
         if (slideContext.PPTContext.Options.EnableVerboseLogging)
         {
             Logger.Debug($"Data binding completed for slide {slideContext.SlideIndex}");
+        }
+    }
+
+    /// <summary>
+    /// Process data binding for a single paragraph, handling Korean text that may be split across spans
+    /// </summary>
+    private void ProcessParagraphDataBinding(DocumentFormat.OpenXml.Drawing.Paragraph paragraph, SlideContext slideContext)
+    {
+        var textElements = paragraph.Descendants<DocumentFormat.OpenXml.Drawing.Text>().ToList();
+        if (textElements.Count == 0)
+            return;
+
+        // Extract the complete paragraph text
+        var paragraphText = string.Join("", textElements.Select(t => t.Text));
+
+        if (slideContext.PPTContext.Options.EnableVerboseLogging)
+        {
+            Logger.Debug($"  Processing paragraph: '{paragraphText}'");
+        }
+
+        // Check if this paragraph contains any binding expressions
+        if (!paragraphText.Contains("${"))
+            return;
+
+        // Apply data binding to the complete paragraph text
+        var indexOffset = slideContext.SlideInstance?.IndexOffset ?? 0;
+        var boundText = _dataBinder.BindData(paragraphText, slideContext.BindingData, indexOffset);
+
+        if (boundText != paragraphText)
+        {
+            if (slideContext.PPTContext.Options.EnableVerboseLogging)
+            {
+                Logger.Debug($"  Paragraph bound from '{paragraphText}' to '{boundText}'");
+            }            // Replace the text while preserving formatting as much as possible
+            if (slideContext.SlidePart != null)
+            {
+                ReplaceTextInParagraph(paragraph, paragraphText, boundText);
+            }
+        }
+    }    /// <summary>
+         /// Replace text in a paragraph while preserving formatting
+         /// </summary>
+    private void ReplaceTextInParagraph(DocumentFormat.OpenXml.Drawing.Paragraph paragraph, string oldText, string newText)
+    {
+        var currentText = ExtractParagraphText(paragraph);
+        if (!currentText.Contains(oldText))
+            return;
+
+        var textElements = paragraph.Descendants<DocumentFormat.OpenXml.Drawing.Text>().ToList();
+
+        // If the old text spans multiple text elements, we need a more sophisticated approach
+        if (textElements.Count == 1)
+        {
+            // Simple case: text is in one element
+            var textElement = textElements[0];
+            if (textElement.Text.Contains(oldText))
+            {
+                textElement.Text = textElement.Text.Replace(oldText, newText);
+            }
+        }
+        else
+        {
+            // Complex case: text spans multiple elements
+            // Enhanced approach to preserve formatting when replacing text
+            ReplaceTextPreservingFormatting(paragraph, textElements, currentText, oldText, newText);
+        }
+    }
+
+    /// <summary>
+    /// Extracts text from a paragraph, handling Korean text that may be split across spans
+    /// </summary>
+    private string ExtractParagraphText(DocumentFormat.OpenXml.Drawing.Paragraph paragraph)
+    {
+        var textBuilder = new System.Text.StringBuilder();
+        var textElements = paragraph.Descendants<DocumentFormat.OpenXml.Drawing.Text>();
+
+        foreach (var textElement in textElements)
+        {
+            if (!string.IsNullOrEmpty(textElement.Text))
+            {
+                textBuilder.Append(textElement.Text);
+            }
+        }
+
+        return textBuilder.ToString();
+    }
+
+    /// <summary>
+    /// Replaces text while preserving the original formatting structure
+    /// </summary>
+    private void ReplaceTextPreservingFormatting(DocumentFormat.OpenXml.Drawing.Paragraph paragraph,
+        IList<DocumentFormat.OpenXml.Drawing.Text> textElements,
+        string currentText, string oldText, string newText)
+    {
+        // Find the position where oldText starts and ends in the combined text
+        var oldTextIndex = currentText.IndexOf(oldText);
+        if (oldTextIndex == -1)
+            return;
+
+        var oldTextEndIndex = oldTextIndex + oldText.Length;
+
+        // Calculate the position of each text element in the combined text
+        var elementPositions = new List<(DocumentFormat.OpenXml.Drawing.Text element, int start, int end)>();
+        var currentPosition = 0;
+
+        foreach (var textElement in textElements)
+        {
+            var elementText = textElement.Text ?? "";
+            var elementStart = currentPosition;
+            var elementEnd = currentPosition + elementText.Length;
+            elementPositions.Add((textElement, elementStart, elementEnd));
+            currentPosition = elementEnd;
+        }
+
+        // Determine which elements need to be modified
+        var elementsToModify = elementPositions
+            .Where(ep => ep.start < oldTextEndIndex && ep.end > oldTextIndex)
+            .ToList();
+
+        if (elementsToModify.Count == 0)
+            return;
+
+        // If the replacement affects only one element, handle it simply
+        if (elementsToModify.Count == 1)
+        {
+            var element = elementsToModify[0].element;
+            var elementStart = elementsToModify[0].start;
+            var relativeOldStart = Math.Max(0, oldTextIndex - elementStart);
+            var relativeOldEnd = Math.Min(element.Text.Length, oldTextEndIndex - elementStart);
+
+            if (relativeOldStart < element.Text.Length && relativeOldEnd > relativeOldStart)
+            {
+                var before = element.Text.Substring(0, relativeOldStart);
+                var after = element.Text.Substring(relativeOldEnd);
+                element.Text = before + newText + after;
+            }
+        }
+        else
+        {
+            // Multiple elements are affected - this is the complex case
+            // Strategy: Keep original formatting structure as much as possible
+
+            // Clear all affected elements first
+            foreach (var (element, _, _) in elementsToModify)
+            {
+                element.Text = "";
+            }
+
+            // Try to distribute the new text while preserving some formatting structure
+            if (elementsToModify.Count >= 2)
+            {
+                var firstElement = elementsToModify[0].element;
+                var lastElement = elementsToModify[elementsToModify.Count - 1].element;
+
+                // If we can reasonably split the newText, do so
+                if (newText.Contains("(") && newText.Contains(")"))
+                {
+                    // Special case for "Product Catalogs(2025-05-29)" pattern
+                    var parenIndex = newText.IndexOf('(');
+                    if (parenIndex > 0)
+                    {
+                        firstElement.Text = newText.Substring(0, parenIndex);
+                        lastElement.Text = newText.Substring(parenIndex);
+                        return;
+                    }
+                }
+
+                // Fallback: put most text in first element, minimal in last
+                var splitPoint = Math.Min(newText.Length, Math.Max(1, newText.Length * 2 / 3));
+                firstElement.Text = newText.Substring(0, splitPoint);
+                if (splitPoint < newText.Length)
+                {
+                    lastElement.Text = newText.Substring(splitPoint);
+                }
+            }
+            else
+            {
+                // Fallback to simple replacement
+                elementsToModify[0].element.Text = newText;
+            }
         }
     }
 

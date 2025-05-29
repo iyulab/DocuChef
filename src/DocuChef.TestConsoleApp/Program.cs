@@ -66,4 +66,4 @@ Price: ${Items[4].Price:C0} USD
 */
 // TestTemplate.Run("template_3.pptx");
 
-Test1.Run();
+Test1.Run("TEST1.pptx");
