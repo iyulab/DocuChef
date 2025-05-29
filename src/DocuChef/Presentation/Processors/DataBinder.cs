@@ -137,39 +137,12 @@ public class DataBinder
             }
         }        // Convert array indexing with property access: Items[0].Id -> Items_0___Id
         // Also handle formatting specifiers: Items[0].Price:C0 -> Items_0___Price:C0
-        var arrayPropertyRegex = new Regex(@"\$\{([a-zA-Z_]\w*)\[(\d+)\]\.([a-zA-Z_]\w*)(:[\w\-\+#,\.]*?)?\}", RegexOptions.Compiled);
-        result = arrayPropertyRegex.Replace(result, @"${$1_$2___$3$4}");
-
-        // Skip bare property wrapping if the template already contains properly formatted expressions
-        // This prevents interfering with function calls like ppt.Image(LogoPath)
-        if (result.Contains("${") && result.Contains("}"))
-        {
-            Logger.Debug($"DataBinder: Template already contains ${{}} expressions, skipping bare property wrapping");
-            return result;
-        }
-
-        // Handle other expressions that might not have context operators
-        // Look for bare property names that should be wrapped
-        var barePropertyRegex = new Regex(@"\b([A-Z]\w*(?:\[\d+\])?(?:\.\w+)*)\b", RegexOptions.Compiled);
-        var bareMatches = barePropertyRegex.Matches(result);
-
-        foreach (Match match in bareMatches)
-        {
-            var property = match.Value;
-
-            // Skip if already processed, is a DollarSign expression, or contains underscore notation
-            if (result.Contains($"${{{property}}}") ||
-                property.Contains("___") ||
-                result.Substring(Math.Max(0, match.Index - 2), Math.Min(result.Length - Math.Max(0, match.Index - 2), property.Length + 4)).Contains($"${{{property}}}"))
-                continue;
-
-            // Skip common words that shouldn't be treated as properties
-            if (IsCommonWord(property))
-                continue;
-
-            // Wrap in DollarSign syntax
-            result = result.Replace(property, $"${{{property}}}");
-        }
+        // Handle both direct expressions and those inside function calls
+        var arrayPropertyRegex = new Regex(@"([a-zA-Z_]\w*)\[(\d+)\]\.([a-zA-Z_]\w*)", RegexOptions.Compiled);
+        result = arrayPropertyRegex.Replace(result, "$1_$2___$3");// IMPORTANT: Only process user-defined template expressions (${...})
+        // Do NOT automatically wrap bare words as template variables
+        // This prevents issues like "Created By: " becoming "${Created} ${By}: "
+        Logger.Debug($"DataBinder: Skipping bare property wrapping to preserve static text");
 
         return result;
     }
@@ -339,20 +312,6 @@ public class DataBinder
                type == typeof(Guid) ||
                type == typeof(TimeSpan) ||
                (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>));
-    }
-    /// <summary>
-    /// Checks if a word is a common word that shouldn't be treated as a property.
-    /// </summary>
-    private static bool IsCommonWord(string word)
-    {
-        var commonWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Value", "Text", "Title", "Description", "Type", "Size", "Count",
-            "Date", "Time", "Year", "Month", "Day", "Hour", "Minute", "Second",
-            "True", "False", "Yes", "No", "On", "Off", "Enable", "Disable"
-        };
-
-        return commonWords.Contains(word);
     }
     /// <summary>
     /// Resolves an expression and returns the result as a string.

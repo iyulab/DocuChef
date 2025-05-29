@@ -317,10 +317,17 @@ public class ContextBasedPowerPointProcessor
             if (slideContext.PPTContext.Options.EnableVerboseLogging)
             {
                 Logger.Debug($"  Processing text element: '{textElement.Text}'");
+            }            // Apply data binding to this text element
+            var indexOffset = slideContext.SlideInstance?.IndexOffset ?? 0;
+            var boundText = _dataBinder.BindData(textElement.Text, slideContext.BindingData, indexOffset);
+            if (boundText != textElement.Text)
+            {
+                textElement.Text = boundText;
+                if (slideContext.PPTContext.Options.EnableVerboseLogging)
+                {
+                    Logger.Debug($"  Text bound from '{textElement.Text}' to '{boundText}'");
+                }
             }
-
-            // Note: Data binding is intentionally NOT performed here
-            // All data binding is handled exclusively in DataBinder.cs via DollarSignEngine
         }
 
         if (slideContext.PPTContext.Options.EnableVerboseLogging)
