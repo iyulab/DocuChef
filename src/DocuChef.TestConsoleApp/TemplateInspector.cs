@@ -179,7 +179,7 @@ namespace DocuChef.TestConsoleApp
                         Console.WriteLine($"\nSlide {i + 1} (SlideId={slideId.Id}) Generated Content:");
                         Console.WriteLine($"-------------------------------------------");
 
-                        var slideText = SlideTextExtractor.GetText(slidePart.Slide);
+                        var slideText = DocuChef.Presentation.Utilities.SlideTextExtractor.GetText(slidePart.Slide);
                         var lines = slideText.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
                         foreach (var line in lines)

@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using DocuChef.Presentation.Exceptions;
 using DocuChef.Presentation.Models;
 using DocuChef.Presentation.Utilities;
+using DocumentFormat.OpenXml.Drawing;
 
 namespace DocuChef.Presentation.Processors;
 
@@ -228,9 +229,8 @@ public class TemplateAnalyzer
     /// <param name="slide">The slide object to extract expressions from</param>
     /// <returns>Collection of binding expression strings</returns>
     private IEnumerable<string> ExtractBindingExpressions(object slide)
-    {
-        // Extract text from slide using SlideTextExtractor utility
-        var slideText = SlideTextExtractor.GetText(slide);
+    {        // Extract text from slide using direct text extraction
+        var slideText = ExtractSlideTextDirect(slide);
 
         // Debug logging
         DocuChef.Logging.Logger.Debug($"TemplateAnalyzer: Extracted slide text: '{slideText}'");
@@ -554,10 +554,8 @@ public class TemplateAnalyzer
                 }
             }
             notesBuilder.AppendLine();
-        }
-
-        // Add content summary
-        var slideText = SlideTextExtractor.GetText(slide);
+        }        // Add content summary
+        var slideText = ExtractSlideTextDirect(slide);
         if (!string.IsNullOrWhiteSpace(slideText))
         {
             var contentSummary = GenerateContentSummary(slideText);
@@ -570,6 +568,33 @@ public class TemplateAnalyzer
         }
 
         return notesBuilder.ToString().Trim();
+    }
+
+    /// <summary>
+    /// Direct text extraction from slide
+    /// </summary>
+    private string ExtractSlideTextDirect(object slide)
+    {
+        if (slide is SlidePart slidePart)
+        {
+            var textBuilder = new System.Text.StringBuilder();
+            var paragraphs = slidePart.Slide.Descendants<Paragraph>();
+
+            foreach (var paragraph in paragraphs)
+            {
+                var hierarchicalInfo = TextExtractionUtility.ExtractHierarchicalText(paragraph);
+                var paragraphText = hierarchicalInfo.CombinedText;
+
+                if (!string.IsNullOrEmpty(paragraphText))
+                {
+                    textBuilder.AppendLine(paragraphText);
+                }
+            }
+
+            return textBuilder.ToString();
+        }
+
+        return string.Empty;
     }
 
     /// <summary>

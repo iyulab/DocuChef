@@ -22,106 +22,182 @@ public class DataBinder
     {
         try
         {
-            // TODO: 보간식이 올바른 인덱스를 가지는지 확인하기 위해 일시적으로 주석처리
-            // 실제 평가 대신 템플릿을 그대로 반환하여 보간식을 확인할 수 있도록 함
+            // Pre-process array indexing expressions for better handling
+            dollarSignTemplate = PreprocessArrayIndexingExpressions(dollarSignTemplate, variables);
+
+            // Setup DollarSignEngine options
             var options = new DollarSignOptions
             {
-                SupportDollarSignSyntax = true
+                SupportDollarSignSyntax = true,
+                ThrowOnError = false, // Don't throw exceptions, return original expression on error
+                ErrorHandler = (expr, ex) =>
+                {
+                    Logger.Debug($"[DollarSignEngine-Error] {ex.Message}");
+                    return "${" + expr + "}"; // Return the original expression on error
+                }
             };
+
             var result = DollarSign.Eval(dollarSignTemplate, variables, options);
             return result ?? string.Empty;
-
-            // // 보간식을 그대로 반환 (디버깅용)
-            // Logger.Debug($"DataBinder.EvaluateTemplate: 평가 없이 템플릿 반환 - '{dollarSignTemplate}'");
-            // return dollarSignTemplate;
         }
         catch (Exception ex)
         {
             Logger.Debug($"DataBinder.EvaluateTemplate: 평가 중 오류 발생 - {ex.Message}");
             return dollarSignTemplate;
         }
-    }    /// <summary>
-         /// Binds data to template expressions in the given text.
-         /// Converts context operators (>) to underscore notation (___) and evaluates using DollarSignEngine.
-         /// This overload only creates variables for expressions that are actually used in the template.
-         /// </summary>
-         /// <param name="template">Template text containing expressions</param>
-         /// <param name="data">Data object to bind</param>
-         /// <param name="usedExpressions">Set of expressions actually used in the template</param>
-         /// <param name="indexOffset">Index offset for array expressions</param>
-         /// <param name="contextPath">Context path for the current slide (e.g., "Products[0]", "Products[1]")</param>
-         /// <returns>Text with all expressions evaluated</returns>
-    public string BindData(string template, object data, ISet<string> usedExpressions, int indexOffset = 0, string? contextPath = null)
+    }
+
+    /// <summary>
+    /// Preprocesses array indexing expressions to ensure they're properly evaluated
+    /// </summary>
+    private string PreprocessArrayIndexingExpressions(string template, Dictionary<string, object> variables)
     {
-        if (string.IsNullOrEmpty(template) || data == null)
-            return template ?? string.Empty;
+        // First, handle the pattern for direct array indexing: ${Items[0]} without property access
+        // Also allow format specifiers: ${Items[0]:C0}
+        var directArrayRegex = new Regex(@"\$\{(\w+)\[(\d+)\](?!\.)(?!\[)(?::([^}]+))?\}", RegexOptions.Compiled);
+        var directMatches = directArrayRegex.Matches(template);
 
-        try
+        string result = template;
+
+        foreach (Match match in directMatches)
         {
-            // Pre-process nested expressions first
-            var preprocessedTemplate = PreprocessNestedExpressions(template, data, indexOffset);
-            Logger.Debug($"DataBinder: Original template: '{template}'");
-            Logger.Debug($"DataBinder: Preprocessed template: '{preprocessedTemplate}'");            // Convert template to DollarSign format
-            var dollarSignTemplate = ConvertToTemplate(preprocessedTemplate);
-            Logger.Debug($"DataBinder: Converted template to '{dollarSignTemplate}'");            // Create context variables for the data - OPTIMIZED VERSION
-            var variables = CreateContextOperatorVariablesFiltered(data, usedExpressions, contextPath);
+            string arrayName = match.Groups[1].Value;
+            string indexStr = match.Groups[2].Value;
+            string formatSpecifier = match.Groups.Count > 3 && match.Groups[3].Success ? match.Groups[3].Value : string.Empty;
+            string originalExpression = match.Value;
 
-            // Add PPT functions to variables - reuse existing instance if available
-            DocuChef.Presentation.Functions.PPTFunctions pptFunctions;
-            if (data is Dictionary<string, object> dataDict &&
-                dataDict.TryGetValue("ppt", out var existingPpt) &&
-                existingPpt is DocuChef.Presentation.Functions.PPTFunctions existingPptFunctions)
+            if (variables.TryGetValue(arrayName, out var arrayObj) &&
+                arrayObj is System.Collections.IEnumerable enumerable &&
+                !(arrayObj is string))
             {
-                // Reuse existing PPTFunctions instance (preserves image cache)
-                pptFunctions = existingPptFunctions;
-                Logger.Debug($"DataBinder: Reusing existing PPTFunctions instance with {existingPptFunctions.GetAllImageCache().Count} cached images");
-            }
-            else
-            {
-                // Create new PPTFunctions instance
-                pptFunctions = new DocuChef.Presentation.Functions.PPTFunctions(variables);
-                Logger.Debug($"DataBinder: Created new PPTFunctions instance");
-            }
-            variables["ppt"] = pptFunctions;
+                var list = enumerable.Cast<object>().ToList();
 
-            Logger.Debug($"DataBinder: Created {variables.Count} filtered variables:");
-            foreach (var kvp in variables)
-            {
-                if (kvp.Value is System.Collections.IEnumerable enumerable && !(kvp.Value is string))
+                if (int.TryParse(indexStr, out int index) && index >= 0 && index < list.Count)
                 {
-                    var list = enumerable.Cast<object>().ToList();
-                    Logger.Debug($"  {kvp.Key} = [{string.Join(", ", list.Take(3).Select(x => x?.ToString() ?? "null"))}] (count: {list.Count})");
-                }
-                else
-                {
-                    Logger.Debug($"  {kvp.Key} = {kvp.Value}");
+                    var item = list[index];
+                    if (item != null)
+                    {
+                        // Add indexed item with underscore format
+                        string itemKey = $"{arrayName}_{index}";
+                        if (!variables.ContainsKey(itemKey))
+                        {
+                            variables[itemKey] = item;
+                            Logger.Debug($"DataBinder.PreprocessArrayIndexingExpressions: Added direct indexed item '{itemKey}'");
+                        }
+
+                        // Convert direct array indexing to underscore format
+                        // Add format specifier if present
+                        string newExpression = string.IsNullOrEmpty(formatSpecifier)
+                            ? $"${{{itemKey}}}"
+                            : $"${{{itemKey}:{formatSpecifier}}}";
+                        result = result.Replace(originalExpression, newExpression);
+                        Logger.Debug($"DataBinder.PreprocessArrayIndexingExpressions: Converted '{originalExpression}' to '{newExpression}'");
+                    }
                 }
             }
-
-            // Apply index offset to array expressions
-            if (indexOffset > 0)
-            {
-                dollarSignTemplate = ApplyIndexOffset(dollarSignTemplate, indexOffset);
-            }
-
-            // 단일 평가 함수 사용 (현재는 보간식을 그대로 반환)
-            var result = EvaluateTemplate(dollarSignTemplate, variables);
-
-            Logger.Debug($"DataBinder: Template '{dollarSignTemplate}' evaluated to '{result}'");
-            return result;
         }
-        catch (Exception ex)
+
+        // Look for patterns like ${Items[0].PropertyName} or ${Items[0].Details.Name} or ${Items[0].Price:C0}
+        var arrayPropertyRegex = new Regex(@"\$\{(\w+)\[(\d+)\]\.([^}:]+)(?::([^}]+))?\}", RegexOptions.Compiled);
+        var matches = arrayPropertyRegex.Matches(result);
+
+        if (matches.Count == 0)
+            return result; foreach (Match match in matches)
         {
-            Logger.Error($"DataBinder: Error binding data to template '{template}': {ex.Message}");
-            return template; // Return original template on error
+            string arrayName = match.Groups[1].Value;
+            string indexStr = match.Groups[2].Value;
+            string propertyName = match.Groups[3].Value;
+            string formatSpecifier = match.Groups.Count > 4 && match.Groups[4].Success ? match.Groups[4].Value : string.Empty;
+            string originalExpression = match.Value;
+
+            // Check if array exists in variables
+            if (variables.TryGetValue(arrayName, out var arrayObj) &&
+                arrayObj is System.Collections.IEnumerable enumerable &&
+                !(arrayObj is string))
+            {
+                // Convert to List<object> for indexed access
+                var list = enumerable.Cast<object>().ToList();
+
+                // Parse index
+                if (int.TryParse(indexStr, out int index) && index >= 0 && index < list.Count)
+                {
+                    // Get the item at the specified index
+                    var item = list[index];
+
+                    if (item != null)
+                    {
+                        // Ensure we have a variable for this specific indexed item
+                        string itemKey = $"{arrayName}[{index}]";
+                        if (!variables.ContainsKey(itemKey))
+                        {
+                            variables[itemKey] = item;
+                            Logger.Debug($"DataBinder.PreprocessArrayIndexingExpressions: Added indexed item '{itemKey}'");
+                        }
+
+                        // Also add with underscore format for DollarSignEngine compatibility
+                        string dollarSignKey = $"{arrayName}_{index}";
+                        if (!variables.ContainsKey(dollarSignKey))
+                        {
+                            variables[dollarSignKey] = item;
+                            Logger.Debug($"DataBinder.PreprocessArrayIndexingExpressions: Added underscore item '{dollarSignKey}'");
+                        }
+
+                        // Handle possibly nested property paths (e.g., "Details.Name")
+                        string[] propertyParts = propertyName.Split('.');
+                        object? currentObj = item;
+                        bool hasValidProperty = true;
+
+                        // Navigate through nested properties
+                        foreach (var part in propertyParts)
+                        {
+                            if (currentObj == null)
+                            {
+                                hasValidProperty = false;
+                                break;
+                            }
+
+                            currentObj = GetPropertyValue(currentObj, part);
+                        }
+
+                        object? propValue = currentObj;
+
+                        if (hasValidProperty && propValue != null)
+                        {
+                            // Format the property key using underscores for nested parts
+                            string normalizedPropertyName = propertyName.Replace(".", "___");
+
+                            // Add direct property access for DollarSignEngine
+                            string propKey = $"{arrayName}_{index}___{normalizedPropertyName}";
+                            if (!variables.ContainsKey(propKey))
+                            {
+                                variables[propKey] = propValue;
+                                Logger.Debug($"DataBinder.PreprocessArrayIndexingExpressions: Added property '{propKey}' = {GetValueDescription(propValue)}");
+                            }
+
+                            // Convert the original array indexing expression to the underscore format
+                            // Replace ${Items[0].Name} with ${Items_0___Name}
+                            // If format specifier exists, include it: ${Items[0].Price:C0} → ${Items_0___Price:C0}
+                            string newExpression = string.IsNullOrEmpty(formatSpecifier)
+                                ? $"${{{arrayName}_{index}___{normalizedPropertyName}}}"
+                                : $"${{{arrayName}_{index}___{normalizedPropertyName}:{formatSpecifier}}}";
+                            result = result.Replace(originalExpression, newExpression);
+                            Logger.Debug($"DataBinder.PreprocessArrayIndexingExpressions: Converted '{originalExpression}' to '{newExpression}'");
+                        }
+                    }
+                }
+            }
         }
-    }    /// <summary>
-         /// Creates context operator variables for only the expressions that are actually used (optimized version).
-         /// Extracts variable names from expressions and only creates variables for those.
-         /// </summary>
-         /// <param name="data">Source data object</param>
-         /// <param name="usedExpressions">Set of expressions actually used in the template</param>
-         /// <param name="contextPath">Context path for the current slide (e.g., "Products[0]", "Products[1]")</param>
+
+        return result;
+    }
+
+    /// <summary>
+    /// Creates context operator variables for only the expressions that are actually used (optimized version).
+    /// Extracts variable names from expressions and only creates variables for those.
+    /// </summary>
+    /// <param name="data">Source data object</param>
+    /// <param name="usedExpressions">Set of expressions actually used in the template</param>
+    /// <param name="contextPath">Context path for the current slide (e.g., "Products[0]", "Products[1]")</param>
     private Dictionary<string, object> CreateContextOperatorVariablesFiltered(object data, ISet<string> usedExpressions, string? contextPath = null)
     {
         var variables = new Dictionary<string, object>();
@@ -147,9 +223,11 @@ public class DataBinder
         }
 
         return variables;
-    }    /// <summary>
-         /// Extracts variable names from expressions (similar to PowerPointProcessor but adapted for DataBinder).
-         /// </summary>
+    }
+
+    /// <summary>
+    /// Extracts variable names from expressions by finding all ${...} patterns in text.
+    /// </summary>
     private HashSet<string> ExtractVariableNamesFromExpressions(ISet<string> expressions)
     {
         var variableNames = new HashSet<string>();
@@ -159,53 +237,61 @@ public class DataBinder
             if (string.IsNullOrWhiteSpace(expression))
                 continue;
 
-            var cleanExpression = expression.Trim().TrimStart('$', '{').TrimEnd('}');
+            // Extract all ${...} patterns from the expression text
+            var dollarSignMatches = DollarSignExpressionRegex.Matches(expression);
 
-            // Handle array indexing with property access: Items[0].Name -> Items, Name
-            var arrayPropertyMatch = System.Text.RegularExpressions.Regex.Match(cleanExpression, @"^([a-zA-Z_]\w*)(?:\[\d+\])\.([a-zA-Z_]\w*)");
-            if (arrayPropertyMatch.Success)
+            foreach (Match match in dollarSignMatches)
             {
-                variableNames.Add(arrayPropertyMatch.Groups[1].Value); // Items
-                variableNames.Add(arrayPropertyMatch.Groups[2].Value); // Name (property name for filtering)
-                continue;
-            }
+                var cleanExpression = match.Groups[1].Value.Trim();
 
-            // Handle array indexing: Items[0] -> Items
-            var arrayMatch = System.Text.RegularExpressions.Regex.Match(cleanExpression, @"^([a-zA-Z_]\w*)(?:\[\d+\])?");
-            if (arrayMatch.Success)
-            {
-                variableNames.Add(arrayMatch.Groups[1].Value);
-            }
+                Logger.Debug($"DataBinder: Processing expression part: '{cleanExpression}'");
 
-            // Handle property access: object.property -> object
-            var propertyMatch = System.Text.RegularExpressions.Regex.Match(cleanExpression, @"^([a-zA-Z_]\w*)(?:\.|:)");
-            if (propertyMatch.Success)
-            {
-                variableNames.Add(propertyMatch.Groups[1].Value);
-            }
-
-            // Handle function calls: ppt.Image(LogoPath) -> LogoPath
-            var functionMatch = System.Text.RegularExpressions.Regex.Match(cleanExpression, @"ppt\.\w+\(([^)]+)\)");
-            if (functionMatch.Success)
-            {
-                var parameters = functionMatch.Groups[1].Value.Split(',');
-                foreach (var param in parameters)
+                // Handle array indexing with property access: Items[0].Name -> Items, Name
+                var arrayPropertyMatch = System.Text.RegularExpressions.Regex.Match(cleanExpression, @"^([a-zA-Z_]\w*)(?:\[\d+\])\.([a-zA-Z_]\w*)");
+                if (arrayPropertyMatch.Success)
                 {
-                    var trimmedParam = param.Trim();
-                    if (!trimmedParam.StartsWith("\"") && !trimmedParam.StartsWith("'"))
+                    variableNames.Add(arrayPropertyMatch.Groups[1].Value); // Items
+                    variableNames.Add(arrayPropertyMatch.Groups[2].Value); // Name (property name for filtering)
+                    continue;
+                }
+
+                // Handle array indexing: Items[0] -> Items
+                var arrayMatch = System.Text.RegularExpressions.Regex.Match(cleanExpression, @"^([a-zA-Z_]\w*)(?:\[\d+\])?");
+                if (arrayMatch.Success)
+                {
+                    variableNames.Add(arrayMatch.Groups[1].Value);
+                }
+
+                // Handle property access: object.property -> object
+                var propertyMatch = System.Text.RegularExpressions.Regex.Match(cleanExpression, @"^([a-zA-Z_]\w*)(?:\.|:)");
+                if (propertyMatch.Success)
+                {
+                    variableNames.Add(propertyMatch.Groups[1].Value);
+                }
+
+                // Handle function calls: ppt.Image(LogoPath) -> LogoPath
+                var functionMatch = System.Text.RegularExpressions.Regex.Match(cleanExpression, @"ppt\.\w+\(([^)]+)\)");
+                if (functionMatch.Success)
+                {
+                    var parameters = functionMatch.Groups[1].Value.Split(',');
+                    foreach (var param in parameters)
                     {
-                        variableNames.Add(trimmedParam);
+                        var trimmedParam = param.Trim();
+                        if (!trimmedParam.StartsWith("\"") && !trimmedParam.StartsWith("'"))
+                        {
+                            variableNames.Add(trimmedParam);
+                        }
                     }
                 }
-            }
 
-            // Handle simple variable names
-            if (System.Text.RegularExpressions.Regex.IsMatch(cleanExpression, @"^[a-zA-Z_]\w*$"))
-            {
-                variableNames.Add(cleanExpression);
+                // Handle simple variable names
+                if (System.Text.RegularExpressions.Regex.IsMatch(cleanExpression, @"^[a-zA-Z_]\w*$"))
+                {
+                    variableNames.Add(cleanExpression);
+                }
             }
         }
-
+        Logger.Debug($"DataBinder: Extracted variable names: {string.Join(", ", variableNames)}");
         return variableNames;
     }
 
@@ -315,9 +401,11 @@ public class DataBinder
         return requiredVariables.Contains(propertyName) ||
                requiredVariables.Contains(fullPropertyName) ||
                requiredVariables.Any(req => req.StartsWith(propertyName + ".") || req.StartsWith(propertyName + "["));
-    }    /// <summary>
-         /// Creates context variables for array/collection elements (filtered version).
-         /// </summary>
+    }
+
+    /// <summary>
+    /// Creates context variables for array/collection elements (filtered version).
+    /// </summary>
     private void CreateContextVariablesForArrayFiltered(System.Collections.IEnumerable enumerable, string propertyName, Dictionary<string, object> variables, int depth, HashSet<string> requiredVariables)
     {
         var list = enumerable.Cast<object>().ToList();
@@ -416,17 +504,19 @@ public class DataBinder
                 Logger.Warning($"DataBinder: Error extracting array element property '{prop.Name}': {ex.Message}");
             }
         }
-    }    /// <summary>
-         /// Binds data to template expressions in the given text with custom functions.
-         /// Converts context operators (>) to underscore notation (___) and evaluates using DollarSignEngine.
-         /// </summary>
-         /// <param name="template">Template text containing expressions</param>
-         /// <param name="data">Data object to bind</param>
-         /// <param name="usedExpressions">Set of expressions actually used for filtering variables</param>
-         /// <param name="customFunctions">Custom functions to register for use in expressions</param>
-         /// <param name="indexOffset">Index offset for array expressions</param>
-         /// <param name="contextPath">Context path for the current slide (e.g., "Products[0]", "Products[1]")</param>
-         /// <returns>Text with all expressions evaluated</returns>
+    }
+
+    /// <summary>
+    /// Binds data to template expressions in the given text with custom functions.
+    /// Converts context operators (>) to underscore notation (___) and evaluates using DollarSignEngine.
+    /// </summary>
+    /// <param name="template">Template text containing expressions</param>
+    /// <param name="data">Data object to bind</param>
+    /// <param name="usedExpressions">Set of expressions actually used for filtering variables</param>
+    /// <param name="customFunctions">Custom functions to register for use in expressions</param>
+    /// <param name="indexOffset">Index offset for array expressions</param>
+    /// <param name="contextPath">Context path for the current slide (e.g., "Products[0]", "Products[1]")</param>
+    /// <returns>Text with all expressions evaluated</returns>
     public string BindData(string template, object data, ISet<string> usedExpressions, Dictionary<string, Func<object, object>>? customFunctions, int indexOffset = 0, string? contextPath = null)
     {
         if (string.IsNullOrEmpty(template) || data == null)
@@ -514,7 +604,7 @@ public class DataBinder
         try
         {
             // Use the optimized BindData method with filtered variables
-            var result = BindData(expression, data, usedExpressions);
+            var result = BindData(expression, data, usedExpressions, null);
             return result;
         }
         catch (Exception ex)
@@ -553,12 +643,23 @@ public class DataBinder
     {
         // 기본적으로 템플릿을 그대로 반환
         return template;
-    }
-
+    }    /// <summary>
+         /// Converts template expressions to a DollarSign compatible format.
+         /// </summary>
     private string ConvertToTemplate(string template)
     {
-        // Context operator (>) 를 underscore (___) 로 변환
-        return ContextOperatorRegex.Replace(template, "$1___$2");
+        if (string.IsNullOrEmpty(template))
+            return string.Empty;
+
+        // First, convert context operator (>) to underscore (___)
+        var result = ContextOperatorRegex.Replace(template, "$1___$2");
+
+        // Note: Array indexing expressions such as ${Items[0].Name} are handled in 
+        // PreprocessArrayIndexingExpressions, which converts them to the underscore format
+        // that matches the variables in the dictionary (e.g., ${Items_0___Name})
+
+        Logger.Debug($"DataBinder.ConvertToTemplate: Converted '{template}' to '{result}'");
+        return result;
     }
 
     private string ApplyIndexOffset(string template, int offset)
@@ -593,18 +694,83 @@ public class DataBinder
 
         try
         {
-            // Parse context path (e.g., "Products[0]" -> rootProperty="Products", index=0)
-            var match = System.Text.RegularExpressions.Regex.Match(contextPath, @"^(\w+)\[(\d+)\]$");
-            if (!match.Success)
+            // Parse context path - handle both collection name only ("Items") and indexed access ("Products[0]")
+            var collectionMatch = System.Text.RegularExpressions.Regex.Match(contextPath, @"^(\w+)(?:\[(\d+)\])?$");
+            if (!collectionMatch.Success)
             {
                 Logger.Debug($"DataBinder: Context path '{contextPath}' doesn't match expected pattern");
                 return;
             }
 
-            string rootProperty = match.Groups[1].Value;
-            int contextIndex = int.Parse(match.Groups[2].Value);
+            string rootProperty = collectionMatch.Groups[1].Value;
+            int contextIndex = 0; // Default to 0 if no index specified
 
-            Logger.Debug($"DataBinder: Parsed context - root: '{rootProperty}', index: {contextIndex}");
+            if (collectionMatch.Groups.Count > 2 && collectionMatch.Groups[2].Success)
+            {
+                contextIndex = int.Parse(collectionMatch.Groups[2].Value);
+                Logger.Debug($"DataBinder: Parsed context - root: '{rootProperty}', index: {contextIndex}");
+            }
+            else
+            {
+                Logger.Debug($"DataBinder: Parsed context - root collection: '{rootProperty}' (no index specified, using all items)");
+                // When only the collection name is provided (e.g., "Items"), we need to add each item with its index
+                // to enable access via Items[0], Items[1], etc.
+                object? collectionObj = GetPropertyValue(data, rootProperty);
+                if (collectionObj is not System.Collections.IEnumerable collectionEnum || collectionObj is string)
+                {
+                    Logger.Debug($"DataBinder: Root property '{rootProperty}' is not a collection");
+                    return;
+                }
+
+                var itemList = collectionEnum.Cast<object>().ToList();
+                Logger.Debug($"DataBinder: Found collection with {itemList.Count} items");
+
+                // Add the collection itself as a global variable first
+                if (!variables.ContainsKey(rootProperty))
+                {
+                    variables[rootProperty] = collectionObj;
+                    Logger.Debug($"DataBinder: Added collection as '{rootProperty}'");
+                }
+
+                // Add each item with its index notation for direct access in template expressions
+                for (int i = 0; i < itemList.Count; i++)
+                {
+                    var item = itemList[i];
+                    if (item != null)
+                    {
+                        // Add the item directly to variables with array index syntax - global access
+                        var itemKey = $"{rootProperty}[{i}]";
+                        variables[itemKey] = item;
+                        Logger.Debug($"DataBinder: Added collection item at '{itemKey}'");
+
+                        // If the item is an object with properties, make those available too
+                        if (!IsSimpleType(item.GetType()))
+                        {
+                            // Create variables for each property of this indexed item
+                            // This makes Items[0].Name directly accessible
+                            CreateIndexedItemProperties(item, rootProperty, i, variables, requiredVariables);
+                        }
+                    }
+                }
+
+                // Add each item as a DollarSignEngine compatible variable with underscore syntax
+                for (int i = 0; i < itemList.Count; i++)
+                {
+                    var item = itemList[i];
+                    if (item != null)
+                    {
+                        // Add with underscore syntax for DollarSignEngine compatibility
+                        var dollarSignKey = $"{rootProperty}_{i}";
+                        if (!variables.ContainsKey(dollarSignKey))
+                        {
+                            variables[dollarSignKey] = item;
+                            Logger.Debug($"DataBinder: Added collection item with underscore syntax as '{dollarSignKey}'");
+                        }
+                    }
+                }
+
+                return; // We've handled the collection differently, so return
+            }
 
             // Get the root collection from data
             object? rootCollection = GetPropertyValue(data, rootProperty);
@@ -641,7 +807,62 @@ public class DataBinder
     }
 
     /// <summary>
-    /// Creates variables for properties of a context object with the root property prefix.
+    /// Creates variables for properties of an indexed item to enable direct access via array syntax
+    /// </summary>
+    private void CreateIndexedItemProperties(object item, string collectionName, int index, Dictionary<string, object> variables, HashSet<string> requiredVariables)
+    {
+        if (item == null) return;
+
+        Logger.Debug($"DataBinder: Creating indexed properties for {collectionName}[{index}]");
+
+        // For dictionaries
+        if (item is Dictionary<string, object> dictionary)
+        {
+            foreach (var kvp in dictionary)
+            {
+                string propName = kvp.Key;
+                string indexedPropPath = $"{collectionName}[{index}].{propName}";
+
+                // Only add if needed
+                if (IsVariableRequired(indexedPropPath, propName, requiredVariables))
+                {
+                    string varKey = $"{collectionName}_{index}___{propName}";
+                    variables[varKey] = kvp.Value;
+                    Logger.Debug($"DataBinder: Added indexed property '{varKey}'");
+                }
+            }
+            return;
+        }
+
+        // For regular objects, use reflection
+        var properties = item.GetType().GetProperties();
+        foreach (var prop in properties)
+        {
+            if (!prop.CanRead) continue;
+
+            try
+            {
+                string propName = prop.Name;
+                string indexedPropPath = $"{collectionName}[{index}].{propName}";
+
+                // Only add if needed
+                if (IsVariableRequired(indexedPropPath, propName, requiredVariables))
+                {
+                    var value = prop.GetValue(item);
+                    string varKey = $"{collectionName}_{index}___{propName}";
+                    variables[varKey] = value ?? new object();
+                    Logger.Debug($"DataBinder: Added indexed property '{varKey}'");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"DataBinder: Error creating indexed property for {prop.Name}: {ex.Message}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Creates context variables for properties of a context object with the root property prefix.
     /// For example, if rootProperty is "Products" and object has "Items" property,
     /// creates "Products___Items" variable.
     /// </summary>
@@ -693,16 +914,22 @@ public class DataBinder
     }
 
     /// <summary>
-    /// Gets a description of a value for logging purposes.
+    /// Gets a readable description of a value for logging
     /// </summary>
     private string GetValueDescription(object? value)
     {
-        if (value == null) return "null";
+        if (value == null)
+            return "null";
+
+        if (value is string str)
+            return $"\"{str}\"";
+
         if (value is System.Collections.IEnumerable enumerable && !(value is string))
         {
-            var list = enumerable.Cast<object>().ToList();
-            return $"[{list.Count} items]";
+            var items = enumerable.Cast<object>().Take(3).ToList();
+            return $"[{string.Join(", ", items.Select(x => x?.ToString() ?? "null"))}] (collection)";
         }
+
         return value.ToString() ?? "null";
     }
 

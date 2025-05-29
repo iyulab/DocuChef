@@ -8,7 +8,7 @@ using DocuChef.TestConsoleApp;
 - BOLD ${Subtitle} Italic
 - Created By: ${Date:yyyy-MM-dd}
 */
-TestTemplate.Run("template_1.pptx");
+// TestTemplate.Run("template_1.pptx");
 
 /* 
 # template_2.pptx
@@ -32,7 +32,7 @@ Price: ${Items[3].Price:C0} USD
 - ${Items[4].Id}. ${Items[4].Name} - ${Items[4].Description}
 Price: ${Items[4].Price:C0} USD
 */
-//TestTemplate.Run("template_2.pptx");
+// TestTemplate.Run("template_2.pptx");
 
 /* 
 # template_3.pptx
@@ -68,4 +68,4 @@ Price: ${Items[4].Price:C0} USD
 
 // Test1.Run("TEST.pptx");
 
-// Test1.Run("TEST2.pptx");
+Test1.Run("TEST2.pptx");

@@ -5,6 +5,7 @@ using DocuChef.Presentation.Models;
 using DocuChef.Presentation.Processors;
 using DocuChef.Presentation.Functions;
 using DocuChef.Presentation.Utilities;
+using System.Text.RegularExpressions;
 
 namespace DocuChef.Presentation.Processors;
 
@@ -14,6 +15,8 @@ namespace DocuChef.Presentation.Processors;
 /// </summary>
 public class ContextBasedPowerPointProcessor
 {
+    private static readonly Regex DollarSignExpressionRegex = new(@"\$\{([^}]+)\}", RegexOptions.Compiled);
+
     private readonly TemplateAnalyzer _templateAnalyzer;
     private readonly SlidePlanGenerator _planGenerator;
     private readonly SlideGenerator _slideGenerator;
@@ -430,11 +433,9 @@ public class ContextBasedPowerPointProcessor
         {
             Logger.Debug($"Data binding completed for slide {slideContext.SlideIndex}");
         }
-    }
-
-    /// <summary>
-    /// Process data binding for a single paragraph, handling Korean text that may be split across spans
-    /// </summary>
+    }    /// <summary>
+         /// Process data binding for a single paragraph with enhanced formatting preservation
+         /// </summary>
     private void ProcessParagraphDataBinding(DocumentFormat.OpenXml.Drawing.Paragraph paragraph, SlideContext slideContext)
     {
         var textElements = paragraph.Descendants<DocumentFormat.OpenXml.Drawing.Text>().ToList();
@@ -451,29 +452,257 @@ public class ContextBasedPowerPointProcessor
 
         // Check if this paragraph contains any binding expressions
         if (!paragraphText.Contains("${"))
-            return;        // Apply data binding to the complete paragraph text
-        var indexOffset = slideContext.SlideInstance?.IndexOffset ?? 0;
-        var usedExpressions = new HashSet<string> { paragraphText };
+            return;
 
-        // Debug logging to track ContextPath issue
-        Logger.Debug($"ContextBasedPowerPointProcessor: About to call DataBinder.BindData with slideContext.ContextPath: '{slideContext.ContextPath}'");
+        // Enhanced strategy: Process complete expressions first, then handle incomplete ones
+        var processedText = ProcessCompleteAndIncompleteExpressions(paragraph, textElements, paragraphText, slideContext);
 
-        var boundText = _dataBinder.BindData(paragraphText, slideContext.BindingData, usedExpressions, indexOffset, slideContext.ContextPath);
-
-        if (boundText != paragraphText)
+        if (processedText != paragraphText)
         {
             if (slideContext.PPTContext.Options.EnableVerboseLogging)
             {
-                Logger.Debug($"  Paragraph bound from '{paragraphText}' to '{boundText}'");
-            }            // Replace the text while preserving formatting as much as possible
-            if (slideContext.SlidePart != null)
-            {
-                ReplaceTextInParagraph(paragraph, paragraphText, boundText);
+                Logger.Debug($"  Paragraph bound from '{paragraphText}' to '{processedText}'");
             }
         }
-    }    /// <summary>
-         /// Replace text in a paragraph while preserving formatting
-         /// </summary>
+    }
+
+    /// <summary>
+    /// Enhanced expression processing with formatting preservation strategy
+    /// 1. Process complete ${...} expressions within single spans first
+    /// 2. Handle incomplete expressions by connecting subsequent spans
+    /// </summary>
+    private string ProcessCompleteAndIncompleteExpressions(
+        DocumentFormat.OpenXml.Drawing.Paragraph paragraph,
+        IList<DocumentFormat.OpenXml.Drawing.Text> textElements,
+        string paragraphText,
+        SlideContext slideContext)
+    {
+        // First pass: Process complete expressions within single spans
+        var modifiedElements = new HashSet<DocumentFormat.OpenXml.Drawing.Text>();
+
+        foreach (var textElement in textElements)
+        {
+            var elementText = textElement.Text ?? "";
+            if (string.IsNullOrEmpty(elementText))
+                continue;
+
+            // Check for complete expressions in this element
+            var completeExpressions = DollarSignExpressionRegex.Matches(elementText);
+            if (completeExpressions.Count > 0)
+            {
+                var processedElementText = ProcessElementExpressions(elementText, slideContext);
+                if (processedElementText != elementText)
+                {
+                    textElement.Text = processedElementText;
+                    modifiedElements.Add(textElement);
+
+                    if (slideContext.PPTContext.Options.EnableVerboseLogging)
+                    {
+                        Logger.Debug($"    Processed complete expression in span: '{elementText}' → '{processedElementText}'");
+                    }
+                }
+            }
+        }
+
+        // Second pass: Handle incomplete expressions spanning multiple elements
+        var updatedParagraphText = string.Join("", textElements.Select(t => t.Text));
+
+        // Check if there are still incomplete expressions
+        if (HasIncompleteExpressions(updatedParagraphText))
+        {
+            ProcessIncompleteExpressions(paragraph, textElements, slideContext, modifiedElements);
+        }
+
+        // Return the final processed text
+        return string.Join("", textElements.Select(t => t.Text));
+    }
+
+    /// <summary>
+    /// Process expressions within a single text element
+    /// </summary>
+    private string ProcessElementExpressions(string elementText, SlideContext slideContext)
+    {
+        var indexOffset = slideContext.SlideInstance?.IndexOffset ?? 0;
+        var usedExpressions = new HashSet<string> { elementText };
+
+        return _dataBinder.BindData(elementText, slideContext.BindingData, usedExpressions, null, indexOffset, slideContext.ContextPath);
+    }
+
+    /// <summary>
+    /// Check if text contains incomplete expressions (e.g., "${" without matching "}")
+    /// </summary>
+    private bool HasIncompleteExpressions(string text)
+    {
+        var openBraces = text.Count(c => c == '{' && text.IndexOf("${", text.IndexOf(c)) != -1);
+        var closeBraces = text.Count(c => c == '}');
+
+        // Also check for incomplete patterns like "${" at the end
+        return text.Contains("${") && (openBraces > closeBraces || text.EndsWith("${"));
+    }
+
+    /// <summary>
+    /// Process incomplete expressions that span multiple text elements
+    /// </summary>
+    private void ProcessIncompleteExpressions(
+        DocumentFormat.OpenXml.Drawing.Paragraph paragraph,
+        IList<DocumentFormat.OpenXml.Drawing.Text> textElements,
+        SlideContext slideContext,
+        HashSet<DocumentFormat.OpenXml.Drawing.Text> alreadyModified)
+    {
+        var fullText = string.Join("", textElements.Select(t => t.Text));
+        var matches = DollarSignExpressionRegex.Matches(fullText);
+
+        if (matches.Count == 0)
+            return;
+
+        foreach (Match match in matches)
+        {
+            var expression = match.Value;
+            var startIndex = match.Index;
+            var endIndex = startIndex + match.Length;
+
+            // Find which elements this expression spans
+            var spanningElements = FindSpanningElements(textElements, startIndex, endIndex);
+
+            if (spanningElements.Count > 1)
+            {
+                ProcessSpanningExpression(expression, spanningElements, slideContext, alreadyModified);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Find text elements that contain parts of an expression
+    /// </summary>
+    private List<(DocumentFormat.OpenXml.Drawing.Text element, int relativeStart, int relativeEnd)> FindSpanningElements(
+        IList<DocumentFormat.OpenXml.Drawing.Text> textElements, int globalStart, int globalEnd)
+    {
+        var result = new List<(DocumentFormat.OpenXml.Drawing.Text, int, int)>();
+        var currentPosition = 0;
+
+        foreach (var element in textElements)
+        {
+            var elementText = element.Text ?? "";
+            var elementStart = currentPosition;
+            var elementEnd = currentPosition + elementText.Length;
+
+            if (elementStart < globalEnd && elementEnd > globalStart)
+            {
+                var relativeStart = Math.Max(0, globalStart - elementStart);
+                var relativeEnd = Math.Min(elementText.Length, globalEnd - elementStart);
+                result.Add((element, relativeStart, relativeEnd));
+            }
+
+            currentPosition = elementEnd;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Process an expression that spans multiple text elements with formatting preservation
+    /// </summary>
+    private void ProcessSpanningExpression(
+        string expression,
+        List<(DocumentFormat.OpenXml.Drawing.Text element, int relativeStart, int relativeEnd)> spanningElements,
+        SlideContext slideContext,
+        HashSet<DocumentFormat.OpenXml.Drawing.Text> alreadyModified)
+    {
+        if (spanningElements.Count == 0)
+            return;
+
+        // Process the expression
+        var processedExpression = ProcessElementExpressions(expression, slideContext);
+
+        if (processedExpression == expression)
+            return; // No change needed
+
+        // Strategy: Preserve formatting by intelligently distributing the processed text
+        var isFirstElement = true;
+        var remainingText = processedExpression;
+
+        foreach (var (element, relativeStart, relativeEnd) in spanningElements)
+        {
+            if (alreadyModified.Contains(element))
+                continue;
+
+            var originalElement = element.Text ?? "";
+
+            if (isFirstElement)
+            {
+                // First element: keep prefix, replace expression part, handle distribution
+                var prefix = originalElement.Substring(0, relativeStart);
+                var suffix = originalElement.Substring(relativeEnd);
+
+                // Intelligent text distribution based on formatting patterns
+                var distributedText = DistributeTextIntelligently(remainingText, spanningElements.Count, 0);
+
+                element.Text = prefix + distributedText + suffix;
+                remainingText = remainingText.Substring(Math.Min(distributedText.Length, remainingText.Length));
+                isFirstElement = false;
+
+                if (slideContext.PPTContext.Options.EnableVerboseLogging)
+                {
+                    Logger.Debug($"    Updated first spanning element: '{originalElement}' → '{element.Text}'");
+                }
+            }
+            else
+            {
+                // Subsequent elements: distribute remaining text or clear
+                if (!string.IsNullOrEmpty(remainingText))
+                {
+                    var elementIndex = spanningElements.FindIndex(se => se.element == element);
+                    var distributedText = DistributeTextIntelligently(remainingText, spanningElements.Count, elementIndex);
+
+                    element.Text = distributedText;
+                    remainingText = remainingText.Substring(Math.Min(distributedText.Length, remainingText.Length));
+
+                    if (slideContext.PPTContext.Options.EnableVerboseLogging)
+                    {
+                        Logger.Debug($"    Updated spanning element {elementIndex}: '{originalElement}' → '{element.Text}'");
+                    }
+                }
+                else
+                {
+                    element.Text = "";
+                }
+            }
+
+            alreadyModified.Add(element);
+        }
+    }
+
+    /// <summary>
+    /// Intelligently distribute text across elements to preserve formatting intention
+    /// </summary>
+    private string DistributeTextIntelligently(string text, int totalElements, int currentElementIndex)
+    {
+        if (string.IsNullOrEmpty(text) || totalElements <= 1)
+            return text;
+
+        // For the pattern "BOLD {content} Italic", try to preserve structure
+        if (currentElementIndex == 0 && text.Length > 10)
+        {
+            // First element gets reasonable portion, not everything
+            var firstPortionLength = Math.Min(text.Length * 2 / 3, text.Length - 5);
+            return text.Substring(0, firstPortionLength);
+        }
+        else if (currentElementIndex == totalElements - 1)
+        {
+            // Last element gets the remainder
+            return text;
+        }
+        else
+        {
+            // Middle elements get proportional distribution
+            var portionLength = text.Length / (totalElements - currentElementIndex);
+            return text.Substring(0, Math.Min(portionLength, text.Length));
+        }
+    }
+
+    /// <summary>
+    /// Replace text in a paragraph while preserving formatting
+    /// </summary>
     private void ReplaceTextInParagraph(DocumentFormat.OpenXml.Drawing.Paragraph paragraph, string oldText, string newText)
     {
         var currentText = ExtractParagraphText(paragraph);
