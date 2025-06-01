@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ClosedXML.Report.XLCustom\src\ClosedXML.Report.XLCustom\ClosedXML.Report.XLCustom.csproj" />
+    <ProjectReference Include="..\..\..\DollarSignEngine\src\DollarSignEngine\DollarSignEngine.csproj" />
+  </ItemGroup>
+
+
+</Project>

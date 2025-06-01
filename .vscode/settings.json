@@ -1,0 +1,13 @@
+{
+    "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+        {
+            "file": "src/DocuChef/AI_RULE.md"
+        },
+        {
+            "file": "src/DocuChef/PPT_DESIGN.md"
+        },
+        {
+            "file": "src/DocuChef/SYNTAX_OF_PPT.md"
+        }
+    ]
+}
