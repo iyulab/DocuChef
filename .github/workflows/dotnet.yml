@@ -1,5 +1,6 @@
 name: .NET Build and NuGet Publish
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
     tags: [ "v*" ]
