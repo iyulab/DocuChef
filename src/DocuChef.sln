@@ -6,16 +6,11 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
+		..\.github\workflows\dotnet.yml = ..\.github\workflows\dotnet.yml
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocuChef", "DocuChef\DocuChef.csproj", "{84627BF6-9A05-4812-A33D-B560C4CA5D2E}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00. libraries", "00. libraries", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClosedXML.Report.XLCustom", "..\..\ClosedXML.Report.XLCustom\src\ClosedXML.Report.XLCustom\ClosedXML.Report.XLCustom.csproj", "{FE458742-BF52-BF4A-6B99-207296F8C686}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DollarSignEngine", "..\..\DollarSignEngine\src\DollarSignEngine\DollarSignEngine.csproj", "{3AE0DD39-3DDD-13F9-6637-88660BF6652E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocuChef.Tests", "DocuChef.Tests\DocuChef.Tests.csproj", "{4E7FDAEB-0478-469E-B540-A5BF32BF738D}"
 EndProject
@@ -31,14 +26,6 @@ Global
 		{84627BF6-9A05-4812-A33D-B560C4CA5D2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84627BF6-9A05-4812-A33D-B560C4CA5D2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84627BF6-9A05-4812-A33D-B560C4CA5D2E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FE458742-BF52-BF4A-6B99-207296F8C686}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE458742-BF52-BF4A-6B99-207296F8C686}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE458742-BF52-BF4A-6B99-207296F8C686}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE458742-BF52-BF4A-6B99-207296F8C686}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3AE0DD39-3DDD-13F9-6637-88660BF6652E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3AE0DD39-3DDD-13F9-6637-88660BF6652E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3AE0DD39-3DDD-13F9-6637-88660BF6652E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3AE0DD39-3DDD-13F9-6637-88660BF6652E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4E7FDAEB-0478-469E-B540-A5BF32BF738D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4E7FDAEB-0478-469E-B540-A5BF32BF738D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E7FDAEB-0478-469E-B540-A5BF32BF738D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -50,10 +37,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{FE458742-BF52-BF4A-6B99-207296F8C686} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{3AE0DD39-3DDD-13F9-6637-88660BF6652E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CEE884EA-CA23-4D66-88A4-BBF679BACC48}
