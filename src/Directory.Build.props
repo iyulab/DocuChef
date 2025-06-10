@@ -16,6 +16,7 @@
     <PackageIconUrl>https://raw.githubusercontent.com/iyulab/public/main/images/iyulab_128.png</PackageIconUrl>
     <PackageTags>office, document, template, excel, powerpoint, word, docx, xlsx, pptx, templating, export, data-binding, merge, document-generation, template-engine, office-automation, reporting, variable-substitution, mustache, dollar-sign, export</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>
     <None Include="../logo.png" Pack="true" PackagePath="" />
