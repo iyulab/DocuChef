@@ -1,6 +1,8 @@
 # DocuChef
 The Master Chef for Document Templates - Cook delicious documents with your data and templates.
 
+![DocuChef Overview](./images/image-1.png)
+
 ## Overview
 DocuChef provides a unified interface for document generation across multiple formats. It supports Excel document generation using ClosedXML.Report.XLCustom and PowerPoint document generation using DollarSignEngine, with future plans to integrate additional template engines for Word documents.
 
