@@ -19,8 +19,10 @@ public class PPTFunctions
     /// Returns a placeholder for image insertion
     /// The actual image insertion will be handled by PowerPointFunctionHandler
     /// </summary>
-    public string Image(object propertyPathObj)
+    public string? Image(object propertyPathObj)
     {
+        if (propertyPathObj == null) return null;
+
         try
         {
             // Convert the input to string, handling various types including JsonElement

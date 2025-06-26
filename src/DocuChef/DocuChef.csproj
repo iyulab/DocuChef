@@ -6,10 +6,15 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!--
   <ItemGroup>
     <PackageReference Include="DollarSignEngine" Version="1.3.4" />
     <PackageReference Include="Iyulab.ClosedXML.Report" Version="0.2.12" />
   </ItemGroup>
+  -->
 
-
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ClosedXML.Report.XLCustom\src\ClosedXML.Report.XLCustom\ClosedXML.Report.XLCustom.csproj" />
+    <ProjectReference Include="..\..\..\DollarSignEngine\src\DollarSignEngine\DollarSignEngine.csproj" />
+  </ItemGroup>
 </Project>
