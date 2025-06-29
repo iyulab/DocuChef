@@ -1,0 +1,1866 @@
+[DocuChef:Debug] DocuChef initialized
+[DocuChef:Debug] Loading template from D:\data\DocuChef\src\DocuChef.TestConsoleApp\bin\Debug\net9.0\files\deep\test-template.pptx with extension .pptx
+[DocuChef:Debug] CombineData: Created new PPTFunctions instance
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] Starting context-based PowerPoint processing
+[DocuChef:Debug] Preprocessing smart quotes in template slides
+[DocuChef:Debug] Smart quote preprocessing complete. Processed 4 slides, normalized 0 expressions
+[DocuChef:Debug] Phase 1: Analyzing template slides
+[DocuChef:Debug] ExpressionExtractor: Processing slide for expression extraction
+[DocuChef:Debug] ExpressionExtractor: Span-level processing 6 text elements
+[DocuChef:Debug] ExpressionExtractor: Processing text span: 'IPX'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: ' '
+[DocuChef:Debug] ExpressionExtractor: Processing text span: 'PRODUCT CATALOG'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: 'Ver'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '. '
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '${Today:yyyy-MM-dd}'
+[DocuChef:Debug] ExpressionExtractor: Found span-level expression: '${Today:yyyy-MM-dd}'
+[DocuChef:Debug] ExpressionExtractor: Span-level extraction found 1 expressions
+[DocuChef:Debug] ExpressionExtractor: Paragraph-level processing 3 paragraphs
+[DocuChef:Debug] ExpressionExtractor: Processing paragraph text: 'IPX '
+[DocuChef:Debug] ExpressionExtractor: Processing paragraph text: 'PRODUCT CATALOG'
+[DocuChef:Debug] ExpressionExtractor: Processing paragraph text: 'Ver. ${Today:yyyy-MM-dd}'
+[DocuChef:Debug] ExpressionExtractor: Paragraph-level extraction added 0 additional expressions
+[DocuChef:Debug] ExpressionExtractor: Total expressions found: 1
+[DocuChef:Debug] ExpressionExtractor: Found expression: '${Today:yyyy-MM-dd}'
+[DocuChef:Debug]   Slide 0: 1 expressions, 0 directives
+[DocuChef:Debug] GetSlideNotes: Found 0 text elements
+[DocuChef:Debug] GetSlideNotes: Filtered to 0 elements
+[DocuChef:Debug] GetSlideNotes: Combined result: ''
+[DocuChef:Debug] ExpressionExtractor: Processing slide for expression extraction
+[DocuChef:Debug] ExpressionExtractor: Span-level processing 1 text elements
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '${Brands[0].Key}'
+[DocuChef:Debug] ExpressionExtractor: Found span-level expression: '${Brands[0].Key}'
+[DocuChef:Debug] ExpressionExtractor: Span-level extraction found 1 expressions
+[DocuChef:Debug] ExpressionExtractor: Paragraph-level processing 1 paragraphs
+[DocuChef:Debug] ExpressionExtractor: Processing paragraph text: '${Brands[0].Key}'
+[DocuChef:Debug] ExpressionExtractor: Paragraph-level extraction added 0 additional expressions
+[DocuChef:Debug] ExpressionExtractor: Total expressions found: 1
+[DocuChef:Debug] ExpressionExtractor: Found expression: '${Brands[0].Key}'
+[DocuChef:Debug]   Slide 1: 1 expressions, 1 directives
+[DocuChef:Debug] GetSlideNotes: Found 0 text elements
+[DocuChef:Debug] GetSlideNotes: Filtered to 0 elements
+[DocuChef:Debug] GetSlideNotes: Combined result: ''
+[DocuChef:Debug] ExpressionExtractor: Processing slide for expression extraction
+[DocuChef:Debug] ExpressionExtractor: Span-level processing 36 text elements
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '${'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: 'Brands>'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: 'Types[0].Key}'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '${'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: 'Brands>'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: 'Types'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '>Items[0]'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '["Item_'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '罹먮┃??
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '_'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '?몃텇瑜?
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '_'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '紐?
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '"]}'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '${'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: 'Brands>'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: 'Types'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '>Items[1]'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '["Item_'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '罹먮┃??
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '_'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '?몃텇瑜?
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '_'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '紐?
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '"]}'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '${'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: 'Brands>'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: 'Types'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '>Items[2]'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '["Item_'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '罹먮┃??
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '_'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '?몃텇瑜?
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '_'
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '紐?
+[DocuChef:Debug] ExpressionExtractor: Processing text span: '"]}'
+[DocuChef:Debug] ExpressionExtractor: Span-level extraction found 0 expressions
+[DocuChef:Debug] ExpressionExtractor: Paragraph-level processing 5 paragraphs
+[DocuChef:Debug] ExpressionExtractor: Processing paragraph text: '${Brands>Types[0].Key}'
+[DocuChef:Debug] ExpressionExtractor: Found paragraph-level expression: '${Brands>Types[0].Key}'
+[DocuChef:Debug] ExpressionExtractor: Processing paragraph text: '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ExpressionExtractor: Found paragraph-level expression: '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ExpressionExtractor: Processing paragraph text: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ExpressionExtractor: Found paragraph-level expression: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ExpressionExtractor: Processing paragraph text: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ExpressionExtractor: Found paragraph-level expression: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ExpressionExtractor: Paragraph-level extraction added 4 additional expressions
+[DocuChef:Debug] ExpressionExtractor: Total expressions found: 4
+[DocuChef:Debug] ExpressionExtractor: Found expression: '${Brands>Types[0].Key}'
+[DocuChef:Debug] ExpressionExtractor: Found expression: '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ExpressionExtractor: Found expression: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ExpressionExtractor: Found expression: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug]   Slide 2: 4 expressions, 1 directives
+[DocuChef:Debug] ExpressionExtractor: Processing slide for expression extraction
+[DocuChef:Debug] ExpressionExtractor: Span-level processing 1 text elements
+[DocuChef:Debug] ExpressionExtractor: Processing text span: 'EOD'
+[DocuChef:Debug] ExpressionExtractor: Span-level extraction found 0 expressions
+[DocuChef:Debug] ExpressionExtractor: Paragraph-level processing 1 paragraphs
+[DocuChef:Debug] ExpressionExtractor: Processing paragraph text: 'EOD'
+[DocuChef:Debug] ExpressionExtractor: Paragraph-level extraction added 0 additional expressions
+[DocuChef:Debug] ExpressionExtractor: Total expressions found: 0
+[DocuChef:Debug]   Slide 3: 0 expressions, 0 directives
+[DocuChef:Debug] Template analysis complete. Found 4 template slides
+[DocuChef:Debug] Phase 3: Applying alias transformations
+[DocuChef:Debug] No aliases found to apply
+[DocuChef:Debug] Phase 4: Generating slide plan based on data
+[DocuChef:Debug] BuildAliasMap: Created alias map with 0 entries
+[DocuChef:Debug] GeneratePlan: Detected nested context, using nested range processing
+[DocuChef:Debug] ProcessNestedRangeSlides: Found parent slide 1 and child slide 2
+[DocuChef:Debug] ResolveCollection: Starting with path='Brands', data type=Dictionary`2
+[DocuChef:Debug] ResolveCollection: Handling direct property access for path 'Brands'
+[DocuChef:Debug] ResolveCollection: ResolvePropertyPath returned: <>f__AnonymousType0`2[]
+[DocuChef:Debug] ResolveCollection: Found enumerable result, count=2
+[DocuChef:Debug] ProcessNestedRangeSlides: Processing 2 parent items
+[DocuChef:Debug] ProcessNestedRangeSlides: Processing parent 0
+[DocuChef:Debug] ResolveCollection: Starting with path='Types', data type=<>f__AnonymousType0`2
+[DocuChef:Debug] ResolveCollection: Handling direct property access for path 'Types'
+[DocuChef:Debug] ResolveCollection: ResolvePropertyPath returned: <>f__AnonymousType1`2[]
+[DocuChef:Debug] ResolveCollection: Found enumerable result, count=3
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Analyzing 4 expressions for collection 'Types'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Looking for directPattern='Types[' and subPattern='Types>'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Checking expression: '${Brands>Types[0].Key}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Found direct reference in '${Brands>Types[0].Key}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Checking expression: '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Found sub-reference in '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Checking expression: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Found sub-reference in '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Checking expression: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Found sub-reference in '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: hasDirectReference=True, hasSubReference=True
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Using direct reference logic -> itemsPerSlide=1
+[DocuChef:Debug] ProcessNestedChildItems: Parent 0 has 3 child items in 'Types', requiring 3 slides with 1 items per slide
+[DocuChef:Debug] ProcessNestedChildItems: Creating child slide 1/3 for parent 0 with local offset 0
+[DocuChef:Debug] ProcessNestedChildItems: Creating child slide 2/3 for parent 0 with local offset 1
+[DocuChef:Debug] ProcessNestedChildItems: Creating child slide 3/3 for parent 0 with local offset 2
+[DocuChef:Debug] ProcessNestedRangeSlides: Processing parent 1
+[DocuChef:Debug] ResolveCollection: Starting with path='Types', data type=<>f__AnonymousType0`2
+[DocuChef:Debug] ResolveCollection: Handling direct property access for path 'Types'
+[DocuChef:Debug] ResolveCollection: ResolvePropertyPath returned: <>f__AnonymousType1`2[]
+[DocuChef:Debug] ResolveCollection: Found enumerable result, count=1
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Analyzing 4 expressions for collection 'Types'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Looking for directPattern='Types[' and subPattern='Types>'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Checking expression: '${Brands>Types[0].Key}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Found direct reference in '${Brands>Types[0].Key}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Checking expression: '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Found sub-reference in '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Checking expression: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Found sub-reference in '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Checking expression: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Found sub-reference in '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: hasDirectReference=True, hasSubReference=True
+[DocuChef:Debug] DetermineItemsPerSlideForNestedCollection: Using direct reference logic -> itemsPerSlide=1
+[DocuChef:Debug] ProcessNestedChildItems: Parent 1 has 1 child items in 'Types', requiring 1 slides with 1 items per slide
+[DocuChef:Debug] ProcessNestedChildItems: Creating child slide 1/1 for parent 1 with local offset 0
+[DocuChef:Debug] ProcessNestedRangeSlides: Completed nested range processing
+[DocuChef:Debug] Slide plan generated. Will create 8 slides
+[DocuChef:Debug]   Slide 0: Template 0, Context: ''
+[DocuChef:Debug]   Slide 1: Template 1, Context: 'Brands'
+[DocuChef:Debug]   Slide 2: Template 2, Context: 'Brands[0]>Types'
+[DocuChef:Debug]   Slide 3: Template 2, Context: 'Brands[0]>Types'
+[DocuChef:Debug]   Slide 4: Template 2, Context: 'Brands[0]>Types'
+[DocuChef:Debug]   Slide 5: Template 1, Context: 'Brands'
+[DocuChef:Debug]   Slide 6: Template 2, Context: 'Brands[1]>Types'
+[DocuChef:Debug]   Slide 7: Template 3, Context: ''
+[DocuChef:Debug] Phase 5: Generating slides
+[DocuChef:Debug] SlideGenerator: Starting generation with 8 slide instances
+[DocuChef:Debug] SlideGenerator: Found 4 source slides
+[DocuChef:Debug] SlideGenerator: Processing slide instance from template 0 with offset 0
+[DocuChef:Debug] SlideGenerator: Keeping original slide 0 at position 0
+[DocuChef:Debug] SlideGenerator: Processing slide instance from template 1 with offset 0
+[DocuChef:Debug] SlideGenerator: Keeping original slide 1 at position 1
+[DocuChef:Debug] SlideGenerator: Processing slide instance from template 2 with offset 0
+[DocuChef:Debug] SlideGenerator: Keeping original slide 2 at position 2
+[DocuChef:Debug] SlideGenerator: Processing slide instance from template 2 with offset 1
+[DocuChef:Debug] SlideGenerator: Processing slide instance from template 2 with offset 2
+[DocuChef:Debug] SlideGenerator: Processing slide instance from template 1 with offset 1
+[DocuChef:Debug] SlideGenerator: Processing slide instance from template 2 with offset 0
+[DocuChef:Debug] SlideGenerator: Processing slide instance from template 3 with offset 0
+[DocuChef:Debug] SlideGenerator: Cloning slide from template 2 at position 3
+[DocuChef:Debug] SlideCloner: No image parts found in template slide
+[DocuChef:Debug] SlideCloner: Inserted slide at position 3, new slide ID: 309
+[DocuChef:Debug] SlideGenerator: Generated auto notes for slide 2
+[DocuChef:Debug] SlideGenerator: Successfully cloned slide from template 2
+[DocuChef:Debug] SlideGenerator: Cloning slide from template 2 at position 4
+[DocuChef:Debug] SlideCloner: No image parts found in template slide
+[DocuChef:Debug] SlideCloner: Inserted slide at position 4, new slide ID: 310
+[DocuChef:Debug] SlideGenerator: Generated auto notes for slide 2
+[DocuChef:Debug] SlideGenerator: Successfully cloned slide from template 2
+[DocuChef:Debug] SlideGenerator: Cloning slide from template 1 at position 5
+[DocuChef:Debug] SlideCloner: No image parts found in template slide
+[DocuChef:Debug] SlideCloner: Inserted slide at position 5, new slide ID: 311
+[DocuChef:Debug] SlideGenerator: Generated auto notes for slide 1
+[DocuChef:Debug] SlideGenerator: Successfully cloned slide from template 1
+[DocuChef:Debug] SlideGenerator: Cloning slide from template 2 at position 6
+[DocuChef:Debug] SlideCloner: No image parts found in template slide
+[DocuChef:Debug] SlideCloner: Inserted slide at position 6, new slide ID: 312
+[DocuChef:Debug] SlideGenerator: Generated auto notes for slide 2
+[DocuChef:Debug] SlideGenerator: Successfully cloned slide from template 2
+[DocuChef:Debug] SlideGenerator: Cloning slide from template 3 at position 7
+[DocuChef:Debug] SlideCloner: Found 1 image parts to clone
+[DocuChef:Debug] SlideCloner: Successfully cloned image part with relationship ID: rId2
+[DocuChef:Debug] SlideCloner: Successfully cloned all 1 image parts
+[DocuChef:Debug] SlideCloner: Inserted slide at position 7, new slide ID: 313
+[DocuChef:Debug] SlideGenerator: Generated auto notes for slide 3
+[DocuChef:Debug] SlideGenerator: Successfully cloned slide from template 3
+[DocuChef:Debug] SlideGenerator: Starting Phase 2 - Expression correction for 8 slides
+[DocuChef:Debug] SlideGenerator: Applying expression updates to slide from template 0 with offset 0
+[DocuChef:Debug] ExpressionUpdater: Updating expressions with index offset 0, contextPath: 'null'
+[DocuChef:Debug] SlideGenerator: Applied expression updates to slide from template 0 with context: , offset: 0
+[DocuChef:Debug] SlideGenerator: Applying expression updates to slide from template 1 with offset 0
+[DocuChef:Debug] ExpressionUpdater: Updating expressions with index offset 0, contextPath: 'Brands'
+[DocuChef:Debug] ElementHider: Checking array bounds for Brands[0] (original: Brands[0] + offset 0)
+[DocuChef:Debug] SlideGenerator: Applied expression updates to slide from template 1 with context: Brands, offset: 0
+[DocuChef:Debug] SlideGenerator: Applying expression updates to slide from template 2 with offset 0
+[DocuChef:Debug] ExpressionUpdater: Updating expressions with index offset 0, contextPath: 'Brands[0]>Types'
+[DocuChef:Debug] ElementHider: Checking array bounds for Types[0] (original: Types[0] + offset 0)
+[DocuChef:Debug] ElementHider: Checking array bounds for Items[0] (original: Items[0] + offset 0)
+[DocuChef:Debug] ElementHider: Checking array bounds for Items[1] (original: Items[1] + offset 0)
+[DocuChef:Debug] ElementHider: Checking array bounds for Items[2] (original: Items[2] + offset 0)
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[0]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[0]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[1]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[1]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[2]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[2]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] SlideGenerator: Applied expression updates to slide from template 2 with context: Brands[0]>Types, offset: 0
+[DocuChef:Debug] SlideGenerator: Applying expression updates to slide from template 2 with offset 1
+[DocuChef:Debug] ExpressionUpdater: Updating expressions with index offset 1, contextPath: 'Brands[0]>Types'
+[DocuChef:Debug] ElementHider: Checking array bounds for Types[1] (original: Types[0] + offset 1)
+[DocuChef:Debug] ElementHider: Checking array bounds for Items[1] (original: Items[0] + offset 1)
+[DocuChef:Debug] ElementHider: Checking array bounds for Items[2] (original: Items[1] + offset 1)
+[DocuChef:Debug] ElementHider: Checking array bounds for Items[3] (original: Items[2] + offset 1)
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Adjusted array index from 'Types[0]' to 'Types[1]' (offset: 1)
+[DocuChef:Debug] ExpressionUpdater: Updated expression from 'Types[0].Key}' to 'Types[1].Key}'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[0]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Adjusted array index from 'Items[0]' to 'Items[1]' (offset: 1)
+[DocuChef:Debug] ExpressionUpdater: Updated expression from '>Items[0]' to '>Items[1]'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[1]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[1]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Adjusted array index from 'Items[1]' to 'Items[2]' (offset: 1)
+[DocuChef:Debug] ExpressionUpdater: Updated expression from '>Items[1]' to '>Items[2]'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[2]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[2]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Adjusted array index from 'Items[2]' to 'Items[3]' (offset: 1)
+[DocuChef:Debug] ExpressionUpdater: Updated expression from '>Items[2]' to '>Items[3]'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[3]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] SlideGenerator: Applied expression updates to slide from template 2 with context: Brands[0]>Types, offset: 1
+[DocuChef:Debug] SlideGenerator: Applying expression updates to slide from template 2 with offset 2
+[DocuChef:Debug] ExpressionUpdater: Updating expressions with index offset 2, contextPath: 'Brands[0]>Types'
+[DocuChef:Debug] ElementHider: Checking array bounds for Types[2] (original: Types[0] + offset 2)
+[DocuChef:Debug] ElementHider: Checking array bounds for Items[2] (original: Items[0] + offset 2)
+[DocuChef:Debug] ElementHider: Checking array bounds for Items[3] (original: Items[1] + offset 2)
+[DocuChef:Debug] ElementHider: Checking array bounds for Items[4] (original: Items[2] + offset 2)
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Adjusted array index from 'Types[0]' to 'Types[2]' (offset: 2)
+[DocuChef:Debug] ExpressionUpdater: Updated expression from 'Types[0].Key}' to 'Types[2].Key}'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[0]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Adjusted array index from 'Items[0]' to 'Items[2]' (offset: 2)
+[DocuChef:Debug] ExpressionUpdater: Updated expression from '>Items[0]' to '>Items[2]'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[2]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[1]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Adjusted array index from 'Items[1]' to 'Items[3]' (offset: 2)
+[DocuChef:Debug] ExpressionUpdater: Updated expression from '>Items[1]' to '>Items[3]'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[3]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[2]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] ExpressionUpdater: Adjusted array index from 'Items[2]' to 'Items[4]' (offset: 2)
+[DocuChef:Debug] ExpressionUpdater: Updated expression from '>Items[2]' to '>Items[4]'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[4]' with contextPath 'Brands[0]>Types'
+[DocuChef:Debug] SlideGenerator: Applied expression updates to slide from template 2 with context: Brands[0]>Types, offset: 2
+[DocuChef:Debug] SlideGenerator: Applying expression updates to slide from template 1 with offset 1
+[DocuChef:Debug] ExpressionUpdater: Updating expressions with index offset 1, contextPath: 'Brands'
+[DocuChef:Debug] ElementHider: Checking array bounds for Brands[1] (original: Brands[0] + offset 1)
+[DocuChef:Debug] ExpressionUpdater: Adjusted array index from 'Brands[0]' to 'Brands[1]' (offset: 1)
+[DocuChef:Debug] ExpressionUpdater: Updated expression from '${Brands[0].Key}' to '${Brands[1].Key}'
+[DocuChef:Debug] SlideGenerator: Applied expression updates to slide from template 1 with context: Brands, offset: 1
+[DocuChef:Debug] SlideGenerator: Applying expression updates to slide from template 2 with offset 0
+[DocuChef:Debug] ExpressionUpdater: Updating expressions with index offset 0, contextPath: 'Brands[1]>Types'
+[DocuChef:Debug] ElementHider: Checking array bounds for Types[0] (original: Types[0] + offset 0)
+[DocuChef:Debug] ElementHider: Checking array bounds for Items[0] (original: Items[0] + offset 0)
+[DocuChef:Debug] ElementHider: Checking array bounds for Items[1] (original: Items[1] + offset 0)
+[DocuChef:Debug] ElementHider: Checking array bounds for Items[2] (original: Items[2] + offset 0)
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[0]' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[0]' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[1]' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[1]' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in 'Brands>' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[2]' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] ExpressionUpdater: Resolving context operators in '>Items[2]' with contextPath 'Brands[1]>Types'
+[DocuChef:Debug] SlideGenerator: Applied expression updates to slide from template 2 with context: Brands[1]>Types, offset: 0
+[DocuChef:Debug] SlideGenerator: Applying expression updates to slide from template 3 with offset 0
+[DocuChef:Debug] ExpressionUpdater: Updating expressions with index offset 0, contextPath: 'null'
+[DocuChef:Debug] SlideGenerator: Applied expression updates to slide from template 3 with context: , offset: 0
+[DocuChef:Debug] SlideRemover: Removing 1 original slides that were repositioned
+[DocuChef:Debug] SlideRemover: Removing original slide 3 with RelationshipId rId8
+[DocuChef:Debug] SlideRemover: Deleted slide part for original slide 3
+[DocuChef:Debug] SlideGenerator: Slide generation completed
+[DocuChef:Debug] Slide generation and expression transformation complete
+[DocuChef:Debug] Phase 6: Processing data binding
+[DocuChef:Debug] DataBinder: Preparing base variables (one-time initialization)
+[DocuChef:Debug] DataBinder: Cached 3 base variables
+[DocuChef:Debug] Base variables prepared for optimized data binding
+[DocuChef:Debug] Base variables prepared for optimized data binding
+[DocuChef:Debug] SlideContext: Creating for slide 0, SourceSlideId: 0
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath count: 0
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath items: []
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPathString: ''
+[DocuChef:Debug] Attempting to get SlidePart for slideId 0 with RelationshipId: rId5
+[DocuChef:Debug] Retrieved SlidePart: True, Slide: True
+[DocuChef:Debug] Processing data binding for slide 0: found 3 paragraphs
+[DocuChef:Debug]   Processing paragraph: 'IPX '
+[DocuChef:Debug]   Processing paragraph: 'PRODUCT CATALOG'
+[DocuChef:Debug]   Processing paragraph: 'Ver. ${Today:yyyy-MM-dd}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 3 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Ver'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '. '
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${Today:yyyy-MM-dd}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 1 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Processing complete expressions in element: '${Today:yyyy-MM-dd}'
+[DocuChef:Debug] SlideContext: Preparing variables for slide 0 with context ''
+[DocuChef:Debug] SlideContext: Cached 3 variables for slide 0
+[DocuChef:Debug]   Variable: Today = DateTime
+[DocuChef:Debug]   Variable: Brands = <>f__AnonymousType0`2[] (count: 2)
+[DocuChef:Debug]   Variable: ppt = PPTFunctions
+[DocuChef:Debug] DataBinder: Original template: '${Today:yyyy-MM-dd}', ContextPath: ''
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: '' (offset: 0)
+[DocuChef:Debug] DataBinder: Cached 3 variables for context ''
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Today:yyyy-MM-dd}'
+[DocuChef:Debug] DataBinder: Found 0 expressions with '__' pattern
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 3 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug] DataBinder.EvaluateTemplate: ${Today:yyyy-MM-dd}: 2025-06-30
+[DocuChef:Debug] DataBinder: Template '${Today:yyyy-MM-dd}' evaluated to '2025-06-30'
+[DocuChef:Debug]     Processed complete expression in span: '${Today:yyyy-MM-dd}' ??'2025-06-30'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: 'Ver. 2025-06-30'
+[DocuChef:Debug] HasIncompleteExpressions: text='Ver. 2025-06-30', openBraces=0, closeBraces=0, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: No expressions found to process
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: 'Ver. 2025-06-30'
+[DocuChef:Debug]   Paragraph bound from 'Ver. ${Today:yyyy-MM-dd}' to 'Ver. 2025-06-30'
+[DocuChef:Debug] Data binding completed for slide 0
+[DocuChef:Debug] [SLIDE 0 FINAL CONTENT]:
+[DocuChef:Debug]   ??IPX 
+[DocuChef:Debug]   ??PRODUCT CATALOG
+[DocuChef:Debug]   ??Ver. 2025-06-30
+[DocuChef:Debug] Data binding complete for slide 0 (context: System.Collections.Generic.List`1[System.String])
+[DocuChef:Debug] SlideContext: Creating for slide 1, SourceSlideId: 1
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath count: 1
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath items: [Brands]
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPathString: 'Brands'
+[DocuChef:Debug] Attempting to get SlidePart for slideId 1 with RelationshipId: rId6
+[DocuChef:Debug] Retrieved SlidePart: True, Slide: True
+[DocuChef:Debug] Processing data binding for slide 1: found 1 paragraphs
+[DocuChef:Debug]   Processing paragraph: '${Brands[0].Key}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 1 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${Brands[0].Key}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 1 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Processing complete expressions in element: '${Brands[0].Key}'
+[DocuChef:Debug] SlideContext: Preparing variables for slide 1 with context 'Brands'
+[DocuChef:Debug] DataBinder: ApplyContextPath called with contextPath='Brands', data type=Dictionary`2
+[DocuChef:Debug] SlideContext: Cached 3 variables for slide 1
+[DocuChef:Debug]   Variable: Today = DateTime
+[DocuChef:Debug]   Variable: Brands = <>f__AnonymousType0`2[] (count: 2)
+[DocuChef:Debug]   Variable: ppt = PPTFunctions
+[DocuChef:Debug] DataBinder: Original template: '${Brands[0].Key}', ContextPath: 'Brands'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands' (offset: 0)
+[DocuChef:Debug] DataBinder: ApplyContextPath called with contextPath='Brands', data type=Dictionary`2
+[DocuChef:Debug] DataBinder: Cached 3 variables for context 'Brands'
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands[0].Key}'
+[DocuChef:Debug] DataBinder: Found 0 expressions with '__' pattern
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 3 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug] DataBinder.EvaluateTemplate: ${Brands[0].Key}: B&F
+[DocuChef:Debug] DataBinder: Template '${Brands[0].Key}' evaluated to 'B&F'
+[DocuChef:Debug]     Processed complete expression in span: '${Brands[0].Key}' ??'B&F'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: 'B&F'
+[DocuChef:Debug] HasIncompleteExpressions: text='B&F', openBraces=0, closeBraces=0, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: No expressions found to process
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: 'B&F'
+[DocuChef:Debug]   Paragraph bound from '${Brands[0].Key}' to 'B&F'
+[DocuChef:Debug] Data binding completed for slide 1
+[DocuChef:Debug] [SLIDE 1 FINAL CONTENT]:
+[DocuChef:Debug]   ??B&F
+[DocuChef:Debug] Data binding complete for slide 1 (context: System.Collections.Generic.List`1[System.String])
+[DocuChef:Debug] SlideContext: Creating for slide 2, SourceSlideId: 2
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath count: 2
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath items: [Brands[0], Types]
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPathString: 'Brands[0]>Types'
+[DocuChef:Debug] Attempting to get SlidePart for slideId 2 with RelationshipId: rId7
+[DocuChef:Debug] Retrieved SlidePart: True, Slide: True
+[DocuChef:Debug] Processing data binding for slide 2: found 5 paragraphs
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types[0].Key}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 3 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types[0].Key}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types[0].Key}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types[0].Key}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=22, textWithoutWhitespace.Length=22, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types[0].Key}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types[0].Key}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types[0].Key}' at [0, 22)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 3 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types[0].Key}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[0]>Types'
+[DocuChef:Debug] SlideContext: Preparing variables for slide 2 with context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: ApplyContextPath called with contextPath='Brands[0]>Types', data type=Dictionary`2
+[DocuChef:Debug] DataBinder: Processing 2 splits for contextPath 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Processing array access 'Brands[0]' -> name='Brands', index=0
+[DocuChef:Debug] DataBinder: ResolveValue - data type: Dictionary`2, property: 'Brands', index: 0
+[DocuChef:Debug] DataBinder: Processing as IDictionary, contains 'Brands': True
+[DocuChef:Debug] DataBinder: Dictionary value is enumerable with 2 items, requested index: 0
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType0`2
+[DocuChef:Debug] DataBinder: Processing simple property 'Types'
+[DocuChef:Debug] DataBinder: ResolveValue - data type: <>f__AnonymousType0`2, property: 'Types', index: 
+[DocuChef:Debug] DataBinder: Found property 'Types' via reflection
+[DocuChef:Debug] DataBinder: Property value type: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Created context variable 'Brands__0__Types' for path 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: BEFORE parent mapping - 'Brands' existing value type: <>f__AnonymousType0`2[]
+[DocuChef:Debug] DataBinder: Backed up original 'Brands' collection
+[DocuChef:Debug] DataBinder: Created parent collection mapping 'Brands' -> nested collection for context resolution
+[DocuChef:Debug] DataBinder: vData type: <>f__AnonymousType1`2[], count: 3
+[DocuChef:Debug] SlideContext: Cached 5 variables for slide 2
+[DocuChef:Debug]   Variable: Today = DateTime
+[DocuChef:Debug]   Variable: Brands = <>f__AnonymousType1`2[] (count: 3)
+[DocuChef:Debug]   Variable: ppt = PPTFunctions
+[DocuChef:Debug]   Variable: Brands__0__Types = <>f__AnonymousType1`2[] (count: 3)
+[DocuChef:Debug]   Variable: Brands__Original = <>f__AnonymousType0`2[] (count: 2)
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types[0].Key}', ContextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[0]>Types' (offset: 0)
+[DocuChef:Debug] DataBinder: ApplyContextPath called with contextPath='Brands[0]>Types', data type=Dictionary`2
+[DocuChef:Debug] DataBinder: Processing 2 splits for contextPath 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Processing array access 'Brands[0]' -> name='Brands', index=0
+[DocuChef:Debug] DataBinder: ResolveValue - data type: Dictionary`2, property: 'Brands', index: 0
+[DocuChef:Debug] DataBinder: Processing as IDictionary, contains 'Brands': True
+[DocuChef:Debug] DataBinder: Found original backup for 'Brands', using original instead of current value
+[DocuChef:Debug] DataBinder: Original type: <>f__AnonymousType0`2[], Current type: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Dictionary value is enumerable with 2 items, requested index: 0
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType0`2
+[DocuChef:Debug] DataBinder: Processing simple property 'Types'
+[DocuChef:Debug] DataBinder: ResolveValue - data type: <>f__AnonymousType0`2, property: 'Types', index: 
+[DocuChef:Debug] DataBinder: Found property 'Types' via reflection
+[DocuChef:Debug] DataBinder: Property value type: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Created context variable 'Brands__0__Types' for path 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: BEFORE parent mapping - 'Brands' existing value type: <>f__AnonymousType0`2[]
+[DocuChef:Debug] DataBinder: Backed up original 'Brands' collection
+[DocuChef:Debug] DataBinder: Created parent collection mapping 'Brands' -> nested collection for context resolution
+[DocuChef:Debug] DataBinder: vData type: <>f__AnonymousType1`2[], count: 3
+[DocuChef:Debug] DataBinder: Cached 5 variables for context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types[0].Key}', remainder='[0].Key'
+[DocuChef:Debug] DataBinder: Converted direct array access '${Brands>Types[0].Key}' to '${Brands__0__Types[0].Key}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__0__Types' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__0__Types[0].Key}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__0__Types[0].Key'
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 5 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__0__Types = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug] DataBinder.EvaluateTemplate: ${Brands__0__Types[0].Key}: KEYRING
+[DocuChef:Debug] DataBinder: Template '${Brands__0__Types[0].Key}' evaluated to 'KEYRING'
+[DocuChef:Debug]     Updated first spanning element: '${' ??'KE'
+[DocuChef:Debug]     Updated spanning element 1: 'Brands>' ??'YR'
+[DocuChef:Debug]     Updated spanning element 2: 'Types[0].Key}' ??'ING'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: 'KEYRING'
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types[0].Key}' to 'KEYRING'
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 11 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '>Items[0]'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '["Item_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '罹먮┃??
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '?몃텇瑜?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '紐?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '"]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=42, textWithoutWhitespace.Length=42, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}' at [0, 42)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 11 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}', ContextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[0]>Types' (offset: 0)
+[DocuChef:Debug] DataBinder: Using cached variables for context 'Brands[0]>Types' (5 variables)
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}', remainder='>Items[0]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Added default index '0' for context, result: '__0__Items[0]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Converted context operator '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}' to '${Brands__0__Types__0__Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__0__Types' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__0__Types__0__Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__0__Types__0__Items[0]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__0__Types__0__Items'
+[DocuChef:Debug] DataBinder: Split into 5 parts: [Brands, 0, Types, 0, Items]
+[DocuChef:Debug] DataBinder: 5-part pattern - BaseName='Brands', BaseIndex='0', NestedName='Types', NestedIndex='0', FinalProperty='Items'
+[DocuChef:Debug] DataBinder: ExtractNestedProperty - trying to get Brands[0].Types[0].Items
+[DocuChef:Debug] DataBinder: Found cached nested variable 'Brands__0__Types' for extraction
+[DocuChef:Debug] DataBinder: Cached nested collection has 3 items
+[DocuChef:Debug] DataBinder: Successfully found nested item at index 0
+[DocuChef:Debug] DataBinder: Extracted 'Items' from <>f__AnonymousType1`2: Dictionary`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__0__Types__0__Items' with 2 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__0__Types = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__0__Types__0__Items = [System.Collections.Generic.Dictionary`2[System.String,System.Object], System.Collections.Generic.Dictionary`2[System.String,System.Object]] (count: 2)
+[DocuChef:Debug] DataBinder.EvaluateTemplate: ${Brands__0__Types__0__Items[0]["Item_罹먮┃???몃텇瑜?紐?]}: BROWN
+[DocuChef:Debug] DataBinder: Template '${Brands__0__Types__0__Items[0]["Item_罹먮┃???몃텇瑜?紐?]}' evaluated to 'BROWN'
+[DocuChef:Debug]     Updated first spanning element: '${' ??''
+[DocuChef:Debug]     Updated spanning element 1: 'Brands>' ??''
+[DocuChef:Debug]     Updated spanning element 2: 'Types' ??''
+[DocuChef:Debug]     Updated spanning element 3: '>Items[0]' ??''
+[DocuChef:Debug]     Updated spanning element 4: '["Item_' ??''
+[DocuChef:Debug]     Updated spanning element 5: '罹먮┃?? ??''
+[DocuChef:Debug]     Updated spanning element 6: '_' ??'B'
+[DocuChef:Debug]     Updated spanning element 7: '?몃텇瑜? ??'R'
+[DocuChef:Debug]     Updated spanning element 8: '_' ??'O'
+[DocuChef:Debug]     Updated spanning element 9: '紐? ??'W'
+[DocuChef:Debug]     Updated spanning element 10: '"]}' ??'N'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: 'BROWN'
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}' to 'BROWN'
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 11 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '>Items[1]'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '["Item_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '罹먮┃??
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '?몃텇瑜?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '紐?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '"]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=42, textWithoutWhitespace.Length=42, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}' at [0, 42)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 11 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}', ContextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[0]>Types' (offset: 0)
+[DocuChef:Debug] DataBinder: Using cached variables for context 'Brands[0]>Types' (5 variables)
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}', remainder='>Items[1]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Added default index '0' for context, result: '__0__Items[1]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Converted context operator '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}' to '${Brands__0__Types__0__Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__0__Types' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__0__Types__0__Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__0__Types__0__Items[1]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__0__Types__0__Items'
+[DocuChef:Debug] DataBinder: Split into 5 parts: [Brands, 0, Types, 0, Items]
+[DocuChef:Debug] DataBinder: 5-part pattern - BaseName='Brands', BaseIndex='0', NestedName='Types', NestedIndex='0', FinalProperty='Items'
+[DocuChef:Debug] DataBinder: ExtractNestedProperty - trying to get Brands[0].Types[0].Items
+[DocuChef:Debug] DataBinder: Found cached nested variable 'Brands__0__Types' for extraction
+[DocuChef:Debug] DataBinder: Cached nested collection has 3 items
+[DocuChef:Debug] DataBinder: Successfully found nested item at index 0
+[DocuChef:Debug] DataBinder: Extracted 'Items' from <>f__AnonymousType1`2: Dictionary`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__0__Types__0__Items' with 2 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__0__Types = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__0__Types__0__Items = [System.Collections.Generic.Dictionary`2[System.String,System.Object], System.Collections.Generic.Dictionary`2[System.String,System.Object]] (count: 2)
+[DocuChef:Debug] DataBinder.EvaluateTemplate: ${Brands__0__Types__0__Items[1]["Item_罹먮┃???몃텇瑜?紐?]}: SALLY
+[DocuChef:Debug] DataBinder: Template '${Brands__0__Types__0__Items[1]["Item_罹먮┃???몃텇瑜?紐?]}' evaluated to 'SALLY'
+[DocuChef:Debug]     Updated first spanning element: '${' ??''
+[DocuChef:Debug]     Updated spanning element 1: 'Brands>' ??''
+[DocuChef:Debug]     Updated spanning element 2: 'Types' ??''
+[DocuChef:Debug]     Updated spanning element 3: '>Items[1]' ??''
+[DocuChef:Debug]     Updated spanning element 4: '["Item_' ??''
+[DocuChef:Debug]     Updated spanning element 5: '罹먮┃?? ??''
+[DocuChef:Debug]     Updated spanning element 6: '_' ??'S'
+[DocuChef:Debug]     Updated spanning element 7: '?몃텇瑜? ??'A'
+[DocuChef:Debug]     Updated spanning element 8: '_' ??'L'
+[DocuChef:Debug]     Updated spanning element 9: '紐? ??'L'
+[DocuChef:Debug]     Updated spanning element 10: '"]}' ??'Y'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: 'SALLY'
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}' to 'SALLY'
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 11 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '>Items[2]'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '["Item_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '罹먮┃??
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '?몃텇瑜?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '紐?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '"]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=42, textWithoutWhitespace.Length=42, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' at [0, 42)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 11 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', ContextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[0]>Types' (offset: 0)
+[DocuChef:Debug] DataBinder: Using cached variables for context 'Brands[0]>Types' (5 variables)
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', remainder='>Items[2]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Added default index '0' for context, result: '__0__Items[2]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Converted context operator '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' to '${Brands__0__Types__0__Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__0__Types' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__0__Types__0__Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__0__Types__0__Items[2]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__0__Types__0__Items'
+[DocuChef:Debug] DataBinder: Split into 5 parts: [Brands, 0, Types, 0, Items]
+[DocuChef:Debug] DataBinder: 5-part pattern - BaseName='Brands', BaseIndex='0', NestedName='Types', NestedIndex='0', FinalProperty='Items'
+[DocuChef:Debug] DataBinder: ExtractNestedProperty - trying to get Brands[0].Types[0].Items
+[DocuChef:Debug] DataBinder: Found cached nested variable 'Brands__0__Types' for extraction
+[DocuChef:Debug] DataBinder: Cached nested collection has 3 items
+[DocuChef:Debug] DataBinder: Successfully found nested item at index 0
+[DocuChef:Debug] DataBinder: Extracted 'Items' from <>f__AnonymousType1`2: Dictionary`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__0__Types__0__Items' with 2 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__0__Types = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__0__Types__0__Items = [System.Collections.Generic.Dictionary`2[System.String,System.Object], System.Collections.Generic.Dictionary`2[System.String,System.Object]] (count: 2)
+[DocuChef:Debug] DataBinder: Array bounds validation failed - Brands__0__Types__0__Items[2] exceeds collection size 2
+[DocuChef:Debug] DataBinder.EvaluateTemplate: Array bounds exceeded, returning empty string - Array index out of bounds: Brands__0__Types__0__Items[2] exceeds collection size 2
+[DocuChef:Debug] DataBinder: Template '${Brands__0__Types__0__Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' evaluated to ''
+[DocuChef:Debug]     Updated first spanning element: '${' ??''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: ''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Text is empty, but keeping paragraph to preserve document structure
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' to ''
+[DocuChef:Debug] Data binding completed for slide 2
+[DocuChef:Debug] [SLIDE 2 FINAL CONTENT]:
+[DocuChef:Debug]   ??KEYRING
+[DocuChef:Debug]   ??BROWN
+[DocuChef:Debug]   ??SALLY
+[DocuChef:Debug] Data binding complete for slide 2 (context: System.Collections.Generic.List`1[System.String])
+[DocuChef:Debug] SlideContext: Creating for slide 3, SourceSlideId: 2
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath count: 2
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath items: [Brands[0], Types]
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPathString: 'Brands[0]>Types'
+[DocuChef:Debug] Attempting to get SlidePart for slideId 3 with RelationshipId: R8807cf7503d84fb6
+[DocuChef:Debug] Retrieved SlidePart: True, Slide: True
+[DocuChef:Debug] Processing data binding for slide 3: found 5 paragraphs
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types[1].Key}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 3 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types[1].Key}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types[1].Key}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types[1].Key}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=22, textWithoutWhitespace.Length=22, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types[1].Key}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types[1].Key}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types[1].Key}' at [0, 22)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 3 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types[1].Key}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[0]>Types'
+[DocuChef:Debug] SlideContext: Preparing variables for slide 3 with context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: ApplyContextPath called with contextPath='Brands[0]>Types', data type=Dictionary`2
+[DocuChef:Debug] DataBinder: Processing 2 splits for contextPath 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Processing array access 'Brands[0]' -> name='Brands', index=0
+[DocuChef:Debug] DataBinder: ResolveValue - data type: Dictionary`2, property: 'Brands', index: 0
+[DocuChef:Debug] DataBinder: Processing as IDictionary, contains 'Brands': True
+[DocuChef:Debug] DataBinder: Dictionary value is enumerable with 2 items, requested index: 0
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType0`2
+[DocuChef:Debug] DataBinder: Processing simple property 'Types'
+[DocuChef:Debug] DataBinder: ResolveValue - data type: <>f__AnonymousType0`2, property: 'Types', index: 
+[DocuChef:Debug] DataBinder: Found property 'Types' via reflection
+[DocuChef:Debug] DataBinder: Property value type: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Created context variable 'Brands__0__Types' for path 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: BEFORE parent mapping - 'Brands' existing value type: <>f__AnonymousType0`2[]
+[DocuChef:Debug] DataBinder: Backed up original 'Brands' collection
+[DocuChef:Debug] DataBinder: Created parent collection mapping 'Brands' -> nested collection for context resolution
+[DocuChef:Debug] DataBinder: vData type: <>f__AnonymousType1`2[], count: 3
+[DocuChef:Debug] SlideContext: Cached 5 variables for slide 3
+[DocuChef:Debug]   Variable: Today = DateTime
+[DocuChef:Debug]   Variable: Brands = <>f__AnonymousType1`2[] (count: 3)
+[DocuChef:Debug]   Variable: ppt = PPTFunctions
+[DocuChef:Debug]   Variable: Brands__0__Types = <>f__AnonymousType1`2[] (count: 3)
+[DocuChef:Debug]   Variable: Brands__Original = <>f__AnonymousType0`2[] (count: 2)
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types[1].Key}', ContextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - input: 'Brands[0]>Types', offset: 1
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - result: 'Brands[0]>Types[1]'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[0]>Types[1]' (offset: 1)
+[DocuChef:Debug] DataBinder: ApplyContextPath called with contextPath='Brands[0]>Types[1]', data type=Dictionary`2
+[DocuChef:Debug] DataBinder: Processing 2 splits for contextPath 'Brands[0]>Types[1]'
+[DocuChef:Debug] DataBinder: Processing array access 'Brands[0]' -> name='Brands', index=0
+[DocuChef:Debug] DataBinder: ResolveValue - data type: Dictionary`2, property: 'Brands', index: 0
+[DocuChef:Debug] DataBinder: Processing as IDictionary, contains 'Brands': True
+[DocuChef:Debug] DataBinder: Found original backup for 'Brands', using original instead of current value
+[DocuChef:Debug] DataBinder: Original type: <>f__AnonymousType0`2[], Current type: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Dictionary value is enumerable with 2 items, requested index: 0
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType0`2
+[DocuChef:Debug] DataBinder: Processing array access 'Types[1]' -> name='Types', index=1
+[DocuChef:Debug] DataBinder: ResolveValue - data type: <>f__AnonymousType0`2, property: 'Types', index: 1
+[DocuChef:Debug] DataBinder: Found property 'Types' via reflection
+[DocuChef:Debug] DataBinder: Property value type: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Created context variable 'Brands__0__Types__1' for path 'Brands[0]>Types[1]'
+[DocuChef:Debug] DataBinder: BEFORE parent mapping - 'Brands' existing value type: <>f__AnonymousType0`2[]
+[DocuChef:Debug] DataBinder: Backed up original 'Brands' collection
+[DocuChef:Debug] DataBinder: Created parent collection mapping 'Brands' -> nested collection for context resolution
+[DocuChef:Debug] DataBinder: vData type: <>f__AnonymousType1`2[], count: 3
+[DocuChef:Debug] DataBinder: Cached 5 variables for context 'Brands[0]>Types[1]'
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[0]>Types[1]'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types[1].Key}', remainder='[1].Key'
+[DocuChef:Debug] DataBinder: Removed duplicate index - converted '${Brands>Types[1].Key}' to '${Brands__0__Types[1].Key}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__0__Types__1' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__0__Types[1].Key}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__0__Types[1].Key'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__0__Types'
+[DocuChef:Debug] DataBinder: Split into 3 parts: [Brands, 0, Types]
+[DocuChef:Debug] DataBinder: 3-part pattern - BaseName='Brands', Index='0', Property='Types'
+[DocuChef:Debug] DataBinder: ExtractSimpleProperty - trying to get Brands[0].Types
+[DocuChef:Debug] DataBinder: Found cached collection 'Brands' for extraction
+[DocuChef:Debug] DataBinder: Extracted 'Types' from <>f__AnonymousType0`2: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__0__Types' with 3 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__0__Types__1 = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__0__Types = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug] DataBinder.EvaluateTemplate: ${Brands__0__Types[1].Key}: FIGURINE
+[DocuChef:Debug] DataBinder: Template '${Brands__0__Types[1].Key}' evaluated to 'FIGURINE'
+[DocuChef:Debug]     Updated first spanning element: '${' ??'FI'
+[DocuChef:Debug]     Updated spanning element 1: 'Brands>' ??'GUR'
+[DocuChef:Debug]     Updated spanning element 2: 'Types[1].Key}' ??'INE'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: 'FIGURINE'
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types[1].Key}' to 'FIGURINE'
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 11 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '>Items[1]'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '["Item_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '罹먮┃??
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '?몃텇瑜?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '紐?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '"]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=42, textWithoutWhitespace.Length=42, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}' at [0, 42)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 11 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}', ContextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - input: 'Brands[0]>Types', offset: 1
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - result: 'Brands[0]>Types[1]'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[0]>Types[1]' (offset: 1)
+[DocuChef:Debug] DataBinder: Using cached variables for context 'Brands[0]>Types[1]' (5 variables)
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[0]>Types[1]'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}', remainder='>Items[1]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Using existing index '1' from contextVarName, result: '__1__Items[1]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Removed duplicate index from contextVarName: 'Brands__0__Types__1' -> 'Brands__0__Types'
+[DocuChef:Debug] DataBinder: Converted context operator '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}' to '${Brands__0__Types__1__Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__0__Types__1' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__0__Types__1__Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__0__Types__1__Items[1]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__0__Types__1__Items'
+[DocuChef:Debug] DataBinder: Split into 5 parts: [Brands, 0, Types, 1, Items]
+[DocuChef:Debug] DataBinder: 5-part pattern - BaseName='Brands', BaseIndex='0', NestedName='Types', NestedIndex='1', FinalProperty='Items'
+[DocuChef:Debug] DataBinder: ExtractNestedProperty - trying to get Brands[0].Types[1].Items
+[DocuChef:Debug] DataBinder: Found cached nested variable 'Brands__0__Types' for extraction
+[DocuChef:Debug] DataBinder: Cached nested collection has 3 items
+[DocuChef:Debug] DataBinder: Successfully found nested item at index 1
+[DocuChef:Debug] DataBinder: Extracted 'Items' from <>f__AnonymousType1`2: Dictionary`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__0__Types__1__Items' with 2 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__0__Types__1 = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__0__Types__1__Items = [System.Collections.Generic.Dictionary`2[System.String,System.Object], System.Collections.Generic.Dictionary`2[System.String,System.Object]] (count: 2)
+[DocuChef:Debug] DataBinder.EvaluateTemplate: ${Brands__0__Types__1__Items[1]["Item_罹먮┃???몃텇瑜?紐?]}: CONY
+[DocuChef:Debug] DataBinder: Template '${Brands__0__Types__1__Items[1]["Item_罹먮┃???몃텇瑜?紐?]}' evaluated to 'CONY'
+[DocuChef:Debug]     Updated first spanning element: '${' ??''
+[DocuChef:Debug]     Updated spanning element 1: 'Brands>' ??''
+[DocuChef:Debug]     Updated spanning element 2: 'Types' ??''
+[DocuChef:Debug]     Updated spanning element 3: '>Items[1]' ??''
+[DocuChef:Debug]     Updated spanning element 4: '["Item_' ??''
+[DocuChef:Debug]     Updated spanning element 5: '罹먮┃?? ??''
+[DocuChef:Debug]     Updated spanning element 6: '_' ??''
+[DocuChef:Debug]     Updated spanning element 7: '?몃텇瑜? ??'C'
+[DocuChef:Debug]     Updated spanning element 8: '_' ??'O'
+[DocuChef:Debug]     Updated spanning element 9: '紐? ??'N'
+[DocuChef:Debug]     Updated spanning element 10: '"]}' ??'Y'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: 'CONY'
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}' to 'CONY'
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 11 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '>Items[2]'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '["Item_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '罹먮┃??
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '?몃텇瑜?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '紐?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '"]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=42, textWithoutWhitespace.Length=42, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' at [0, 42)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 11 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', ContextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - input: 'Brands[0]>Types', offset: 1
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - result: 'Brands[0]>Types[1]'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[0]>Types[1]' (offset: 1)
+[DocuChef:Debug] DataBinder: Using cached variables for context 'Brands[0]>Types[1]' (5 variables)
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[0]>Types[1]'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', remainder='>Items[2]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Using existing index '1' from contextVarName, result: '__1__Items[2]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Removed duplicate index from contextVarName: 'Brands__0__Types__1' -> 'Brands__0__Types'
+[DocuChef:Debug] DataBinder: Converted context operator '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' to '${Brands__0__Types__1__Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__0__Types__1' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__0__Types__1__Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__0__Types__1__Items[2]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__0__Types__1__Items'
+[DocuChef:Debug] DataBinder: Split into 5 parts: [Brands, 0, Types, 1, Items]
+[DocuChef:Debug] DataBinder: 5-part pattern - BaseName='Brands', BaseIndex='0', NestedName='Types', NestedIndex='1', FinalProperty='Items'
+[DocuChef:Debug] DataBinder: ExtractNestedProperty - trying to get Brands[0].Types[1].Items
+[DocuChef:Debug] DataBinder: Found cached nested variable 'Brands__0__Types' for extraction
+[DocuChef:Debug] DataBinder: Cached nested collection has 3 items
+[DocuChef:Debug] DataBinder: Successfully found nested item at index 1
+[DocuChef:Debug] DataBinder: Extracted 'Items' from <>f__AnonymousType1`2: Dictionary`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__0__Types__1__Items' with 2 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__0__Types__1 = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__0__Types__1__Items = [System.Collections.Generic.Dictionary`2[System.String,System.Object], System.Collections.Generic.Dictionary`2[System.String,System.Object]] (count: 2)
+[DocuChef:Debug] DataBinder: Array bounds validation failed - Brands__0__Types__1__Items[2] exceeds collection size 2
+[DocuChef:Debug] DataBinder.EvaluateTemplate: Array bounds exceeded, returning empty string - Array index out of bounds: Brands__0__Types__1__Items[2] exceeds collection size 2
+[DocuChef:Debug] DataBinder: Template '${Brands__0__Types__1__Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' evaluated to ''
+[DocuChef:Debug]     Updated first spanning element: '${' ??''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: ''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Text is empty, but keeping paragraph to preserve document structure
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' to ''
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 11 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '>Items[3]'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '["Item_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '罹먮┃??
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '?몃텇瑜?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '紐?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '"]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=42, textWithoutWhitespace.Length=42, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}' at [0, 42)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 11 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}', ContextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - input: 'Brands[0]>Types', offset: 1
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - result: 'Brands[0]>Types[1]'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[0]>Types[1]' (offset: 1)
+[DocuChef:Debug] DataBinder: Using cached variables for context 'Brands[0]>Types[1]' (5 variables)
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[0]>Types[1]'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}', remainder='>Items[3]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Using existing index '1' from contextVarName, result: '__1__Items[3]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Removed duplicate index from contextVarName: 'Brands__0__Types__1' -> 'Brands__0__Types'
+[DocuChef:Debug] DataBinder: Converted context operator '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}' to '${Brands__0__Types__1__Items[3]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__0__Types__1' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__0__Types__1__Items[3]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__0__Types__1__Items[3]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__0__Types__1__Items'
+[DocuChef:Debug] DataBinder: Split into 5 parts: [Brands, 0, Types, 1, Items]
+[DocuChef:Debug] DataBinder: 5-part pattern - BaseName='Brands', BaseIndex='0', NestedName='Types', NestedIndex='1', FinalProperty='Items'
+[DocuChef:Debug] DataBinder: ExtractNestedProperty - trying to get Brands[0].Types[1].Items
+[DocuChef:Debug] DataBinder: Found cached nested variable 'Brands__0__Types' for extraction
+[DocuChef:Debug] DataBinder: Cached nested collection has 3 items
+[DocuChef:Debug] DataBinder: Successfully found nested item at index 1
+[DocuChef:Debug] DataBinder: Extracted 'Items' from <>f__AnonymousType1`2: Dictionary`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__0__Types__1__Items' with 2 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__0__Types__1 = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__0__Types__1__Items = [System.Collections.Generic.Dictionary`2[System.String,System.Object], System.Collections.Generic.Dictionary`2[System.String,System.Object]] (count: 2)
+[DocuChef:Debug] DataBinder: Array bounds validation failed - Brands__0__Types__1__Items[3] exceeds collection size 2
+[DocuChef:Debug] DataBinder.EvaluateTemplate: Array bounds exceeded, returning empty string - Array index out of bounds: Brands__0__Types__1__Items[3] exceeds collection size 2
+[DocuChef:Debug] DataBinder: Template '${Brands__0__Types__1__Items[3]["Item_罹먮┃???몃텇瑜?紐?]}' evaluated to ''
+[DocuChef:Debug]     Updated first spanning element: '${' ??''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: ''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Text is empty, but keeping paragraph to preserve document structure
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}' to ''
+[DocuChef:Debug] Data binding completed for slide 3
+[DocuChef:Debug] [SLIDE 3 FINAL CONTENT]:
+[DocuChef:Debug]   ??FIGURINE
+[DocuChef:Debug]   ??CONY
+[DocuChef:Debug] Data binding complete for slide 3 (context: System.Collections.Generic.List`1[System.String])
+[DocuChef:Debug] SlideContext: Creating for slide 4, SourceSlideId: 2
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath count: 2
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath items: [Brands[0], Types]
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPathString: 'Brands[0]>Types'
+[DocuChef:Debug] Attempting to get SlidePart for slideId 4 with RelationshipId: R5d6f19e4fc5d4665
+[DocuChef:Debug] Retrieved SlidePart: True, Slide: True
+[DocuChef:Debug] Processing data binding for slide 4: found 5 paragraphs
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types[2].Key}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 3 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types[2].Key}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types[2].Key}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types[2].Key}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=22, textWithoutWhitespace.Length=22, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types[2].Key}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types[2].Key}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types[2].Key}' at [0, 22)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 3 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types[2].Key}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[0]>Types'
+[DocuChef:Debug] SlideContext: Preparing variables for slide 4 with context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: ApplyContextPath called with contextPath='Brands[0]>Types', data type=Dictionary`2
+[DocuChef:Debug] DataBinder: Processing 2 splits for contextPath 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Processing array access 'Brands[0]' -> name='Brands', index=0
+[DocuChef:Debug] DataBinder: ResolveValue - data type: Dictionary`2, property: 'Brands', index: 0
+[DocuChef:Debug] DataBinder: Processing as IDictionary, contains 'Brands': True
+[DocuChef:Debug] DataBinder: Dictionary value is enumerable with 2 items, requested index: 0
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType0`2
+[DocuChef:Debug] DataBinder: Processing simple property 'Types'
+[DocuChef:Debug] DataBinder: ResolveValue - data type: <>f__AnonymousType0`2, property: 'Types', index: 
+[DocuChef:Debug] DataBinder: Found property 'Types' via reflection
+[DocuChef:Debug] DataBinder: Property value type: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Created context variable 'Brands__0__Types' for path 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: BEFORE parent mapping - 'Brands' existing value type: <>f__AnonymousType0`2[]
+[DocuChef:Debug] DataBinder: Backed up original 'Brands' collection
+[DocuChef:Debug] DataBinder: Created parent collection mapping 'Brands' -> nested collection for context resolution
+[DocuChef:Debug] DataBinder: vData type: <>f__AnonymousType1`2[], count: 3
+[DocuChef:Debug] SlideContext: Cached 5 variables for slide 4
+[DocuChef:Debug]   Variable: Today = DateTime
+[DocuChef:Debug]   Variable: Brands = <>f__AnonymousType1`2[] (count: 3)
+[DocuChef:Debug]   Variable: ppt = PPTFunctions
+[DocuChef:Debug]   Variable: Brands__0__Types = <>f__AnonymousType1`2[] (count: 3)
+[DocuChef:Debug]   Variable: Brands__Original = <>f__AnonymousType0`2[] (count: 2)
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types[2].Key}', ContextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - input: 'Brands[0]>Types', offset: 2
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - result: 'Brands[0]>Types[2]'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[0]>Types[2]' (offset: 2)
+[DocuChef:Debug] DataBinder: ApplyContextPath called with contextPath='Brands[0]>Types[2]', data type=Dictionary`2
+[DocuChef:Debug] DataBinder: Processing 2 splits for contextPath 'Brands[0]>Types[2]'
+[DocuChef:Debug] DataBinder: Processing array access 'Brands[0]' -> name='Brands', index=0
+[DocuChef:Debug] DataBinder: ResolveValue - data type: Dictionary`2, property: 'Brands', index: 0
+[DocuChef:Debug] DataBinder: Processing as IDictionary, contains 'Brands': True
+[DocuChef:Debug] DataBinder: Found original backup for 'Brands', using original instead of current value
+[DocuChef:Debug] DataBinder: Original type: <>f__AnonymousType0`2[], Current type: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Dictionary value is enumerable with 2 items, requested index: 0
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType0`2
+[DocuChef:Debug] DataBinder: Processing array access 'Types[2]' -> name='Types', index=2
+[DocuChef:Debug] DataBinder: ResolveValue - data type: <>f__AnonymousType0`2, property: 'Types', index: 2
+[DocuChef:Debug] DataBinder: Found property 'Types' via reflection
+[DocuChef:Debug] DataBinder: Property value type: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Created context variable 'Brands__0__Types__2' for path 'Brands[0]>Types[2]'
+[DocuChef:Debug] DataBinder: BEFORE parent mapping - 'Brands' existing value type: <>f__AnonymousType0`2[]
+[DocuChef:Debug] DataBinder: Backed up original 'Brands' collection
+[DocuChef:Debug] DataBinder: Created parent collection mapping 'Brands' -> nested collection for context resolution
+[DocuChef:Debug] DataBinder: vData type: <>f__AnonymousType1`2[], count: 3
+[DocuChef:Debug] DataBinder: Cached 5 variables for context 'Brands[0]>Types[2]'
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[0]>Types[2]'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types[2].Key}', remainder='[2].Key'
+[DocuChef:Debug] DataBinder: Removed duplicate index - converted '${Brands>Types[2].Key}' to '${Brands__0__Types[2].Key}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__0__Types__2' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__0__Types[2].Key}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__0__Types[2].Key'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__0__Types'
+[DocuChef:Debug] DataBinder: Split into 3 parts: [Brands, 0, Types]
+[DocuChef:Debug] DataBinder: 3-part pattern - BaseName='Brands', Index='0', Property='Types'
+[DocuChef:Debug] DataBinder: ExtractSimpleProperty - trying to get Brands[0].Types
+[DocuChef:Debug] DataBinder: Found cached collection 'Brands' for extraction
+[DocuChef:Debug] DataBinder: Extracted 'Types' from <>f__AnonymousType0`2: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__0__Types' with 3 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__0__Types__2 = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__0__Types = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug] DataBinder.EvaluateTemplate: ${Brands__0__Types[2].Key}: TOY_SET
+[DocuChef:Debug] DataBinder: Template '${Brands__0__Types[2].Key}' evaluated to 'TOY_SET'
+[DocuChef:Debug]     Updated first spanning element: '${' ??'TO'
+[DocuChef:Debug]     Updated spanning element 1: 'Brands>' ??'Y_'
+[DocuChef:Debug]     Updated spanning element 2: 'Types[2].Key}' ??'SET'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: 'TOY_SET'
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types[2].Key}' to 'TOY_SET'
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 11 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '>Items[2]'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '["Item_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '罹먮┃??
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '?몃텇瑜?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '紐?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '"]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=42, textWithoutWhitespace.Length=42, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' at [0, 42)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 11 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', ContextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - input: 'Brands[0]>Types', offset: 2
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - result: 'Brands[0]>Types[2]'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[0]>Types[2]' (offset: 2)
+[DocuChef:Debug] DataBinder: Using cached variables for context 'Brands[0]>Types[2]' (5 variables)
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[0]>Types[2]'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', remainder='>Items[2]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Using existing index '2' from contextVarName, result: '__2__Items[2]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Removed duplicate index from contextVarName: 'Brands__0__Types__2' -> 'Brands__0__Types'
+[DocuChef:Debug] DataBinder: Converted context operator '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' to '${Brands__0__Types__2__Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__0__Types__2' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__0__Types__2__Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__0__Types__2__Items[2]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__0__Types__2__Items'
+[DocuChef:Debug] DataBinder: Split into 5 parts: [Brands, 0, Types, 2, Items]
+[DocuChef:Debug] DataBinder: 5-part pattern - BaseName='Brands', BaseIndex='0', NestedName='Types', NestedIndex='2', FinalProperty='Items'
+[DocuChef:Debug] DataBinder: ExtractNestedProperty - trying to get Brands[0].Types[2].Items
+[DocuChef:Debug] DataBinder: Found cached nested variable 'Brands__0__Types' for extraction
+[DocuChef:Debug] DataBinder: Cached nested collection has 3 items
+[DocuChef:Debug] DataBinder: Successfully found nested item at index 2
+[DocuChef:Debug] DataBinder: Extracted 'Items' from <>f__AnonymousType1`2: Dictionary`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__0__Types__2__Items' with 1 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__0__Types__2 = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__0__Types__2__Items = [System.Collections.Generic.Dictionary`2[System.String,System.Object]] (count: 1)
+[DocuChef:Debug] DataBinder: Array bounds validation failed - Brands__0__Types__2__Items[2] exceeds collection size 1
+[DocuChef:Debug] DataBinder.EvaluateTemplate: Array bounds exceeded, returning empty string - Array index out of bounds: Brands__0__Types__2__Items[2] exceeds collection size 1
+[DocuChef:Debug] DataBinder: Template '${Brands__0__Types__2__Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' evaluated to ''
+[DocuChef:Debug]     Updated first spanning element: '${' ??''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: ''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Text is empty, but keeping paragraph to preserve document structure
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' to ''
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 11 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '>Items[3]'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '["Item_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '罹먮┃??
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '?몃텇瑜?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '紐?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '"]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=42, textWithoutWhitespace.Length=42, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}' at [0, 42)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 11 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}', ContextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - input: 'Brands[0]>Types', offset: 2
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - result: 'Brands[0]>Types[2]'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[0]>Types[2]' (offset: 2)
+[DocuChef:Debug] DataBinder: Using cached variables for context 'Brands[0]>Types[2]' (5 variables)
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[0]>Types[2]'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}', remainder='>Items[3]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Using existing index '2' from contextVarName, result: '__2__Items[3]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Removed duplicate index from contextVarName: 'Brands__0__Types__2' -> 'Brands__0__Types'
+[DocuChef:Debug] DataBinder: Converted context operator '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}' to '${Brands__0__Types__2__Items[3]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__0__Types__2' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__0__Types__2__Items[3]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__0__Types__2__Items[3]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__0__Types__2__Items'
+[DocuChef:Debug] DataBinder: Split into 5 parts: [Brands, 0, Types, 2, Items]
+[DocuChef:Debug] DataBinder: 5-part pattern - BaseName='Brands', BaseIndex='0', NestedName='Types', NestedIndex='2', FinalProperty='Items'
+[DocuChef:Debug] DataBinder: ExtractNestedProperty - trying to get Brands[0].Types[2].Items
+[DocuChef:Debug] DataBinder: Found cached nested variable 'Brands__0__Types' for extraction
+[DocuChef:Debug] DataBinder: Cached nested collection has 3 items
+[DocuChef:Debug] DataBinder: Successfully found nested item at index 2
+[DocuChef:Debug] DataBinder: Extracted 'Items' from <>f__AnonymousType1`2: Dictionary`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__0__Types__2__Items' with 1 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__0__Types__2 = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__0__Types__2__Items = [System.Collections.Generic.Dictionary`2[System.String,System.Object]] (count: 1)
+[DocuChef:Debug] DataBinder: Array bounds validation failed - Brands__0__Types__2__Items[3] exceeds collection size 1
+[DocuChef:Debug] DataBinder.EvaluateTemplate: Array bounds exceeded, returning empty string - Array index out of bounds: Brands__0__Types__2__Items[3] exceeds collection size 1
+[DocuChef:Debug] DataBinder: Template '${Brands__0__Types__2__Items[3]["Item_罹먮┃???몃텇瑜?紐?]}' evaluated to ''
+[DocuChef:Debug]     Updated first spanning element: '${' ??''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: ''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Text is empty, but keeping paragraph to preserve document structure
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types>Items[3]["Item_罹먮┃???몃텇瑜?紐?]}' to ''
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types>Items[4]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 11 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '>Items[4]'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '["Item_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '罹먮┃??
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '?몃텇瑜?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '紐?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '"]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types>Items[4]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types>Items[4]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=42, textWithoutWhitespace.Length=42, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types>Items[4]["Item_罹먮┃???몃텇瑜?紐?]}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types>Items[4]["Item_罹먮┃???몃텇瑜?紐?]}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types>Items[4]["Item_罹먮┃???몃텇瑜?紐?]}' at [0, 42)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 11 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types>Items[4]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types>Items[4]["Item_罹먮┃???몃텇瑜?紐?]}', ContextPath: 'Brands[0]>Types'
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - input: 'Brands[0]>Types', offset: 2
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - result: 'Brands[0]>Types[2]'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[0]>Types[2]' (offset: 2)
+[DocuChef:Debug] DataBinder: Using cached variables for context 'Brands[0]>Types[2]' (5 variables)
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[0]>Types[2]'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types>Items[4]["Item_罹먮┃???몃텇瑜?紐?]}', remainder='>Items[4]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Using existing index '2' from contextVarName, result: '__2__Items[4]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Removed duplicate index from contextVarName: 'Brands__0__Types__2' -> 'Brands__0__Types'
+[DocuChef:Debug] DataBinder: Converted context operator '${Brands>Types>Items[4]["Item_罹먮┃???몃텇瑜?紐?]}' to '${Brands__0__Types__2__Items[4]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__0__Types__2' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__0__Types__2__Items[4]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__0__Types__2__Items[4]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__0__Types__2__Items'
+[DocuChef:Debug] DataBinder: Split into 5 parts: [Brands, 0, Types, 2, Items]
+[DocuChef:Debug] DataBinder: 5-part pattern - BaseName='Brands', BaseIndex='0', NestedName='Types', NestedIndex='2', FinalProperty='Items'
+[DocuChef:Debug] DataBinder: ExtractNestedProperty - trying to get Brands[0].Types[2].Items
+[DocuChef:Debug] DataBinder: Found cached nested variable 'Brands__0__Types' for extraction
+[DocuChef:Debug] DataBinder: Cached nested collection has 3 items
+[DocuChef:Debug] DataBinder: Successfully found nested item at index 2
+[DocuChef:Debug] DataBinder: Extracted 'Items' from <>f__AnonymousType1`2: Dictionary`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__0__Types__2__Items' with 1 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__0__Types__2 = [{ Key = KEYRING, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = FIGURINE, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }, { Key = TOY_SET, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 3)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__0__Types__2__Items = [System.Collections.Generic.Dictionary`2[System.String,System.Object]] (count: 1)
+[DocuChef:Debug] DataBinder: Array bounds validation failed - Brands__0__Types__2__Items[4] exceeds collection size 1
+[DocuChef:Debug] DataBinder.EvaluateTemplate: Array bounds exceeded, returning empty string - Array index out of bounds: Brands__0__Types__2__Items[4] exceeds collection size 1
+[DocuChef:Debug] DataBinder: Template '${Brands__0__Types__2__Items[4]["Item_罹먮┃???몃텇瑜?紐?]}' evaluated to ''
+[DocuChef:Debug]     Updated first spanning element: '${' ??''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: ''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Text is empty, but keeping paragraph to preserve document structure
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types>Items[4]["Item_罹먮┃???몃텇瑜?紐?]}' to ''
+[DocuChef:Debug] Data binding completed for slide 4
+[DocuChef:Debug] [SLIDE 4 FINAL CONTENT]:
+[DocuChef:Debug]   ??TOY_SET
+[DocuChef:Debug] Data binding complete for slide 4 (context: System.Collections.Generic.List`1[System.String])
+[DocuChef:Debug] SlideContext: Creating for slide 5, SourceSlideId: 1
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath count: 1
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath items: [Brands]
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPathString: 'Brands'
+[DocuChef:Debug] Attempting to get SlidePart for slideId 5 with RelationshipId: R69cbe374cb9e4044
+[DocuChef:Debug] Retrieved SlidePart: True, Slide: True
+[DocuChef:Debug] Processing data binding for slide 5: found 1 paragraphs
+[DocuChef:Debug]   Processing paragraph: '${Brands[1].Key}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 1 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${Brands[1].Key}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 1 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Processing complete expressions in element: '${Brands[1].Key}'
+[DocuChef:Debug] SlideContext: Preparing variables for slide 5 with context 'Brands'
+[DocuChef:Debug] DataBinder: ApplyContextPath called with contextPath='Brands', data type=Dictionary`2
+[DocuChef:Debug] SlideContext: Cached 3 variables for slide 5
+[DocuChef:Debug]   Variable: Today = DateTime
+[DocuChef:Debug]   Variable: Brands = <>f__AnonymousType0`2[] (count: 2)
+[DocuChef:Debug]   Variable: ppt = PPTFunctions
+[DocuChef:Debug] DataBinder: Original template: '${Brands[1].Key}', ContextPath: 'Brands'
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - input: 'Brands', offset: 1
+[DocuChef:Debug] DataBinder: AdjustContextPathWithOffset - result: 'Brands[1]'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[1]' (offset: 1)
+[DocuChef:Debug] DataBinder: ApplyContextPath called with contextPath='Brands[1]', data type=Dictionary`2
+[DocuChef:Debug] DataBinder: Cached 3 variables for context 'Brands[1]'
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands[1].Key}'
+[DocuChef:Debug] DataBinder: Found 0 expressions with '__' pattern
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 3 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug] DataBinder.EvaluateTemplate: ${Brands[1].Key}: BT21
+[DocuChef:Debug] DataBinder: Template '${Brands[1].Key}' evaluated to 'BT21'
+[DocuChef:Debug]     Processed complete expression in span: '${Brands[1].Key}' ??'BT21'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: 'BT21'
+[DocuChef:Debug] HasIncompleteExpressions: text='BT21', openBraces=0, closeBraces=0, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: No expressions found to process
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: 'BT21'
+[DocuChef:Debug]   Paragraph bound from '${Brands[1].Key}' to 'BT21'
+[DocuChef:Debug] Data binding completed for slide 5
+[DocuChef:Debug] [SLIDE 5 FINAL CONTENT]:
+[DocuChef:Debug]   ??BT21
+[DocuChef:Debug] Data binding complete for slide 5 (context: System.Collections.Generic.List`1[System.String])
+[DocuChef:Debug] SlideContext: Creating for slide 6, SourceSlideId: 2
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath count: 2
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath items: [Brands[1], Types]
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPathString: 'Brands[1]>Types'
+[DocuChef:Debug] Attempting to get SlidePart for slideId 6 with RelationshipId: R2785825422c8457c
+[DocuChef:Debug] Retrieved SlidePart: True, Slide: True
+[DocuChef:Debug] Processing data binding for slide 6: found 5 paragraphs
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types[0].Key}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 3 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types[0].Key}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types[0].Key}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types[0].Key}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=22, textWithoutWhitespace.Length=22, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types[0].Key}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types[0].Key}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types[0].Key}' at [0, 22)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 3 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types[0].Key}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[1]>Types'
+[DocuChef:Debug] SlideContext: Preparing variables for slide 6 with context 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: ApplyContextPath called with contextPath='Brands[1]>Types', data type=Dictionary`2
+[DocuChef:Debug] DataBinder: Processing 2 splits for contextPath 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Processing array access 'Brands[1]' -> name='Brands', index=1
+[DocuChef:Debug] DataBinder: ResolveValue - data type: Dictionary`2, property: 'Brands', index: 1
+[DocuChef:Debug] DataBinder: Processing as IDictionary, contains 'Brands': True
+[DocuChef:Debug] DataBinder: Dictionary value is enumerable with 2 items, requested index: 1
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType0`2
+[DocuChef:Debug] DataBinder: Processing simple property 'Types'
+[DocuChef:Debug] DataBinder: ResolveValue - data type: <>f__AnonymousType0`2, property: 'Types', index: 
+[DocuChef:Debug] DataBinder: Found property 'Types' via reflection
+[DocuChef:Debug] DataBinder: Property value type: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Created context variable 'Brands__1__Types' for path 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: BEFORE parent mapping - 'Brands' existing value type: <>f__AnonymousType0`2[]
+[DocuChef:Debug] DataBinder: Backed up original 'Brands' collection
+[DocuChef:Debug] DataBinder: Created parent collection mapping 'Brands' -> nested collection for context resolution
+[DocuChef:Debug] DataBinder: vData type: <>f__AnonymousType1`2[], count: 1
+[DocuChef:Debug] SlideContext: Cached 5 variables for slide 6
+[DocuChef:Debug]   Variable: Today = DateTime
+[DocuChef:Debug]   Variable: Brands = <>f__AnonymousType1`2[] (count: 1)
+[DocuChef:Debug]   Variable: ppt = PPTFunctions
+[DocuChef:Debug]   Variable: Brands__1__Types = <>f__AnonymousType1`2[] (count: 1)
+[DocuChef:Debug]   Variable: Brands__Original = <>f__AnonymousType0`2[] (count: 2)
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types[0].Key}', ContextPath: 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[1]>Types' (offset: 0)
+[DocuChef:Debug] DataBinder: ApplyContextPath called with contextPath='Brands[1]>Types', data type=Dictionary`2
+[DocuChef:Debug] DataBinder: Processing 2 splits for contextPath 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Processing array access 'Brands[1]' -> name='Brands', index=1
+[DocuChef:Debug] DataBinder: ResolveValue - data type: Dictionary`2, property: 'Brands', index: 1
+[DocuChef:Debug] DataBinder: Processing as IDictionary, contains 'Brands': True
+[DocuChef:Debug] DataBinder: Found original backup for 'Brands', using original instead of current value
+[DocuChef:Debug] DataBinder: Original type: <>f__AnonymousType0`2[], Current type: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Dictionary value is enumerable with 2 items, requested index: 1
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType0`2
+[DocuChef:Debug] DataBinder: Processing simple property 'Types'
+[DocuChef:Debug] DataBinder: ResolveValue - data type: <>f__AnonymousType0`2, property: 'Types', index: 
+[DocuChef:Debug] DataBinder: Found property 'Types' via reflection
+[DocuChef:Debug] DataBinder: Property value type: <>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: After ResolveValue: vData type=<>f__AnonymousType1`2[]
+[DocuChef:Debug] DataBinder: Created context variable 'Brands__1__Types' for path 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: BEFORE parent mapping - 'Brands' existing value type: <>f__AnonymousType0`2[]
+[DocuChef:Debug] DataBinder: Backed up original 'Brands' collection
+[DocuChef:Debug] DataBinder: Created parent collection mapping 'Brands' -> nested collection for context resolution
+[DocuChef:Debug] DataBinder: vData type: <>f__AnonymousType1`2[], count: 1
+[DocuChef:Debug] DataBinder: Cached 5 variables for context 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types[0].Key}', remainder='[0].Key'
+[DocuChef:Debug] DataBinder: Converted direct array access '${Brands>Types[0].Key}' to '${Brands__1__Types[0].Key}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__1__Types' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__1__Types[0].Key}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__1__Types[0].Key'
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 5 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = PLUSH, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 1)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__1__Types = [{ Key = PLUSH, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 1)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug] DataBinder.EvaluateTemplate: ${Brands__1__Types[0].Key}: PLUSH
+[DocuChef:Debug] DataBinder: Template '${Brands__1__Types[0].Key}' evaluated to 'PLUSH'
+[DocuChef:Debug]     Updated first spanning element: '${' ??'P'
+[DocuChef:Debug]     Updated spanning element 1: 'Brands>' ??'LU'
+[DocuChef:Debug]     Updated spanning element 2: 'Types[0].Key}' ??'SH'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: 'PLUSH'
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types[0].Key}' to 'PLUSH'
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 11 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '>Items[0]'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '["Item_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '罹먮┃??
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '?몃텇瑜?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '紐?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '"]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=42, textWithoutWhitespace.Length=42, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}' at [0, 42)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 11 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}', ContextPath: 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[1]>Types' (offset: 0)
+[DocuChef:Debug] DataBinder: Using cached variables for context 'Brands[1]>Types' (5 variables)
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}', remainder='>Items[0]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Added default index '0' for context, result: '__0__Items[0]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Converted context operator '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}' to '${Brands__1__Types__0__Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__1__Types' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__1__Types__0__Items[0]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__1__Types__0__Items[0]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__1__Types__0__Items'
+[DocuChef:Debug] DataBinder: Split into 5 parts: [Brands, 1, Types, 0, Items]
+[DocuChef:Debug] DataBinder: 5-part pattern - BaseName='Brands', BaseIndex='1', NestedName='Types', NestedIndex='0', FinalProperty='Items'
+[DocuChef:Debug] DataBinder: ExtractNestedProperty - trying to get Brands[1].Types[0].Items
+[DocuChef:Debug] DataBinder: Found cached nested variable 'Brands__1__Types' for extraction
+[DocuChef:Debug] DataBinder: Cached nested collection has 1 items
+[DocuChef:Debug] DataBinder: Successfully found nested item at index 0
+[DocuChef:Debug] DataBinder: Extracted 'Items' from <>f__AnonymousType1`2: Dictionary`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__1__Types__0__Items' with 2 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = PLUSH, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 1)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__1__Types = [{ Key = PLUSH, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 1)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__1__Types__0__Items = [System.Collections.Generic.Dictionary`2[System.String,System.Object], System.Collections.Generic.Dictionary`2[System.String,System.Object]] (count: 2)
+[DocuChef:Debug] DataBinder.EvaluateTemplate: ${Brands__1__Types__0__Items[0]["Item_罹먮┃???몃텇瑜?紐?]}: TATA
+[DocuChef:Debug] DataBinder: Template '${Brands__1__Types__0__Items[0]["Item_罹먮┃???몃텇瑜?紐?]}' evaluated to 'TATA'
+[DocuChef:Debug]     Updated first spanning element: '${' ??''
+[DocuChef:Debug]     Updated spanning element 1: 'Brands>' ??''
+[DocuChef:Debug]     Updated spanning element 2: 'Types' ??''
+[DocuChef:Debug]     Updated spanning element 3: '>Items[0]' ??''
+[DocuChef:Debug]     Updated spanning element 4: '["Item_' ??''
+[DocuChef:Debug]     Updated spanning element 5: '罹먮┃?? ??''
+[DocuChef:Debug]     Updated spanning element 6: '_' ??''
+[DocuChef:Debug]     Updated spanning element 7: '?몃텇瑜? ??'T'
+[DocuChef:Debug]     Updated spanning element 8: '_' ??'A'
+[DocuChef:Debug]     Updated spanning element 9: '紐? ??'T'
+[DocuChef:Debug]     Updated spanning element 10: '"]}' ??'A'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: 'TATA'
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types>Items[0]["Item_罹먮┃???몃텇瑜?紐?]}' to 'TATA'
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 11 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '>Items[1]'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '["Item_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '罹먮┃??
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '?몃텇瑜?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '紐?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '"]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=42, textWithoutWhitespace.Length=42, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}' at [0, 42)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 11 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}', ContextPath: 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[1]>Types' (offset: 0)
+[DocuChef:Debug] DataBinder: Using cached variables for context 'Brands[1]>Types' (5 variables)
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}', remainder='>Items[1]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Added default index '0' for context, result: '__0__Items[1]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Converted context operator '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}' to '${Brands__1__Types__0__Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__1__Types' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__1__Types__0__Items[1]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__1__Types__0__Items[1]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__1__Types__0__Items'
+[DocuChef:Debug] DataBinder: Split into 5 parts: [Brands, 1, Types, 0, Items]
+[DocuChef:Debug] DataBinder: 5-part pattern - BaseName='Brands', BaseIndex='1', NestedName='Types', NestedIndex='0', FinalProperty='Items'
+[DocuChef:Debug] DataBinder: ExtractNestedProperty - trying to get Brands[1].Types[0].Items
+[DocuChef:Debug] DataBinder: Found cached nested variable 'Brands__1__Types' for extraction
+[DocuChef:Debug] DataBinder: Cached nested collection has 1 items
+[DocuChef:Debug] DataBinder: Successfully found nested item at index 0
+[DocuChef:Debug] DataBinder: Extracted 'Items' from <>f__AnonymousType1`2: Dictionary`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__1__Types__0__Items' with 2 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = PLUSH, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 1)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__1__Types = [{ Key = PLUSH, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 1)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__1__Types__0__Items = [System.Collections.Generic.Dictionary`2[System.String,System.Object], System.Collections.Generic.Dictionary`2[System.String,System.Object]] (count: 2)
+[DocuChef:Debug] DataBinder.EvaluateTemplate: ${Brands__1__Types__0__Items[1]["Item_罹먮┃???몃텇瑜?紐?]}: COOKY
+[DocuChef:Debug] DataBinder: Template '${Brands__1__Types__0__Items[1]["Item_罹먮┃???몃텇瑜?紐?]}' evaluated to 'COOKY'
+[DocuChef:Debug]     Updated first spanning element: '${' ??''
+[DocuChef:Debug]     Updated spanning element 1: 'Brands>' ??''
+[DocuChef:Debug]     Updated spanning element 2: 'Types' ??''
+[DocuChef:Debug]     Updated spanning element 3: '>Items[1]' ??''
+[DocuChef:Debug]     Updated spanning element 4: '["Item_' ??''
+[DocuChef:Debug]     Updated spanning element 5: '罹먮┃?? ??''
+[DocuChef:Debug]     Updated spanning element 6: '_' ??'C'
+[DocuChef:Debug]     Updated spanning element 7: '?몃텇瑜? ??'O'
+[DocuChef:Debug]     Updated spanning element 8: '_' ??'O'
+[DocuChef:Debug]     Updated spanning element 9: '紐? ??'K'
+[DocuChef:Debug]     Updated spanning element 10: '"]}' ??'Y'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: 'COOKY'
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types>Items[1]["Item_罹먮┃???몃텇瑜?紐?]}' to 'COOKY'
+[DocuChef:Debug]   Processing paragraph: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Starting first pass with 11 text elements
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '${'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Brands>'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: 'Types'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '>Items[2]'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '["Item_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '罹먮┃??
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '?몃텇瑜?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '_'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '紐?
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Checking element text: '"]}'
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found 0 complete expressions in element
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Checking text='${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] IsCompleteExpression: Found 1 regex matches
+[DocuChef:Debug] IsCompleteExpression: coveredLength=42, textWithoutWhitespace.Length=42, isComplete=True
+[DocuChef:Debug] HasIncompleteExpressions: text='${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', openBraces=1, closeBraces=1, hasIncomplete=False
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...
+[DocuChef:Debug] ProcessIncompleteExpressions: fullText='${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', matches.Count=1
+[DocuChef:Debug] ProcessIncompleteExpressions: Found expression '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' at [0, 42)
+[DocuChef:Debug] ProcessIncompleteExpressions: Expression spans 11 elements
+[DocuChef:Debug] ProcessIncompleteExpressions: Processing spanning expression '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] ProcessSpanningExpression: Ensuring variables are cached for context 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Original template: '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', ContextPath: 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Adjusted ContextPath: 'Brands[1]>Types' (offset: 0)
+[DocuChef:Debug] DataBinder: Using cached variables for context 'Brands[1]>Types' (5 variables)
+[DocuChef:Debug] DataBinder: Converting context operators for contextPath: 'Brands[1]>Types'
+[DocuChef:Debug] DataBinder: Processing regex match '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}', remainder='>Items[2]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Added default index '0' for context, result: '__0__Items[2]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Converted context operator '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' to '${Brands__1__Types__0__Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Converted expressions with pattern 'Brands>Types' to use 'Brands__1__Types' in template
+[DocuChef:Debug] DataBinder: CreateVariablesForCorrectedExpressions called with template: '${Brands__1__Types__0__Items[2]["Item_罹먮┃???몃텇瑜?紐?]}'
+[DocuChef:Debug] DataBinder: Found 1 expressions with '__' pattern
+[DocuChef:Debug] DataBinder: Processing expression: 'Brands__1__Types__0__Items[2]["Item_罹먮┃???몃텇瑜?紐?]'
+[DocuChef:Debug] DataBinder: Extracting data for 'Brands__1__Types__0__Items'
+[DocuChef:Debug] DataBinder: Split into 5 parts: [Brands, 1, Types, 0, Items]
+[DocuChef:Debug] DataBinder: 5-part pattern - BaseName='Brands', BaseIndex='1', NestedName='Types', NestedIndex='0', FinalProperty='Items'
+[DocuChef:Debug] DataBinder: ExtractNestedProperty - trying to get Brands[1].Types[0].Items
+[DocuChef:Debug] DataBinder: Found cached nested variable 'Brands__1__Types' for extraction
+[DocuChef:Debug] DataBinder: Cached nested collection has 1 items
+[DocuChef:Debug] DataBinder: Successfully found nested item at index 0
+[DocuChef:Debug] DataBinder: Extracted 'Items' from <>f__AnonymousType1`2: Dictionary`2[]
+[DocuChef:Debug] DataBinder: Created variable 'Brands__1__Types__0__Items' with 2 items
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] DataBinder: Reusing existing PPTFunctions instance with 0 cached images
+[DocuChef:Debug] DataBinder: Created 6 filtered variables
+[DocuChef:Debug]   Today = 6/30/2025 2:16:54 AM
+[DocuChef:Debug]   Brands = [{ Key = PLUSH, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 1)
+[DocuChef:Debug]   ppt = DocuChef.Presentation.Functions.PPTFunctions
+[DocuChef:Debug]   Brands__1__Types = [{ Key = PLUSH, Items = System.Collections.Generic.Dictionary`2[System.String,System.Object][] }] (count: 1)
+[DocuChef:Debug]   Brands__Original = [{ Key = B&F, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }, { Key = BT21, Types = <>f__AnonymousType1`2[System.String,System.Collections.Generic.Dictionary`2[System.String,System.Object][]][] }] (count: 2)
+[DocuChef:Debug]   Brands__1__Types__0__Items = [System.Collections.Generic.Dictionary`2[System.String,System.Object], System.Collections.Generic.Dictionary`2[System.String,System.Object]] (count: 2)
+[DocuChef:Debug] DataBinder: Array bounds validation failed - Brands__1__Types__0__Items[2] exceeds collection size 2
+[DocuChef:Debug] DataBinder.EvaluateTemplate: Array bounds exceeded, returning empty string - Array index out of bounds: Brands__1__Types__0__Items[2] exceeds collection size 2
+[DocuChef:Debug] DataBinder: Template '${Brands__1__Types__0__Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' evaluated to ''
+[DocuChef:Debug]     Updated first spanning element: '${' ??''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Final text: ''
+[DocuChef:Debug] ProcessCompleteAndIncompleteExpressions: Text is empty, but keeping paragraph to preserve document structure
+[DocuChef:Debug]   Paragraph bound from '${Brands>Types>Items[2]["Item_罹먮┃???몃텇瑜?紐?]}' to ''
+[DocuChef:Debug] Data binding completed for slide 6
+[DocuChef:Debug] [SLIDE 6 FINAL CONTENT]:
+[DocuChef:Debug]   ??PLUSH
+[DocuChef:Debug]   ??TATA
+[DocuChef:Debug]   ??COOKY
+[DocuChef:Debug] Data binding complete for slide 6 (context: System.Collections.Generic.List`1[System.String])
+[DocuChef:Debug] SlideContext: Creating for slide 7, SourceSlideId: 3
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath count: 0
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPath items: []
+[DocuChef:Debug] SlideContext: SlideInstance.ContextPathString: ''
+[DocuChef:Debug] Attempting to get SlidePart for slideId 7 with RelationshipId: R523c96b9a0b04df9
+[DocuChef:Debug] Retrieved SlidePart: True, Slide: True
+[DocuChef:Debug] Processing data binding for slide 7: found 1 paragraphs
+[DocuChef:Debug]   Processing paragraph: 'EOD'
+[DocuChef:Debug] Data binding completed for slide 7
+[DocuChef:Debug] [SLIDE 7 FINAL CONTENT]:
+[DocuChef:Debug]   ??EOD
+[DocuChef:Debug] Data binding complete for slide 7 (context: System.Collections.Generic.List`1[System.String])
+[DocuChef:Debug] Data binding phase complete
+[DocuChef:Debug] Phase 7: Processing PowerPoint functions
+[DocuChef:Debug] PowerPointFunctionHandler.ProcessFunctions started
+[DocuChef:Debug] PowerPointFunctionHandler: Found 8 slides to process
+[DocuChef:Debug] PowerPointFunctionHandler: Processing slide with RelationshipId: rId5
+[DocuChef:Debug] ProcessSlideImagePlaceholders started
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: Retrieved image cache with 0 items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: No cached images found, exiting
+[DocuChef:Debug] PowerPointFunctionHandler: Processing slide with RelationshipId: rId6
+[DocuChef:Debug] ProcessSlideImagePlaceholders started
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: Retrieved image cache with 0 items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: No cached images found, exiting
+[DocuChef:Debug] PowerPointFunctionHandler: Processing slide with RelationshipId: rId7
+[DocuChef:Debug] ProcessSlideImagePlaceholders started
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: Retrieved image cache with 0 items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: No cached images found, exiting
+[DocuChef:Debug] PowerPointFunctionHandler: Processing slide with RelationshipId: R8807cf7503d84fb6
+[DocuChef:Debug] ProcessSlideImagePlaceholders started
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: Retrieved image cache with 0 items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: No cached images found, exiting
+[DocuChef:Debug] PowerPointFunctionHandler: Processing slide with RelationshipId: R5d6f19e4fc5d4665
+[DocuChef:Debug] ProcessSlideImagePlaceholders started
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: Retrieved image cache with 0 items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: No cached images found, exiting
+[DocuChef:Debug] PowerPointFunctionHandler: Processing slide with RelationshipId: R69cbe374cb9e4044
+[DocuChef:Debug] ProcessSlideImagePlaceholders started
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: Retrieved image cache with 0 items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: No cached images found, exiting
+[DocuChef:Debug] PowerPointFunctionHandler: Processing slide with RelationshipId: R2785825422c8457c
+[DocuChef:Debug] ProcessSlideImagePlaceholders started
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: Retrieved image cache with 0 items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: No cached images found, exiting
+[DocuChef:Debug] PowerPointFunctionHandler: Processing slide with RelationshipId: R523c96b9a0b04df9
+[DocuChef:Debug] ProcessSlideImagePlaceholders started
+[DocuChef:Debug] PPTFunctions.GetAllImageCache: Returning 0 cached items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: Retrieved image cache with 0 items
+[DocuChef:Debug] ProcessSlideImagePlaceholders: No cached images found, exiting
+[DocuChef:Debug] PowerPointFunctionHandler.ProcessFunctions completed
+[DocuChef:Debug] Function processing complete
+[DocuChef:Debug] Phase 6: Finalizing presentation
+[DocuChef:Debug] Context-based PowerPoint processing complete
+[DocuChef:Debug] PowerPoint document generated success fully
+Unhandled exception. System.IO.IOException: The process cannot access the file 'D:\data\DocuChef\src\DocuChef.TestConsoleApp\bin\Debug\net9.0\files\deep\test-output.pptx' because it is being used by another process.
+   at System.IO.FileSystem.CopyFile(String sourceFullPath, String destFullPath, Boolean overwrite)
+   at DocuChef.Presentation.PowerPointDocument.SaveAs(String filePath) in D:\data\DocuChef\src\DocuChef\Presentation\PowerPointDocument.cs:line 40
+   at DocuChef.RecipeExtensions.CookPowerPointRecipe(PowerPointRecipe recipe, String outputPath) in D:\data\DocuChef\src\DocuChef\IRecipe.cs:line 245
+   at DocuChef.RecipeExtensions.Cook(IRecipe recipe, String outputPath) in D:\data\DocuChef\src\DocuChef\IRecipe.cs:line 202
+   at DocuChef.TestConsoleApp.DeepTest.Run() in D:\data\DocuChef\src\DocuChef.TestConsoleApp\DeepTest.cs:line 124
+   at Program.<Main>$(String[] args) in D:\data\DocuChef\src\DocuChef.TestConsoleApp\Program.cs:line 7

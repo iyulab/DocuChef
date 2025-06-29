@@ -138,8 +138,18 @@ internal class ExpressionUpdater
         {
             var arrayName = match.Groups[1].Value;
             var currentIndex = int.Parse(match.Groups[2].Value);
+
+            // Don't adjust Items array indices - they should always start from 0 within each Type
+            if (arrayName.EndsWith("Items") || arrayName.Contains(">Items"))
+            {
+                Logger.Debug($"ExpressionUpdater: Skipping index adjustment for Items array: '{match.Value}' (Items indices should remain 0-based)");
+                return match.Value;
+            }
+
             var newIndex = currentIndex + indexOffset;
-            return $"{arrayName}[{newIndex}]";
+            var result = $"{arrayName}[{newIndex}]";
+            Logger.Debug($"ExpressionUpdater: Adjusted array index from '{match.Value}' to '{result}' (offset: {indexOffset})");
+            return result;
         });
     }    /// <summary>
          /// Applies alias transformations to expressions in text

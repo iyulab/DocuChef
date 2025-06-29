@@ -570,6 +570,9 @@ public class ContextBasedPowerPointProcessor
         if (slideContext.PPTContext.Options.EnableVerboseLogging)
         {
             Logger.Debug($"Data binding completed for slide {slideContext.SlideIndex}");
+
+            // Log final bound results for verification
+            LogFinalSlideContent(slideContext);
         }
     }    /// <summary>
          /// Process data binding for a single paragraph with enhanced formatting preservation
@@ -618,16 +621,25 @@ public class ContextBasedPowerPointProcessor
         // First pass: Process complete expressions within single spans
         var modifiedElements = new HashSet<DocumentFormat.OpenXml.Drawing.Text>();
 
+        Logger.Debug($"ProcessCompleteAndIncompleteExpressions: Starting first pass with {textElements.Count} text elements");
+
         foreach (var textElement in textElements)
         {
             var elementText = textElement.Text ?? "";
             if (string.IsNullOrEmpty(elementText))
-                continue;            // Check for complete expressions in this element
+                continue;
+
+            Logger.Debug($"ProcessCompleteAndIncompleteExpressions: Checking element text: '{elementText}'");
+
+            // Check for complete expressions in this element
             var completeExpressions = DollarSignExpressionRegex.Matches(elementText);
+            Logger.Debug($"ProcessCompleteAndIncompleteExpressions: Found {completeExpressions.Count} complete expressions in element");
+
             if (completeExpressions.Count > 0)
             {
                 try
                 {
+                    Logger.Debug($"ProcessCompleteAndIncompleteExpressions: Processing complete expressions in element: '{elementText}'");
                     var processedElementText = ProcessElementExpressions(elementText, slideContext);
                     if (processedElementText != elementText)
                     {
@@ -642,22 +654,11 @@ public class ContextBasedPowerPointProcessor
                 }
                 catch (ElementHideException ex)
                 {
-                    Logger.Debug($"Hiding element due to array bounds: {ex.Message}");
-                    // Find the parent shape and hide it
-                    var parentShape = _elementHider.FindParentShape(textElement);
-                    if (parentShape != null)
-                    {
-                        Logger.Debug($"Found parent shape of type: {parentShape.GetType().Name}");
-                        _elementHider.HideElement(parentShape);
-                        Logger.Debug($"Hidden parent shape containing element with text: '{elementText}'");
-                    }
-                    else
-                    {
-                        // If no parent shape found, try to hide the text element itself
-                        Logger.Debug($"No parent shape found, attempting to hide text element directly: '{elementText}'");
-                        _elementHider.HideElement(textElement);
-                        Logger.Debug($"Attempted to hide text element: '{elementText}'");
-                    }
+                    Logger.Debug($"Array bounds exceeded, setting element to empty string: {ex.Message}");
+                    // Set element text to empty string instead of hiding
+                    textElement.Text = "";
+                    modifiedElements.Add(textElement);
+                    Logger.Debug($"    Set element text to empty string due to array bounds: '{elementText}' → ''");
                 }
             }
         }
@@ -665,14 +666,38 @@ public class ContextBasedPowerPointProcessor
         // Second pass: Handle incomplete expressions spanning multiple elements
         var updatedParagraphText = string.Join("", textElements.Select(t => t.Text));
 
-        // Check if there are still incomplete expressions
+        Logger.Debug($"ProcessCompleteAndIncompleteExpressions: Second pass - updatedParagraphText: '{updatedParagraphText}'");
+
+        // Check if there are still incomplete expressions or complete expressions that weren't processed
         if (HasIncompleteExpressions(updatedParagraphText))
         {
+            Logger.Debug($"ProcessCompleteAndIncompleteExpressions: Has incomplete expressions, processing...");
             ProcessIncompleteExpressions(paragraph, textElements, slideContext, modifiedElements);
+        }
+        else if (DollarSignExpressionRegex.IsMatch(updatedParagraphText))
+        {
+            // Even if expressions are "complete", they might be fragmented across elements
+            // Process them as incomplete expressions to properly bind them
+            Logger.Debug($"ProcessCompleteAndIncompleteExpressions: Found complete expressions that were fragmented, processing as incomplete...");
+            ProcessIncompleteExpressions(paragraph, textElements, slideContext, modifiedElements);
+        }
+        else
+        {
+            Logger.Debug($"ProcessCompleteAndIncompleteExpressions: No expressions found to process");
         }
 
         // Return the final processed text
-        return string.Join("", textElements.Select(t => t.Text));
+        var finalText = string.Join("", textElements.Select(t => t.Text));
+        Logger.Debug($"ProcessCompleteAndIncompleteExpressions: Final text: '{finalText}'");        // Check if all text elements are empty and remove the paragraph if so
+        if (string.IsNullOrWhiteSpace(finalText))
+        {
+            // DISABLED: Don't automatically remove empty paragraphs
+            // Individual line-break separated elements should be preserved even if they become empty
+            // Only remove in very specific cases (e.g., template errors, not data-driven emptiness)
+            Logger.Debug($"ProcessCompleteAndIncompleteExpressions: Text is empty, but keeping paragraph to preserve document structure");
+        }
+
+        return finalText;
     }    /// <summary>
          /// Process expressions within a single text element
          /// </summary>
@@ -690,26 +715,72 @@ public class ContextBasedPowerPointProcessor
         }
         catch (DocuChefHideException ex)
         {
-            Logger.Debug($"ProcessElementExpressions: Element should be hidden due to array out of bounds: {ex.Message}");
-            throw new ElementHideException("Element hidden due to array out of bounds", ex);
+            Logger.Debug($"ProcessElementExpressions: Array bounds exceeded, returning empty string: {ex.Message}");
+            return string.Empty;
         }
         catch (ElementHideException ex)
         {
-            Logger.Debug($"ProcessElementExpressions: Element should be hidden due to: {ex.Message}");
-            throw; // Re-throw to let the calling code handle element hiding
+            Logger.Debug($"ProcessElementExpressions: Element should be empty due to: {ex.Message}");
+            return string.Empty;
         }
-    }
-
-    /// <summary>
-    /// Check if text contains incomplete expressions (e.g., "${" without matching "}")
-    /// </summary>
+    }    /// <summary>
+         /// Check if text contains incomplete expressions (e.g., "${" without matching "}")
+         /// </summary>
     private bool HasIncompleteExpressions(string text)
     {
-        var openBraces = text.Count(c => c == '{' && text.IndexOf("${", text.IndexOf(c)) != -1);
+        // Count opening patterns "${" and closing patterns "}"
+        var openBraces = 0;
         var closeBraces = text.Count(c => c == '}');
 
-        // Also check for incomplete patterns like "${" at the end
-        return text.Contains("${") && (openBraces > closeBraces || text.EndsWith("${"));
+        // Count "${" patterns properly
+        for (int i = 0; i < text.Length - 1; i++)
+        {
+            if (text[i] == '$' && text[i + 1] == '{')
+            {
+                openBraces++;
+            }
+        }
+
+        // Check for incomplete patterns:
+        // 1. "${" at the end without closing "}"
+        // 2. More opening than closing braces
+        // 3. Contains "${" but text is fragmented (doesn't form complete expressions)
+        var hasIncomplete = text.Contains("${") &&
+                           (openBraces > closeBraces ||
+                            text.EndsWith("${") ||
+                            (openBraces == closeBraces && !IsCompleteExpression(text)));
+
+        Logger.Debug($"HasIncompleteExpressions: text='{text}', openBraces={openBraces}, closeBraces={closeBraces}, hasIncomplete={hasIncomplete}");
+
+        return hasIncomplete;
+    }    /// <summary>
+         /// Check if the text contains only complete, well-formed expressions
+         /// </summary>
+    private bool IsCompleteExpression(string text)
+    {
+        Logger.Debug($"IsCompleteExpression: Checking text='{text}'");
+
+        // Use regex to find complete expressions
+        var completeExpressionPattern = @"\$\{[^{}]*\}";
+        var matches = System.Text.RegularExpressions.Regex.Matches(text, completeExpressionPattern);
+
+        Logger.Debug($"IsCompleteExpression: Found {matches.Count} regex matches");
+
+        if (matches.Count == 0)
+        {
+            Logger.Debug($"IsCompleteExpression: No matches found, returning false");
+            return false;
+        }
+
+        // Check if the entire text is covered by complete expressions (allowing whitespace)
+        var coveredLength = matches.Cast<System.Text.RegularExpressions.Match>()
+                                  .Sum(m => m.Length);
+        var textWithoutWhitespace = text.Replace(" ", "").Replace("\n", "").Replace("\r", "").Replace("\t", "");
+
+        var isComplete = coveredLength >= textWithoutWhitespace.Length;
+        Logger.Debug($"IsCompleteExpression: coveredLength={coveredLength}, textWithoutWhitespace.Length={textWithoutWhitespace.Length}, isComplete={isComplete}");
+
+        return isComplete;
     }
 
     /// <summary>
@@ -724,6 +795,8 @@ public class ContextBasedPowerPointProcessor
         var fullText = string.Join("", textElements.Select(t => t.Text));
         var matches = DollarSignExpressionRegex.Matches(fullText);
 
+        Logger.Debug($"ProcessIncompleteExpressions: fullText='{fullText}', matches.Count={matches.Count}");
+
         if (matches.Count == 0)
             return;
 
@@ -733,11 +806,16 @@ public class ContextBasedPowerPointProcessor
             var startIndex = match.Index;
             var endIndex = startIndex + match.Length;
 
+            Logger.Debug($"ProcessIncompleteExpressions: Found expression '{expression}' at [{startIndex}, {endIndex})");
+
             // Find which elements this expression spans
             var spanningElements = FindSpanningElements(textElements, startIndex, endIndex);
 
+            Logger.Debug($"ProcessIncompleteExpressions: Expression spans {spanningElements.Count} elements");
+
             if (spanningElements.Count > 1)
             {
+                Logger.Debug($"ProcessIncompleteExpressions: Processing spanning expression '{expression}'");
                 ProcessSpanningExpression(expression, spanningElements, slideContext, alreadyModified);
             }
         }
@@ -782,6 +860,11 @@ public class ContextBasedPowerPointProcessor
     {
         if (spanningElements.Count == 0)
             return;
+
+        // CRITICAL: Ensure variables are cached for nested context expressions
+        // This is needed because spanning expressions may not trigger GetCachedVariables() in the first pass
+        Logger.Debug($"ProcessSpanningExpression: Ensuring variables are cached for context '{slideContext.ContextPath}'");
+        slideContext.GetCachedVariables();
 
         // Process the expression
         var processedExpression = ProcessElementExpressions(expression, slideContext);
@@ -1065,5 +1148,61 @@ public class ContextBasedPowerPointProcessor
         }
 
         return dataPath;
+    }
+
+    /// <summary>
+    /// Log final slide content for verification
+    /// </summary>
+    private void LogFinalSlideContent(SlideContext slideContext)
+    {
+        try
+        {
+            var slidePart = slideContext.SlidePart;
+            if (slidePart?.Slide == null) return;
+
+            var paragraphs = slidePart.Slide.Descendants<DocumentFormat.OpenXml.Drawing.Paragraph>().ToList();
+            var slideContent = new List<string>();
+
+            foreach (var paragraph in paragraphs)
+            {
+                var textElements = paragraph.Descendants<DocumentFormat.OpenXml.Drawing.Text>().ToList();
+                if (textElements.Any())
+                {
+                    var paragraphText = string.Join("", textElements.Select(t => t.Text));
+                    if (!string.IsNullOrWhiteSpace(paragraphText))
+                    {
+                        slideContent.Add(paragraphText);
+                    }
+                }
+            }
+
+            if (slideContent.Any())
+            {
+                Logger.Debug($"[SLIDE {slideContext.SlideIndex} FINAL CONTENT]:");
+                foreach (var content in slideContent)
+                {
+                    Logger.Debug($"  → {content}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Debug($"Error logging slide content: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Check if text contains only expressions (no literal text content)
+    /// </summary>
+    private bool HasOnlyExpressions(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return true;
+
+        // Remove all expressions from text
+        var textWithoutExpressions = DollarSignExpressionRegex.Replace(text, "");
+
+        // If what remains is only whitespace, then the text contained only expressions
+        return string.IsNullOrWhiteSpace(textWithoutExpressions);
     }
 }

@@ -756,10 +756,14 @@ public class SlidePlanGenerator
         }
 
         var childItems = childCollection.ToList();
-        var itemsPerSlide = childSlide.MaxArrayIndex + 1; // 0-based to count
+
+        // Determine items per slide based on template pattern analysis
+        // If the current collection level is directly referenced (e.g., Types[0]), use 1 item per slide
+        // If sub-collections are referenced (e.g., Types>Items[0], Types>Items[1], Types>Items[2]), use MaxArrayIndex + 1
+        var itemsPerSlide = DetermineItemsPerSlideForNestedCollection(childSlide, childCollectionName, parentContextPath);
         var requiredSlides = CalculateRequiredSlides(childItems.Count, itemsPerSlide);
 
-        Logger.Debug($"ProcessNestedChildItems: Parent {parentIndex} has {childItems.Count} child items, requiring {requiredSlides} slides with {itemsPerSlide} items per slide");
+        Logger.Debug($"ProcessNestedChildItems: Parent {parentIndex} has {childItems.Count} child items in '{childCollectionName}', requiring {requiredSlides} slides with {itemsPerSlide} items per slide");
 
         // Create child slides - use local offset within this parent's collection, not global
         for (int slideIndex = 0; slideIndex < requiredSlides; slideIndex++)
@@ -775,6 +779,59 @@ public class SlidePlanGenerator
                 ContextPath = new List<string> { $"{parts[0]}[{parentIndex}]", childCollectionName },
                 IndexOffset = offset
             });
+        }
+    }
+    private int DetermineItemsPerSlideForNestedCollection(SlideInfo childSlide, string childCollectionName, string parentContextPath)
+    {
+        // Analyze expressions to determine if the current collection level is directly referenced
+        // vs. having sub-collections referenced
+
+        // Build expected patterns for this collection level
+        var directPattern = $"{childCollectionName}["; // e.g., "Types[0]"
+        var subPattern = $"{childCollectionName}>"; // e.g., "Types>Items["
+
+        bool hasDirectReference = false;
+        bool hasSubReference = false;
+
+        Logger.Debug($"DetermineItemsPerSlideForNestedCollection: Analyzing {childSlide.BindingExpressions.Count} expressions for collection '{childCollectionName}'");
+        Logger.Debug($"DetermineItemsPerSlideForNestedCollection: Looking for directPattern='{directPattern}' and subPattern='{subPattern}'");
+
+        foreach (var expression in childSlide.BindingExpressions)
+        {
+            var exprText = expression.OriginalExpression;
+            Logger.Debug($"DetermineItemsPerSlideForNestedCollection: Checking expression: '{exprText}'");
+
+            // Check if expression directly references this collection level
+            if (exprText.Contains(directPattern))
+            {
+                hasDirectReference = true;
+                Logger.Debug($"DetermineItemsPerSlideForNestedCollection: Found direct reference in '{exprText}'");
+            }
+
+            // Check if expression references sub-collections
+            if (exprText.Contains(subPattern))
+            {
+                hasSubReference = true;
+                Logger.Debug($"DetermineItemsPerSlideForNestedCollection: Found sub-reference in '{exprText}'");
+            }
+        }
+
+        Logger.Debug($"DetermineItemsPerSlideForNestedCollection: hasDirectReference={hasDirectReference}, hasSubReference={hasSubReference}");
+
+        // Decision logic:
+        // If this collection is directly referenced (e.g., Types[0].Key), each item should get its own slide
+        // This takes priority over sub-collection references
+        if (hasDirectReference)
+        {
+            // Direct reference pattern: each item gets its own slide
+            Logger.Debug($"DetermineItemsPerSlideForNestedCollection: Using direct reference logic -> itemsPerSlide=1");
+            return 1;
+        }
+        else
+        {
+            // Sub-collection pattern only: use MaxArrayIndex
+            Logger.Debug($"DetermineItemsPerSlideForNestedCollection: Using MaxArrayIndex logic -> itemsPerSlide={childSlide.MaxArrayIndex + 1}");
+            return childSlide.MaxArrayIndex + 1;
         }
     }
 }

@@ -271,11 +271,31 @@ public class SlideContext
         {
             Logger.Debug($"SlideContext: Preparing variables for slide {SlideIndex} with context '{ContextPath ?? "null"}'");
 
-            // Use shared DataBinder instance from PPTContext to get variables for this specific context
-            // This leverages the existing variable preparation and caching logic
-            _cachedVariables = PPTContext.DataBinder.GetVariablesForContext(PPTContext.Variables, ContextPath);
+            // For nested contexts, we need to use the actual data object, not the variables dictionary
+            // Start with base variables and apply context-specific transformations
+            _cachedVariables = new Dictionary<string, object>(PPTContext.Variables);
+
+            // If we have a context path, resolve it and apply transformations
+            if (!string.IsNullOrEmpty(ContextPath))
+            {
+                // Use the DataBinder's ApplyContextPath method directly with the original data
+                // This ensures proper variable creation for nested contexts
+                PPTContext.DataBinder.ApplyContextPath(_cachedVariables, PPTContext.Variables, ContextPath);
+            }
 
             Logger.Debug($"SlideContext: Cached {_cachedVariables.Count} variables for slide {SlideIndex}");
+
+            // Log key variables for debugging
+            foreach (var kvp in _cachedVariables)
+            {
+                var valueInfo = kvp.Value?.GetType().Name ?? "null";
+                if (kvp.Value is System.Collections.IEnumerable enumerable && !(kvp.Value is string))
+                {
+                    var count = enumerable.Cast<object>().Count();
+                    valueInfo += $" (count: {count})";
+                }
+                Logger.Debug($"  Variable: {kvp.Key} = {valueInfo}");
+            }
         }
 
         return _cachedVariables;
