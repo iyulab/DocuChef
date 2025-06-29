@@ -45,79 +45,79 @@ internal class DeepTest
         var json = File.ReadAllText(dataPath);
         var items = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json);
 
-        //var brands = items
-        //   .GroupBy(item => item.TryGetValue("Item_IP_대", out JsonElement value) ? value.ToString() : "null")
-        //   .Select(types =>
-        //   {
-        //       return new
-        //       {
-        //           types.Key,
-        //           Types = types
-        //            .GroupBy(type => type.TryGetValue("Stock_자재구분값_영어", out JsonElement value) ? value.ToString() : "null")
-        //            .Select(items =>
-        //            {
-        //                return new
-        //                {
-        //                    items.Key,
-        //                    Items = items
-        //                };
-        //            })
-        //       };
-        //   });
+        var brands = items
+           .GroupBy(item => item.TryGetValue("Item_IP_대", out JsonElement value) ? value.ToString() : "null")
+           .Select(types =>
+           {
+               return new
+               {
+                   types.Key,
+                   Types = types
+                    .GroupBy(type => type.TryGetValue("Stock_자재구분값_영어", out JsonElement value) ? value.ToString() : "null")
+                    .Select(items =>
+                    {
+                        return new
+                        {
+                            items.Key,
+                            Items = items
+                        };
+                    })
+               };
+           });
 
         // 테스트를 위해 더 다양한 브랜드와 타입을 생성
-        var brands = new[]
-        {
-            new
-            {
-                Key = "B&F",
-                Types = new[]
-                {
-                    new
-                    {
-                        Key = "KEYRING",
-                        Items = new[]
-                        {
-                            new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "BROWN" },
-                            new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "SALLY" }
-                        }
-                    },
-                    new
-                    {
-                        Key = "FIGURINE",
-                        Items = new[]
-                        {
-                            new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "BROWN" },
-                            new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "CONY" }
-                        }
-                    },
-                    new
-                    {
-                        Key = "TOY_SET",
-                        Items = new[]
-                        {
-                            new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "FRIENDS" }
-                        }
-                    }
-                }
-            },
-            new
-            {
-                Key = "BT21",
-                Types = new[]
-                {
-                    new
-                    {
-                        Key = "PLUSH",
-                        Items = new[]
-                        {
-                            new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "TATA" },
-                            new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "COOKY" }
-                        }
-                    }
-                }
-            }
-        };
+        //var brands = new[]
+        //{
+        //    new
+        //    {
+        //        Key = "B&F",
+        //        Types = new[]
+        //        {
+        //            new
+        //            {
+        //                Key = "KEYRING",
+        //                Items = new[]
+        //                {
+        //                    new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "BROWN" },
+        //                    new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "SALLY" }
+        //                }
+        //            },
+        //            new
+        //            {
+        //                Key = "FIGURINE",
+        //                Items = new[]
+        //                {
+        //                    new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "BROWN" },
+        //                    new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "CONY" }
+        //                }
+        //            },
+        //            new
+        //            {
+        //                Key = "TOY_SET",
+        //                Items = new[]
+        //                {
+        //                    new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "FRIENDS" }
+        //                }
+        //            }
+        //        }
+        //    },
+        //    new
+        //    {
+        //        Key = "BT21",
+        //        Types = new[]
+        //        {
+        //            new
+        //            {
+        //                Key = "PLUSH",
+        //                Items = new[]
+        //                {
+        //                    new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "TATA" },
+        //                    new Dictionary<string, object> { ["Item_캐릭터_세분류_명"] = "COOKY" }
+        //                }
+        //            }
+        //        }
+        //    }
+        //};
 
         recipe.AddVariable("Today", DateTime.Now);
         recipe.AddVariable("Brands", brands);

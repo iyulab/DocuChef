@@ -607,174 +607,70 @@ public class DataBinder
     /// </summary>
     private string ConvertContextOperatorsToContextAware(string template, string? contextPath)
     {
-        if (string.IsNullOrEmpty(contextPath) || !contextPath.Contains('>'))
+        if (string.IsNullOrEmpty(contextPath) || !template.Contains('>'))
             return template;
 
         Logger.Debug($"DataBinder: Converting context operators for contextPath: '{contextPath}'");
+        Logger.Debug($"DataBinder: Input template: '{template}'");
 
-        // Extract array indices from context path for context-specific variable names
-        var contextParts = contextPath.Split('>');
-        var contextVarNames = new List<string>();
+        // For nested contexts like "Brands[1]>Types", we need to be more careful
+        // The slide offset determines which item in the innermost collection we're processing
+        var parts = contextPath.Split('>');
+        var result = template;
 
-        foreach (var part in contextParts)
+        if (parts.Length >= 2)
         {
-            if (part.Contains('[') && part.Contains(']'))
+            // Extract parent context index from first part (e.g., "Brands[1]" -> 1)
+            var parentPart = parts[0];
+            var parentMatch = Regex.Match(parentPart, @"(\w+)\[(\d+)\]");
+            if (parentMatch.Success)
             {
-                var baseName = part.Substring(0, part.IndexOf("["));
-                var indexText = part.Substring(part.IndexOf("[") + 1, part.IndexOf("]") - part.IndexOf("[") - 1);
-                // Use double underscores to match variable creation in ApplyContextPath
-                contextVarNames.Add($"{baseName}__{indexText}");
-            }
-            else
-            {
-                contextVarNames.Add(part);
+                var parentName = parentMatch.Groups[1].Value;
+                var parentIndex = parentMatch.Groups[2].Value;
+
+                // Extract current context index dynamically instead of hardcoding 0
+                var currentContextIndex = ExtractCurrentContextIndex(contextPath);
+                Logger.Debug($"DataBinder: Extracted current context index: {currentContextIndex}");
+
+                // Replace pattern like "Brands__1__Types>Items" with "Brands__1__Types__{currentIndex}__Items"
+                var pattern = $@"{parentName}__\d+__(\w+)>(\w+)";
+                result = Regex.Replace(result, pattern, $"{parentName}__{parentIndex}__$1__{currentContextIndex}__$2");
+                Logger.Debug($"DataBinder: Applied nested pattern replacement with parent index {parentIndex} and current context index {currentContextIndex}");
             }
         }
 
-        // Build context-specific variable name
-        var contextVarName = string.Join("__", contextVarNames);
-
-        // Find and replace all context operator expressions
-        // Pattern: ${Brands>Types[x]...} or ${Brands>Types>...}
-        var result = template;
-
-        // Build the pattern to match - just the prefix part without array indices
-        var genericPattern = string.Join(">", contextParts.Select(p => p.Contains('[') ? p.Substring(0, p.IndexOf("[")) : p));
-
-        // Use regex to find and replace all expressions that start with this pattern
-        // Pattern should match: ${Brands>Types[0].Key}, ${Brands>Types>Items[0]...}, etc.
-        var pattern = @"\$\{" + Regex.Escape(genericPattern) + @"((?:\[[^\]]*\])?(?:\.[^}>]*|>[^}]*)*)\}";
-        result = Regex.Replace(result, pattern, match =>
-        {
-            try
-            {
-                var remainder = match.Groups.Count > 1 ? match.Groups[1].Value : ""; // Everything after the base pattern
-
-                Logger.Debug($"DataBinder: Processing regex match '{match.Value}', remainder='{remainder}'");
-
-                // Handle direct property access like [0].Key
-                if (remainder.StartsWith("[") && remainder.Contains("]."))
-                {
-                    // Extract array index and property access
-                    var closeBracketIndex = remainder.IndexOf(']');
-                    if (closeBracketIndex > 0)
-                    {
-                        var arrayIndex = remainder.Substring(1, closeBracketIndex - 1);
-                        var propertyAccess = remainder.Substring(closeBracketIndex + 1);
-
-                        // FIXED: Check if the contextVarName already contains this array index
-                        // For example, if contextVarName is "Brands__0__Types__1" and arrayIndex is "1",
-                        // we should use just "Brands__0__Types[1]" instead of "Brands__0__Types__1[1]"
-                        var result = "";
-                        if (contextVarName.EndsWith($"__{arrayIndex}"))
-                        {
-                            // Remove the duplicate index from contextVarName
-                            var baseContextName = contextVarName.Substring(0, contextVarName.LastIndexOf($"__{arrayIndex}"));
-                            result = "${" + baseContextName + "[" + arrayIndex + "]" + propertyAccess + "}";
-                            Logger.Debug($"DataBinder: Removed duplicate index - converted '{match.Value}' to '{result}'");
-                        }
-                        else
-                        {
-                            // No duplication, use normal conversion
-                            result = "${" + contextVarName + "[" + arrayIndex + "]" + propertyAccess + "}";
-                            Logger.Debug($"DataBinder: Converted direct array access '{match.Value}' to '{result}'");
-                        }
-                        return result;
-                    }
-                }
-
-                // Handle context operator access like >Items[0]...
-                if (remainder.StartsWith(">"))
-                {
-                    // If the context variable already represents a specific array element,
-                    // we need to remove redundant array access
-                    if (contextPath.Contains('[') && remainder.StartsWith("["))
-                    {
-                        // Remove the first array access since it's already in the context variable name
-                        var firstCloseBracket = remainder.IndexOf(']');
-                        if (firstCloseBracket >= 0)
-                        {
-                            remainder = remainder.Substring(firstCloseBracket + 1);
-                            Logger.Debug($"DataBinder: Removed redundant array access, new remainder='{remainder}'");
-                        }
-                    }
-
-                    // For expressions like ">Items[0]...", we need to add the missing Types index
-                    // FIXED: Check if contextVarName already ends with an index to avoid duplication
-                    if (remainder.StartsWith(">") && !string.IsNullOrEmpty(contextPath))
-                    {
-                        // Check if contextVarName already ends with an index (e.g., "Brands__0__Types__1")
-                        var contextVarNameParts = contextVarName.Split("__");
-                        var lastPart = contextVarNameParts[contextVarNameParts.Length - 1];
-
-                        if (int.TryParse(lastPart, out var existingIndex))
-                        {
-                            // contextVarName already ends with an index, so we use that index
-                            remainder = $"__{existingIndex}__{remainder.Substring(1)}";
-                            Logger.Debug($"DataBinder: Using existing index '{existingIndex}' from contextVarName, result: '{remainder}'");
-                        }
-                        else
-                        {
-                            // Extract the last index from contextPath for the missing level
-                            var contextParts = contextPath.Split('>');
-                            if (contextParts.Length >= 2)
-                            {
-                                var lastPart2 = contextParts[contextParts.Length - 1];
-                                if (lastPart2.Contains('[') && lastPart2.Contains(']'))
-                                {
-                                    var lastIndex = lastPart2.Substring(lastPart2.IndexOf('[') + 1, lastPart2.IndexOf(']') - lastPart2.IndexOf('[') - 1);
-                                    remainder = $"__{lastIndex}__{remainder.Substring(1)}";
-                                    Logger.Debug($"DataBinder: Added missing index '{lastIndex}' for context, result: '{remainder}'");
-                                }
-                                else
-                                {
-                                    // No index in last part, use 0 as default
-                                    remainder = $"__0__{remainder.Substring(1)}";
-                                    Logger.Debug($"DataBinder: Added default index '0' for context, result: '{remainder}'");
-                                }
-                            }
-                            else
-                            {
-                                // Fallback to simple conversion
-                                remainder = $"__{remainder.Substring(1)}";
-                                Logger.Debug($"DataBinder: Simple conversion for leading '>', result: '{remainder}'");
-                            }
-                        }
-                    }
-
-                    // Replace any remaining ">" with "__" (for deeper nesting)
-                    remainder = remainder.Replace(">", "__");
-
-                    // FIXED: If contextVarName already ends with an index, use the base name without the index
-                    var finalContextVarName = contextVarName;
-                    var contextVarNameParts2 = contextVarName.Split("__");
-                    var lastPartCheck = contextVarNameParts2[contextVarNameParts2.Length - 1];
-                    if (int.TryParse(lastPartCheck, out var _))
-                    {
-                        // Remove the last index part from contextVarName to avoid duplication
-                        finalContextVarName = string.Join("__", contextVarNameParts2.Take(contextVarNameParts2.Length - 1));
-                        Logger.Debug($"DataBinder: Removed duplicate index from contextVarName: '{contextVarName}' -> '{finalContextVarName}'");
-                    }
-
-                    var result = "${" + finalContextVarName + remainder + "}";
-                    Logger.Debug($"DataBinder: Converted context operator '{match.Value}' to '{result}'");
-                    return result;
-                }
-
-                // Default case - just use context variable
-                var defaultResult = "${" + contextVarName + remainder + "}";
-                Logger.Debug($"DataBinder: Default conversion '{match.Value}' to '{defaultResult}'");
-                return defaultResult;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"DataBinder: Error processing regex match '{match.Value}': {ex.Message}");
-                return match.Value; // Return original if error
-            }
-        });
-
-        Logger.Debug($"DataBinder: Converted expressions with pattern '{genericPattern}' to use '{contextVarName}' in template");
+        Logger.Debug($"DataBinder: After conversion: '{result}'");
         return result;
+    }    /// <summary>
+         /// Extract current context index from contextPath
+         /// This should return the slide offset for the current collection, not the parent index
+         /// For nested contexts like "Brands[0]>Types[1]", this should return the Types index (1)
+         /// For "Brands[1]>Types", this should return 0 (first Types item for this slide)
+         /// </summary>
+    private int ExtractCurrentContextIndex(string? contextPath)
+    {
+        if (string.IsNullOrEmpty(contextPath))
+            return 0;
+
+        Logger.Debug($"DataBinder: ExtractCurrentContextIndex - input contextPath: '{contextPath}'");
+
+        // Split by > to get context parts
+        var parts = contextPath.Split('>');
+
+        // For nested contexts, we want the index from the last part if it has one
+        // Example: "Brands[0]>Types[1]" should return 1 (the Types index)
+        // Example: "Brands[1]>Types" should return 0 (default for first Types item)
+        var lastPart = parts[parts.Length - 1];
+        var match = Regex.Match(lastPart, @"\[(\d+)\]");
+        if (match.Success && int.TryParse(match.Groups[1].Value, out var index))
+        {
+            Logger.Debug($"DataBinder: Extracted current context index {index} from last part '{lastPart}'");
+            return index;
+        }
+
+        // If no index in last part, this represents the first item (index 0)
+        Logger.Debug($"DataBinder: No index found in last part '{lastPart}', using default 0");
+        return 0;
     }
 
     private Dictionary<string, object> ResolveVariables(object data)
