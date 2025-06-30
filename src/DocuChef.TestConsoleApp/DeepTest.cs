@@ -27,6 +27,19 @@ namespace DocuChef.TestConsoleApp;
 # 해결방법:
 슬라이드3을 Types 컬렉션을 반복하도록 수정하고
 각 Type마다 별도 슬라이드가 생성되도록 해야 함.
+
+# 추가 테스트:
+// 슬라이드노트
+#alias: Brands>Types as Types
+#alias: Brands>Types>Items as Items
+
+// 템플릿
+${Types[0].Key}
+${Items[0]["Stock_자재내역"]}
+
+// alias 적용
+${Brands>Types[0].Key}
+${Brands>Types>Items[0]["Stock_자재내역"]}
 */
 
 internal class DeepTest

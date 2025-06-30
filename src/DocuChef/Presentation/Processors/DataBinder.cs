@@ -61,9 +61,11 @@ public class DataBinder
         Logger.Debug($"DataBinder: Cached {variables.Count} variables for context '{cacheKey}'");
 
         return variables;
-    }    /// <summary>
-         /// Apply context path transformation with optimized parsing
-         /// </summary>
+    }
+    
+    /// <summary>
+    /// Apply context path transformation with optimized parsing
+    /// </summary>
     public void ApplyContextPath(Dictionary<string, object> variables, object data, string contextPath)
     {
         Logger.Debug($"DataBinder: ApplyContextPath called with contextPath='{contextPath}', data type={data?.GetType().Name ?? "null"}");
@@ -116,7 +118,7 @@ public class DataBinder
             {
                 Logger.Debug($"DataBinder: BEFORE parent mapping - '{cleanParentName}' existing value type: {(variables.ContainsKey(cleanParentName) ? variables[cleanParentName]?.GetType().Name : "not exists")}");
 
-                // Store the original collection if not already stored
+                // Store the original collection if not already stored (but don't expose it in final variables)
                 var originalKey = $"{cleanParentName}__Original";
                 if (!variables.ContainsKey(originalKey) && variables.ContainsKey(cleanParentName))
                 {
@@ -175,13 +177,20 @@ public class DataBinder
         _baseVariables = null;
         _propertyCache.Clear();
         Logger.Debug("DataBinder: All caches cleared");
-    }    /// <summary>
-         /// 단일 평가 함수 - 모든 DollarSign.EvalAsync 호출을 여기서 처리
-         /// </summary>
+    }    
+    
+    /// <summary>
+    /// 단일 평가 함수 - 모든 DollarSign.EvalAsync 호출을 여기서 처리
+    /// </summary>
     private string EvaluateTemplate(string dollarSignTemplate, Dictionary<string, object> variables)
     {
         try
         {
+            // Filter out __Original variables for evaluation
+            var filteredVariables = variables
+                .Where(kvp => !kvp.Key.EndsWith("__Original"))
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
             // PERFORMANCE OPTIMIZATION: Pre-validate array indices before DollarSign.Eval
             // Temporarily disable strict validation to allow more flexible array access
             // ValidateArrayIndicesInTemplate(dollarSignTemplate, variables);
@@ -193,7 +202,7 @@ public class DataBinder
                 ThrowOnError = false  // Allow graceful handling of missing values
             };
 
-            var result = DollarSign.Eval(dollarSignTemplate, variables, options);
+            var result = DollarSign.Eval(dollarSignTemplate, filteredVariables, options);
 
             // Check if result contains error message and return empty string instead
             if (result != null && result.Contains("[ERROR:"))
@@ -228,68 +237,7 @@ public class DataBinder
             return string.Empty;
         }
     }
-
-    /// <summary>
-    /// PERFORMANCE OPTIMIZATION: Pre-validate array indices in template expressions
-    /// Throws DocuChefHideException early if array bounds are exceeded, avoiding expensive DollarSign.Eval
-    /// </summary>
-    private void ValidateArrayIndicesInTemplate(string template, Dictionary<string, object> variables)
-    {
-        if (string.IsNullOrEmpty(template) || !template.Contains("${"))
-            return;
-
-        // only array check
-        if (template.Contains('[') && template.Contains(']'))
-        {
-            // Extract ${...} expressions using regex
-            var dollarSignPattern = @"\$\{([^}]+)\}";
-            var matches = Regex.Matches(template, dollarSignPattern);
-
-            foreach (Match match in matches)
-            {
-                var expression = match.Groups[1].Value.Trim();
-                ValidateArrayIndexInExpression(expression, variables);
-            }
-        }
-    }    /// <summary>
-         /// Validate array index bounds in a single expression with unified logic
-         /// </summary>
-    private void ValidateArrayIndexInExpression(string expression, Dictionary<string, object> variables)
-    {
-        // Look for array access patterns like "Items[0]", "Users[1].Name", "Products[2].Details[0]"
-        var arrayAccessPattern = @"(\w+)\[(\d+)\]";
-        var matches = Regex.Matches(expression, arrayAccessPattern);
-
-        foreach (Match match in matches)
-        {
-            var arrayName = match.Groups[1].Value;
-            var indexText = match.Groups[2].Value;
-
-            if (int.TryParse(indexText, out var index) &&
-                variables.TryGetValue(arrayName, out var arrayValue))
-            {
-                var bounds = GetCollectionBounds(arrayValue);
-                if (bounds.HasValue && (index >= bounds.Value || index < 0))
-                {
-                    Logger.Debug($"DataBinder: Array bounds validation failed - {arrayName}[{index}] exceeds collection size {bounds.Value}");
-                    throw new DocuChefHideException($"Array index out of bounds: {arrayName}[{index}] exceeds collection size {bounds.Value}");
-                }
-            }
-        }
-    }    /// <summary>
-         /// Get collection bounds for various collection types
-         /// </summary>
-    private static int? GetCollectionBounds(object? collection)
-    {
-        return collection switch
-        {
-            IList list => list.Count,
-            ICollection<object> col => col.Count,
-            IEnumerable enumerable when enumerable is not string => enumerable.Cast<object>().Count(),
-            _ => null
-        };
-    }
-
+    
     /// <summary>
     /// Recursively creates context variables for nested objects and arrays, but only for required variables.
     /// </summary>
@@ -824,17 +772,24 @@ public class DataBinder
             var expression = match.Groups[1].Value;
             Logger.Debug($"DataBinder: Processing expression: '{expression}'");
 
-            // Extract the base variable name (e.g., "Products__1__Items" -> "Products__1__Items")
-            var baseVarMatch = System.Text.RegularExpressions.Regex.Match(expression, @"^([^[.\(]+)");
-            if (baseVarMatch.Success)
+            // Extract all variable names with __ pattern from the expression
+            // This handles both simple cases like "Products__1__Items" and function calls like "ppt.Image(Products__1__Items[0])"
+            var variableRegex = new System.Text.RegularExpressions.Regex(@"([A-Za-z_][A-Za-z0-9_]*__[A-Za-z0-9_]*__[A-Za-z0-9_]*)");
+            var variableMatches = variableRegex.Matches(expression);
+
+            foreach (System.Text.RegularExpressions.Match varMatch in variableMatches)
             {
-                var variableName = baseVarMatch.Groups[1].Value;
+                var variableName = varMatch.Groups[1].Value;
+                Logger.Debug($"DataBinder: Found variable name: '{variableName}'");
 
                 // Skip if variable already exists
                 if (variables.ContainsKey(variableName))
                 {
+                    Logger.Debug($"DataBinder: Variable '{variableName}' already exists, skipping");
                     continue;
-                }                // Try to extract data for this corrected expression
+                }
+
+                // Try to extract data for this corrected expression
                 var extractedData = ExtractDataForCorrectedExpression(data, variableName);
                 if (extractedData != null)
                 {
@@ -1201,58 +1156,6 @@ public class DataBinder
             Logger.Debug($"DataBinder: Error extracting deeply nested property '{baseName}[{baseIndexStr}].{midName}[{midIndexStr}].__{nestedIndexStr}__{finalProperty}': {ex.Message}");
             return null;
         }
-    }
-
-    /// <summary>
-    /// Convert remaining '>' operators to '__' with proper context indexing
-    /// </summary>
-    private string ConvertRemainingContextOperators(string remainder, string contextPath)
-    {
-        if (!remainder.Contains(">"))
-        {
-            return remainder;
-        }
-
-        Logger.Debug($"DataBinder: Converting remaining context operators in '{remainder}' with contextPath '{contextPath}'");
-
-        var result = remainder;
-
-        // For expressions like ">Items[0]...", we need to add the missing Types index
-        // For example: contextPath="Brands[0]>Types[1]" should make ">Items[0]" become "__1__Items[0]"
-        if (result.StartsWith(">") && !string.IsNullOrEmpty(contextPath))
-        {
-            // Extract the last index from contextPath for the missing level
-            var contextParts = contextPath.Split('>');
-            if (contextParts.Length >= 2)
-            {
-                var lastPart = contextParts[contextParts.Length - 1];
-                if (lastPart.Contains('[') && lastPart.Contains(']'))
-                {
-                    var lastIndex = lastPart.Substring(lastPart.IndexOf('[') + 1, lastPart.IndexOf(']') - lastPart.IndexOf('[') - 1);
-                    // Add the missing index level
-                    result = $"__{lastIndex}__{result.Substring(1)}";
-                    Logger.Debug($"DataBinder: Added missing index '{lastIndex}' for context, result: '{result}'");
-                }
-                else
-                {
-                    // No index in last part, use 0 as default
-                    result = $"__0__{result.Substring(1)}";
-                    Logger.Debug($"DataBinder: Added default index '0' for context, result: '{result}'");
-                }
-            }
-            else
-            {
-                // Fallback to simple conversion
-                result = $"__{result.Substring(1)}";
-                Logger.Debug($"DataBinder: Simple conversion for leading '>', result: '{result}'");
-            }
-        }
-
-        // Replace any remaining ">" with "__" (for deeper nesting)
-        result = result.Replace(">", "__");
-
-        Logger.Debug($"DataBinder: Final conversion result: '{remainder}' -> '{result}'");
-        return result;
     }
 
     /// <summary>

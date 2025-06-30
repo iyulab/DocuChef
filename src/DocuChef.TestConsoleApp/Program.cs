@@ -4,4 +4,5 @@ using DocuChef.TestConsoleApp;
 //Test1.Run("TEST.pptx");
 // Test1.Run("TEST2.pptx");
 
-DeepTest.Run();
+//DeepTest.Run();
+AliasTest.Run();

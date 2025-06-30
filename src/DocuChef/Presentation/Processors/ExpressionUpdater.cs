@@ -197,35 +197,49 @@ internal class ExpressionUpdater
          /// </summary>
     private string TransformAliasExpression(string expression, Dictionary<string, string> aliasMap)
     {
+        Logger.Debug($"ExpressionUpdater.TransformAliasExpression: Input expression='{expression}', aliasMap has {aliasMap.Count} entries");
+
+        foreach (var alias in aliasMap)
+        {
+            Logger.Debug($"ExpressionUpdater.TransformAliasExpression: Available alias '{alias.Key}' -> '{alias.Value}'");
+        }
+
+        var result = expression;
+
         foreach (var alias in aliasMap)
         {
             var aliasName = alias.Key;
             var aliasPath = alias.Value;
 
-            // Check if expression starts with the alias name
-            if (expression.StartsWith(aliasName))
-            {
-                // Replace the alias with the full path
-                // Example: "Items[0]" becomes "Products>Items[0]" when alias is "Products>Items as Items"
-                var remainingPart = expression.Substring(aliasName.Length);
-                return aliasPath + remainingPart;
-            }
+            Logger.Debug($"ExpressionUpdater.TransformAliasExpression: Testing alias '{aliasName}' -> '{aliasPath}' against expression '{result}'");
 
-            // Also check for alias usage within function calls or other contexts
-            // Use word boundary to ensure we match complete variable names
-            var pattern = $@"\b{Regex.Escape(aliasName)}\b";
-            if (Regex.IsMatch(expression, pattern))
+            // Create a pattern that matches the alias name followed by array access or property access
+            // This handles cases like: Items[0], Items.Property, Items["key"], etc.
+            // Use word boundaries to ensure we match complete variable names
+            var pattern = $@"\b{Regex.Escape(aliasName)}(?=\[|\.|\[|$)";
+
+            if (Regex.IsMatch(result, pattern))
             {
-                var transformed = Regex.Replace(expression, pattern, aliasPath);
-                if (transformed != expression)
+                var transformed = Regex.Replace(result, pattern, aliasPath);
+                if (transformed != result)
                 {
-                    Logger.Debug($"ExpressionUpdater: Applied alias transformation from '{expression}' to '{transformed}'");
-                    return transformed;
+                    Logger.Debug($"ExpressionUpdater.TransformAliasExpression: MATCHED! '{result}' -> '{transformed}'");
+                    result = transformed;
+                    // Continue to check for other aliases in the same expression
                 }
             }
         }
 
-        return expression;
+        if (result != expression)
+        {
+            Logger.Debug($"ExpressionUpdater.TransformAliasExpression: Final transformation: '{expression}' -> '{result}'");
+        }
+        else
+        {
+            Logger.Debug($"ExpressionUpdater.TransformAliasExpression: No alias match found for '{expression}'");
+        }
+
+        return result;
     }
 
     /// <summary>

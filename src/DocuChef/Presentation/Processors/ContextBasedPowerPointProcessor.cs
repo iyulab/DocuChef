@@ -281,20 +281,35 @@ public class ContextBasedPowerPointProcessor
             var notesSlidePart = slidePart.NotesSlidePart;
             if (notesSlidePart?.NotesSlide?.CommonSlideData?.ShapeTree != null)
             {
-                var textElements = notesSlidePart.NotesSlide.CommonSlideData.ShapeTree
-                    .Descendants<DocumentFormat.OpenXml.Drawing.Text>()
-                    .Select(t => t.Text ?? "")
-                    .Where(text => !string.IsNullOrWhiteSpace(text))
+                // Instead of extracting all text elements, extract paragraph by paragraph
+                var paragraphs = notesSlidePart.NotesSlide.CommonSlideData.ShapeTree
+                    .Descendants<DocumentFormat.OpenXml.Drawing.Paragraph>()
                     .ToList();
 
-                var filteredTexts = textElements
-                    .Where(text => !IsSlideNumber(text.Trim()))
-                    .ToList();
+                var paragraphTexts = new List<string>();
 
-                var result = string.Join("", filteredTexts);
+                foreach (var paragraph in paragraphs)
+                {
+                    var textElements = paragraph.Descendants<DocumentFormat.OpenXml.Drawing.Text>()
+                        .Select(t => t.Text ?? "")
+                        .Where(text => !string.IsNullOrWhiteSpace(text))
+                        .ToList();
 
-                Logger.Debug($"GetSlideNotes: Found {textElements.Count} text elements");
-                Logger.Debug($"GetSlideNotes: Filtered to {filteredTexts.Count} elements");
+                    if (textElements.Count > 0)
+                    {
+                        var paragraphText = string.Join("", textElements).Trim();
+                        if (!IsSlideNumber(paragraphText) && !string.IsNullOrEmpty(paragraphText))
+                        {
+                            paragraphTexts.Add(paragraphText);
+                        }
+                    }
+                }
+
+                // Join paragraphs with newlines to preserve structure
+                var result = string.Join("\n", paragraphTexts);
+
+                Logger.Debug($"GetSlideNotes: Found {paragraphs.Count} paragraphs");
+                Logger.Debug($"GetSlideNotes: Filtered to {paragraphTexts.Count} valid paragraphs");
                 Logger.Debug($"GetSlideNotes: Combined result: '{result}'");
 
                 return result;
@@ -641,7 +656,17 @@ public class ContextBasedPowerPointProcessor
                 {
                     Logger.Debug($"ProcessCompleteAndIncompleteExpressions: Processing complete expressions in element: '{elementText}'");
                     var processedElementText = ProcessElementExpressions(elementText, slideContext);
-                    if (processedElementText != elementText)
+
+                    // Check if the result is empty (binding failure/index out of bounds)
+                    if (string.IsNullOrEmpty(processedElementText) && DollarSignExpressionRegex.IsMatch(elementText))
+                    {
+                        Logger.Debug($"ProcessCompleteAndIncompleteExpressions: Expression resulted in empty string, hiding element: '{elementText}'");
+                        // Hide the element by removing it from parent or setting special attribute
+                        HideTextElement(textElement);
+                        modifiedElements.Add(textElement);
+                        Logger.Debug($"    Hidden element due to binding failure: '{elementText}' → [HIDDEN]");
+                    }
+                    else if (processedElementText != elementText)
                     {
                         textElement.Text = processedElementText;
                         modifiedElements.Add(textElement);
@@ -654,11 +679,11 @@ public class ContextBasedPowerPointProcessor
                 }
                 catch (ElementHideException ex)
                 {
-                    Logger.Debug($"Array bounds exceeded, setting element to empty string: {ex.Message}");
-                    // Set element text to empty string instead of hiding
-                    textElement.Text = "";
+                    Logger.Debug($"Array bounds exceeded, hiding element: {ex.Message}");
+                    // Hide the element instead of setting to empty string
+                    HideTextElement(textElement);
                     modifiedElements.Add(textElement);
-                    Logger.Debug($"    Set element text to empty string due to array bounds: '{elementText}' → ''");
+                    Logger.Debug($"    Hidden element due to array bounds: '{elementText}' → [HIDDEN]");
                 }
             }
         }
@@ -1204,5 +1229,83 @@ public class ContextBasedPowerPointProcessor
 
         // If what remains is only whitespace, then the text contained only expressions
         return string.IsNullOrWhiteSpace(textWithoutExpressions);
+    }
+
+    /// <summary>
+    /// Hide a text element by hiding the containing shape
+    /// </summary>
+    private void HideTextElement(DocumentFormat.OpenXml.Drawing.Text textElement)
+    {
+        try
+        {
+            // Find the shape that contains this text element
+            var shape = FindContainingShape(textElement);
+            if (shape != null)
+            {
+                HideShape(shape);
+                Logger.Debug($"HideTextElement: Successfully hidden shape containing text element");
+            }
+            else
+            {
+                // Fallback: just set text to empty string
+                textElement.Text = "";
+                Logger.Debug($"HideTextElement: Could not find containing shape, cleared text instead");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warning($"HideTextElement: Failed to hide shape: {ex.Message}");
+            // Fallback: just set to empty string
+            textElement.Text = "";
+        }
+    }
+
+    /// <summary>
+    /// Find the shape that contains the given text element
+    /// </summary>
+    private DocumentFormat.OpenXml.OpenXmlElement? FindContainingShape(DocumentFormat.OpenXml.Drawing.Text textElement)
+    {
+        var current = textElement.Parent;
+        while (current != null)
+        {
+            // Look for shape types in presentation slides
+            if (current.LocalName == "sp" || // Shape
+                current.LocalName == "pic" || // Picture
+                current.LocalName == "cxnSp" || // Connection Shape
+                current.LocalName == "grpSp") // Group Shape
+            {
+                return current;
+            }
+            current = current.Parent;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Hide a shape by setting its visibility or removing it
+    /// </summary>
+    private void HideShape(DocumentFormat.OpenXml.OpenXmlElement shape)
+    {
+        try
+        {
+            // Method 1: Try to set visibility property (if supported)
+            // For PowerPoint shapes, we can set the hidden property or transform
+
+            // Method 2: Remove the shape from its parent
+            var parent = shape.Parent;
+            if (parent != null)
+            {
+                parent.RemoveChild(shape);
+                Logger.Debug($"HideShape: Removed shape '{shape.LocalName}' from parent");
+            }
+            else
+            {
+                Logger.Warning($"HideShape: Shape '{shape.LocalName}' has no parent to remove from");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warning($"HideShape: Failed to hide shape '{shape.LocalName}': {ex.Message}");
+        }
     }
 }

@@ -87,8 +87,20 @@ public class TemplateAnalyzer
 
         Logger.Debug($"ParseSlideNotes: Processing notes: '{notes}'");
 
+        // First, handle the case where multiple directives are concatenated without line breaks
+        // Split by '#' and reconstruct with proper line breaks, but keep the '#' at the start
+        var normalizedNotes = notes;
+        if (notes.Contains("#alias:") && !notes.Contains("\n") && !notes.Contains("\r"))
+        {
+            // Replace '#alias:' with '\n#alias:' to create proper line breaks
+            normalizedNotes = notes.Replace("#alias:", "\n#alias:");
+            if (normalizedNotes.StartsWith("\n"))
+                normalizedNotes = normalizedNotes.Substring(1); // Remove leading newline
+            Logger.Debug($"ParseSlideNotes: Normalized concatenated directives: '{normalizedNotes}'");
+        }
+
         // Split by lines to handle each directive properly
-        var lines = notes.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+        var lines = normalizedNotes.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
             .Select(line => line.Trim())
             .Where(line => !string.IsNullOrEmpty(line) && !IsSlideNumber(line))
             .ToList();
