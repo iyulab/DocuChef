@@ -2,6 +2,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocuChef.Presentation.Models;
 using DocuChef.Presentation.Functions;
 using DocuChef.Presentation.Processors;
+using DocuChef.Progress;
 
 namespace DocuChef.Presentation.Context;
 
@@ -54,7 +55,7 @@ public class PPTContext
     /// <summary>
     /// 현재 처리 단계
     /// </summary>
-    public ProcessingPhase CurrentPhase { get; set; } = ProcessingPhase.Initialization; public PPTContext(PresentationDocument templateDocument, PowerPointOptions options)
+    public ProcessingPhase CurrentPhase { get; set; } = ProcessingPhase.TemplateAnalysis; public PPTContext(PresentationDocument templateDocument, PowerPointOptions options)
     {
         TemplateDocument = templateDocument ?? throw new ArgumentNullException(nameof(templateDocument));
         Options = options ?? throw new ArgumentNullException(nameof(options));
@@ -108,19 +109,4 @@ public class PPTContext
     {
         return new SlideContext(this, slideIndex, slideInstance);
     }
-}
-
-/// <summary>
-/// PowerPoint 처리 단계 열거형
-/// </summary>
-public enum ProcessingPhase
-{
-    Initialization,      // 초기화
-    TemplateAnalysis,    // 템플릿 분석
-    AliasTransformation, // Alias 표현식 변환
-    PlanGeneration,      // 슬라이드 계획 생성
-    ExpressionBinding,   // 표현식 바인딩
-    DataBinding,         // 데이터 바인딩
-    FunctionProcessing,  // 함수 처리 (이미지 등)
-    Finalization        // 최종화
 }

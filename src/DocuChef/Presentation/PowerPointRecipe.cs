@@ -7,6 +7,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
 using DocumentFormat.OpenXml.Drawing;
 using DocuChef.Logging;
+using DocuChef.Progress;
 
 namespace DocuChef.Presentation;
 
@@ -23,6 +24,7 @@ public class PowerPointRecipe : IRecipe
     private readonly Dictionary<string, Func<object, object>> customFunctions = new Dictionary<string, Func<object, object>>();
     private object? dataObject;
     private DocuChef.Presentation.Functions.PPTFunctions? _pptFunctions;
+    private ProgressCallback? _progressCallback;
 
     /// <summary>
     /// Creates a new PowerPoint recipe using a template file
@@ -37,6 +39,18 @@ public class PowerPointRecipe : IRecipe
         // Validate template path
         if (string.IsNullOrEmpty(templatePath) || !File.Exists(templatePath))
             throw new ArgumentException("Template file not found", nameof(templatePath));
+    }
+
+    /// <summary>
+    /// Creates a new PowerPoint recipe using a template file with progress callback
+    /// </summary>
+    /// <param name="templatePath">Path to the template file</param>
+    /// <param name="options">Options for processing</param>
+    /// <param name="progressCallback">Progress callback</param>
+    public PowerPointRecipe(string templatePath, PowerPointOptions options, ProgressCallback progressCallback)
+        : this(templatePath, options)
+    {
+        _progressCallback = progressCallback;
     }
 
     /// <summary>
@@ -55,6 +69,18 @@ public class PowerPointRecipe : IRecipe
         templateMemoryStream = new MemoryStream();
         templateStream.CopyTo(templateMemoryStream);
         templateMemoryStream.Position = 0;
+    }
+
+    /// <summary>
+    /// Creates a new PowerPoint recipe using a template stream with progress callback
+    /// </summary>
+    /// <param name="templateStream">Stream containing the template</param>
+    /// <param name="powerPointOptions">Options for processing</param>
+    /// <param name="progressCallback">Progress callback</param>
+    public PowerPointRecipe(Stream templateStream, PowerPointOptions powerPointOptions, ProgressCallback progressCallback)
+        : this(templateStream, powerPointOptions)
+    {
+        _progressCallback = progressCallback;
     }
 
     /// <summary>
@@ -96,6 +122,15 @@ public class PowerPointRecipe : IRecipe
     }
 
     /// <summary>
+    /// Sets the progress callback for tracking processing progress
+    /// </summary>
+    /// <param name="progressCallback">Progress callback</param>
+    public void SetProgressCallback(ProgressCallback progressCallback)
+    {
+        _progressCallback = progressCallback;
+    }
+
+    /// <summary>
     /// Clears all variables
     /// </summary>
     public void ClearVariables()
@@ -127,9 +162,9 @@ public class PowerPointRecipe : IRecipe
             using var templateDocument = OpenTemplateDocument();
             var combinedData = CombineData();
 
-            // Use the new context-based processor
+            // Use the new context-based processor with progress reporting
             var processor = new ContextBasedPowerPointProcessor();
-            var result = processor.ProcessPresentation(templateDocument, options, combinedData);            // Save the working document to the output path
+            var result = processor.ProcessPresentation(templateDocument, options, combinedData, _progressCallback);            // Save the working document to the output path
             if (result is PowerPointDocument pptDoc)
             {
                 // Save the PowerPoint document to the specified output path
@@ -161,9 +196,9 @@ public class PowerPointRecipe : IRecipe
             using var templateDocument = OpenTemplateDocument();
             var combinedData = CombineData();
 
-            // Use the new context-based processor
+            // Use the new context-based processor with progress reporting
             var processor = new ContextBasedPowerPointProcessor();
-            var result = processor.ProcessPresentation(templateDocument, options, combinedData);
+            var result = processor.ProcessPresentation(templateDocument, options, combinedData, _progressCallback);
 
             if (result is PowerPointDocument pptDoc)
             {

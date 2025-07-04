@@ -7,7 +7,9 @@ using DocuChef.Presentation.Models;
 using DocuChef.Presentation.Processors;
 using DocuChef.Presentation.Functions;
 using DocuChef.Presentation.Utilities;
+using DocuChef.Progress;
 using System.Text.RegularExpressions;
+using PPTProcessingPhase = DocuChef.Progress.ProcessingPhase;
 
 namespace DocuChef.Presentation.Processors;
 
@@ -34,14 +36,18 @@ public class ContextBasedPowerPointProcessor
          /// PowerPoint 문서 생성 전체 프로세스
          /// </summary>
     public IDish ProcessPresentation(PresentationDocument templateDocument, PowerPointOptions options,
-        Dictionary<string, object> variables)
+        Dictionary<string, object> variables, ProgressCallback? progressCallback = null)
     {        // 1. PPTContext 초기화
         var context = new PPTContext(templateDocument, options);
         context.AddVariables(variables);
-        context.CurrentPhase = ProcessingPhase.TemplateAnalysis;
+        context.CurrentPhase = PPTProcessingPhase.TemplateAnalysis;
 
         // 작업용 문서 생성
         context.WorkingDocument = CreateWorkingDocument(templateDocument);
+
+        // 진행률 리포터 초기화
+        var progressReporter = new ProgressReporter(progressCallback, options.EnableVerboseLogging);
+        progressReporter.ReportProgress(0, "PowerPoint 처리 시작");
 
         if (options.EnableVerboseLogging)
         {
@@ -49,28 +55,39 @@ public class ContextBasedPowerPointProcessor
         }
         try
         {            // 1. 스마트 따옴표 전처리 - PowerPoint 특수 따옴표를 일반 따옴표로 변환
+            progressReporter.ReportPhaseProgress(PPTProcessingPhase.TemplateAnalysis, 0, 5, "스마트 따옴표 전처리 중");
             PreprocessSmartQuotes(context);
 
             // 2. 템플릿 분석 - SlideInfo List 구성
+            progressReporter.ReportPhaseProgress(PPTProcessingPhase.TemplateAnalysis, 50, 15, "템플릿 분석 중");
             AnalyzeTemplate(context);
 
             // 3. Alias 표현식 변환 - 템플릿의 모든 표현식을 원래 경로로 변환
+            progressReporter.ReportPhaseProgress(PPTProcessingPhase.AliasTransformation, 0, 25, "Alias 표현식 변환 중");
             ApplyAliasTransformations(context);
 
             // 4. 슬라이드 계획 생성 - 바인딩할 데이터를 기반으로 range, foreach 복제 고려
+            progressReporter.ReportPhaseProgress(PPTProcessingPhase.PlanGeneration, 0, 40, "슬라이드 계획 생성 중");
             GenerateSlidePlan(context);
 
             // 5. 슬라이드 생성
+            progressReporter.ReportPhaseProgress(PPTProcessingPhase.ExpressionBinding, 0, 55, "슬라이드 생성 중");
             GenerateSlides(context);
 
             // 6. 데이터 바인딩 처리
-            ProcessDataBinding(context);
+            progressReporter.ReportPhaseProgress(PPTProcessingPhase.DataBinding, 0, 70, "데이터 바인딩 처리 중");
+            ProcessDataBinding(context, progressReporter);
 
             // 7. 함수 처리 (이미지 등)
+            progressReporter.ReportPhaseProgress(PPTProcessingPhase.FunctionProcessing, 0, 85, "함수 처리 중");
             ProcessFunctions(context);
 
             // 8. 최종화
-            return FinalizePresentationTemplate(context);
+            progressReporter.ReportPhaseProgress(PPTProcessingPhase.Finalization, 0, 95, "최종화 중");
+            var result = FinalizePresentationTemplate(context);
+
+            progressReporter.ReportProgress(100, "PowerPoint 처리 완료");
+            return result;
         }
         catch (Exception ex)
         {
@@ -208,7 +225,7 @@ public class ContextBasedPowerPointProcessor
     /// </summary>
     private void AnalyzeTemplate(PPTContext context)
     {
-        context.CurrentPhase = ProcessingPhase.TemplateAnalysis;
+        context.CurrentPhase = PPTProcessingPhase.TemplateAnalysis;
 
         if (context.Options.EnableVerboseLogging)
         {
@@ -334,7 +351,7 @@ public class ContextBasedPowerPointProcessor
          /// </summary>
     private void GenerateSlidePlan(PPTContext context)
     {
-        context.CurrentPhase = ProcessingPhase.PlanGeneration;
+        context.CurrentPhase = PPTProcessingPhase.PlanGeneration;
 
         if (context.Options.EnableVerboseLogging)
         {
@@ -357,7 +374,7 @@ public class ContextBasedPowerPointProcessor
          /// </summary>
     private void ApplyAliasTransformations(PPTContext context)
     {
-        context.CurrentPhase = ProcessingPhase.AliasTransformation;
+        context.CurrentPhase = PPTProcessingPhase.AliasTransformation;
 
         if (context.Options.EnableVerboseLogging)
         {
@@ -469,7 +486,7 @@ public class ContextBasedPowerPointProcessor
          /// </summary>
     private void GenerateSlides(PPTContext context)
     {
-        context.CurrentPhase = ProcessingPhase.ExpressionBinding;
+        context.CurrentPhase = PPTProcessingPhase.ExpressionBinding;
 
         if (context.Options.EnableVerboseLogging)
         {
@@ -486,9 +503,9 @@ public class ContextBasedPowerPointProcessor
     }    /// <summary>
          /// 6단계: 데이터 바인딩 처리
          /// </summary>
-    private void ProcessDataBinding(PPTContext context)
+    private void ProcessDataBinding(PPTContext context, ProgressReporter? progressReporter = null)
     {
-        context.CurrentPhase = ProcessingPhase.DataBinding;
+        context.CurrentPhase = PPTProcessingPhase.DataBinding;
 
         if (context.Options.EnableVerboseLogging)
         {
@@ -512,13 +529,25 @@ public class ContextBasedPowerPointProcessor
             .OfType<DocumentFormat.OpenXml.Presentation.SlideId>().ToList();
 
         // 각 슬라이드에 대해 컨텍스트 생성하고 바인딩 처리
-        for (int i = 0; i < slideIds.Count && i < context.GenerationPlan.SlideInstances.Count; i++)
+        var totalSlides = Math.Min(slideIds.Count, context.GenerationPlan.SlideInstances.Count);
+        for (int i = 0; i < totalSlides; i++)
         {
             var slideId = slideIds[i];
             var slideInstance = context.GenerationPlan.SlideInstances[i];
 
             if (string.IsNullOrEmpty(slideId.RelationshipId?.Value))
-                continue; try
+                continue;
+
+            // 진행률 업데이트
+            if (progressReporter != null)
+            {
+                var slideProgress = (i * 100) / totalSlides;
+                var overallProgress = 70 + (slideProgress * 15 / 100); // DataBinding은 70-85% 구간
+                progressReporter.ReportStepProgress(PPTProcessingPhase.DataBinding, i + 1, totalSlides, overallProgress,
+                    $"슬라이드 {i + 1}/{totalSlides} 데이터 바인딩 중");
+            }
+
+            try
             {
                 // 슬라이드 컨텍스트 생성
                 var slideContext = context.CreateSlideContext(i, slideInstance);
@@ -985,7 +1014,7 @@ public class ContextBasedPowerPointProcessor
     /// </summary>
     private void ProcessFunctions(PPTContext context)
     {
-        context.CurrentPhase = ProcessingPhase.FunctionProcessing; if (context.Options.EnableVerboseLogging)
+        context.CurrentPhase = PPTProcessingPhase.FunctionProcessing; if (context.Options.EnableVerboseLogging)
         {
             Logger.Debug("Phase 7: Processing PowerPoint functions");
         }// PowerPoint 함수 처리 (이미지 삽입 등)
@@ -1002,7 +1031,7 @@ public class ContextBasedPowerPointProcessor
     /// </summary>
     private IDish FinalizePresentationTemplate(PPTContext context)
     {
-        context.CurrentPhase = ProcessingPhase.Finalization;
+        context.CurrentPhase = PPTProcessingPhase.Finalization;
 
         if (context.Options.EnableVerboseLogging)
         {
