@@ -14,13 +14,11 @@ namespace DocuChef.Presentation;
 /// <summary>
 /// Processes PowerPoint templates and generates output documents
 /// </summary>
-public class PowerPointRecipe : IRecipe
+public class PowerPointRecipe : RecipeBase
 {
     private readonly string? templatePath;
     private readonly PowerPointOptions options;
     private readonly MemoryStream? templateMemoryStream;
-    private readonly Dictionary<string, object> variables = new Dictionary<string, object>();
-    private readonly Dictionary<string, object> globalVariables = new Dictionary<string, object>();
     private readonly Dictionary<string, Func<object, object>> customFunctions = new Dictionary<string, Func<object, object>>();
     private object? dataObject;
     private DocuChef.Presentation.Functions.PPTFunctions? _pptFunctions;
@@ -88,37 +86,24 @@ public class PowerPointRecipe : IRecipe
     /// </summary>
     /// <param name="name">Variable name</param>
     /// <param name="value">Variable value</param>
-    public void AddVariable(string name, object value)
+    public override void AddVariable(string name, object value)
     {
         if (string.IsNullOrEmpty(name))
             throw new ArgumentException("Variable name cannot be null or empty", nameof(name));
 
-        variables[name] = value;
+        Variables[name] = value;
     }
 
     /// <summary>
     /// Adds an object as the main data source
     /// </summary>
     /// <param name="data">Data object</param>
-    public void AddVariable(object data)
+    public override void AddVariable(object data)
     {
         if (data == null)
             throw new ArgumentNullException(nameof(data));
 
         dataObject = data;
-    }
-
-    /// <summary>
-    /// Registers a global variable
-    /// </summary>
-    /// <param name="name">Variable name</param>
-    /// <param name="value">Variable value</param>
-    public void RegisterGlobalVariable(string name, object value)
-    {
-        if (string.IsNullOrEmpty(name))
-            throw new ArgumentException("Variable name cannot be null or empty", nameof(name));
-
-        globalVariables[name] = value;
     }
 
     /// <summary>
@@ -133,63 +118,17 @@ public class PowerPointRecipe : IRecipe
     /// <summary>
     /// Clears all variables
     /// </summary>
-    public void ClearVariables()
+    public override void ClearVariables()
     {
-        variables.Clear();
+        Variables.Clear();
         dataObject = null;
-    }
-
-    /// <summary>
-    /// Disposes resources
-    /// </summary>
-    public void Dispose()
-    {
-        templateMemoryStream?.Dispose();
-    }
-
-    /// <summary>
-    /// Generates the PowerPoint document using the new context-based processor
-    /// </summary>
-    /// <param name="outputPath">Path for the output file</param>
-    /// <returns>Document result</returns>
-    public IDish Cook(string outputPath)
-    {
-        if (string.IsNullOrEmpty(outputPath))
-            throw new ArgumentException("Output path cannot be null or empty", nameof(outputPath));
-
-        try
-        {
-            using var templateDocument = OpenTemplateDocument();
-            var combinedData = CombineData();
-
-            // Use the new context-based processor with progress reporting
-            var processor = new ContextBasedPowerPointProcessor();
-            var result = processor.ProcessPresentation(templateDocument, options, combinedData, _progressCallback);            // Save the working document to the output path
-            if (result is PowerPointDocument pptDoc)
-            {
-                // Save the PowerPoint document to the specified output path
-                pptDoc.SaveAs(outputPath);
-
-                if (options.EnableVerboseLogging)
-                {
-                    Logger.Debug($"PowerPoint document saved to: {outputPath}");
-                }
-            }
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            Logger.Error($"Error generating PowerPoint document: {ex.Message}", ex);
-            throw;
-        }
     }
 
     /// <summary>
     /// Generates the PowerPoint document and returns it
     /// </summary>
     /// <returns>Generated PowerPoint document</returns>
-    public PowerPointDocument Generate()
+    public override IDish Generate()
     {
         try
         {
@@ -204,7 +143,7 @@ public class PowerPointRecipe : IRecipe
             {
                 if (options.EnableVerboseLogging)
                 {
-                    Logger.Debug("PowerPoint document generated success fully");
+                    Logger.Debug("PowerPoint document generated successfully");
                 }
                 return pptDoc;
             }
@@ -245,12 +184,12 @@ public class PowerPointRecipe : IRecipe
     /// </summary>
     private Dictionary<string, object> CombineData()
     {
-        var combinedData = new Dictionary<string, object>(variables);
+        var combinedData = new Dictionary<string, object>(Variables);
 
-        // Add global variables
-        foreach (var kvp in globalVariables)
+        // Add global variables (invoke Func<object> to get values)
+        foreach (var kvp in GlobalVariables)
         {
-            combinedData[kvp.Key] = kvp.Value;
+            combinedData[kvp.Key] = kvp.Value();
         }
 
         // Add properties from data object
@@ -303,6 +242,21 @@ public class PowerPointRecipe : IRecipe
         combinedData["ppt"] = _pptFunctions;
 
         return combinedData;
+    }
+
+    /// <summary>
+    /// Disposes resources
+    /// </summary>
+    protected override void Dispose(bool disposing)
+    {
+        if (IsDisposed) return;
+
+        if (disposing)
+        {
+            templateMemoryStream?.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     // NOTE: All data binding related methods have been removed

@@ -147,7 +147,7 @@ public class ExcelRecipe : RecipeBase
     /// <summary>
     /// Generates the document from the template
     /// </summary>
-    public ExcelDocument Generate()
+    public override IDish Generate()
     {
         ThrowIfDisposed();
 

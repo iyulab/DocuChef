@@ -1,6 +1,7 @@
 using DocuChef.Excel;
 using DocuChef.Logging;
 using DocuChef.Presentation;
+using DocuChef.Word;
 
 namespace DocuChef;
 
@@ -67,7 +68,7 @@ public class Chef : IDisposable
         {
             ".xlsx" => LoadExcelTemplate(templatePath),
             ".pptx" => LoadPowerPointTemplate(templatePath),
-            // Future: .docx support
+            ".docx" => LoadWordTemplate(templatePath),
             _ => throw new DocuChefException($"Unsupported file format: {extension}")
         };
     }    /// <summary>
@@ -167,6 +168,56 @@ public class Chef : IDisposable
         {
             Logger.Error("Failed to load PowerPoint template from stream", ex);
             throw new DocuChefException($"Failed to load PowerPoint template from stream: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Loads a Word template from the specified path
+    /// </summary>
+    public WordRecipe LoadWordTemplate(string templatePath, WordOptions? options = null)
+    {
+        ThrowIfDisposed();
+
+        if (string.IsNullOrEmpty(templatePath))
+            throw new ArgumentNullException(nameof(templatePath));
+
+        if (!File.Exists(templatePath))
+            throw new FileNotFoundException("Template file not found", templatePath);
+
+        try
+        {
+            var recipe = new WordRecipe(templatePath, options ?? _options.GetWordOptions());
+            return recipe;
+        }
+        catch (Exception ex) when (!(ex is DocuChefException))
+        {
+            Logger.Error($"Failed to load Word template from {templatePath}", ex);
+            throw new DocuChefException($"Failed to load Word template: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Loads a Word template from a stream
+    /// </summary>
+    public WordRecipe LoadWordTemplate(Stream templateStream, WordOptions? options = null)
+    {
+        ThrowIfDisposed();
+
+        if (templateStream == null)
+            throw new ArgumentNullException(nameof(templateStream));
+
+        if (!templateStream.CanRead)
+            throw new ArgumentException("Template stream must be readable", nameof(templateStream));
+
+        try
+        {
+            var recipe = new WordRecipe(templateStream, options ?? _options.GetWordOptions());
+            return recipe;
+        }
+        catch (Exception ex) when (!(ex is DocuChefException))
+        {
+            Logger.Error("Failed to load Word template from stream", ex);
+            throw new DocuChefException($"Failed to load Word template from stream: {ex.Message}", ex);
         }
     }
 

@@ -1,6 +1,4 @@
 using DocuChef.Excel;
-using DocuChef.Presentation;
-using System.Reflection;
 
 namespace DocuChef;
 
@@ -28,6 +26,16 @@ public interface IRecipe : IDisposable
     /// Registers a global variable
     /// </summary>
     void RegisterGlobalVariable(string name, object value);
+
+    /// <summary>
+    /// Generates the document from the template
+    /// </summary>
+    IDish Generate();
+
+    /// <summary>
+    /// Generates the document and saves it to the specified path
+    /// </summary>
+    IDish Generate(string outputPath);
 }
 
 /// <summary>
@@ -96,6 +104,23 @@ public abstract class RecipeBase : IRecipe
         {
             GlobalVariables[name] = () => value;
         }
+    }
+
+    /// <summary>
+    /// Generates the document from the template
+    /// </summary>
+    public abstract IDish Generate();
+
+    /// <summary>
+    /// Generates the document and saves it to the specified path
+    /// </summary>
+    public virtual IDish Generate(string outputPath)
+    {
+        if (string.IsNullOrEmpty(outputPath))
+            throw new ArgumentNullException(nameof(outputPath));
+        var dish = Generate();
+        dish.SaveAs(outputPath);
+        return dish;
     }
 
     /// <summary>
@@ -192,56 +217,11 @@ public static class RecipeExtensions
     {
         if (string.IsNullOrEmpty(outputPath))
             throw new ArgumentNullException(nameof(outputPath));
-
-        if (recipe is ExcelRecipe excelRecipe)
-        {
-            CookExcelRecipe(excelRecipe, outputPath);
-        }
-        else if (recipe is PowerPointRecipe powerPointRecipe)
-        {
-            CookPowerPointRecipe(powerPointRecipe, outputPath);
-        }
-        else
-        {
-            throw new InvalidOperationException($"Recipe type {recipe.GetType().Name} is not supported");
-        }
+        recipe.Generate(outputPath);
     }
 
     /// <summary>
     /// Cooks (generates) a recipe and returns the resulting dish
     /// </summary>
-    public static IDish CookDish(this IRecipe recipe)
-    {
-        if (recipe is ExcelRecipe excelRecipe)
-        {
-            return excelRecipe.Generate();
-        }
-        else if (recipe is PowerPointRecipe powerPointRecipe)
-        {
-            return powerPointRecipe.Generate();
-        }
-        else
-        {
-            throw new InvalidOperationException($"Recipe type {recipe.GetType().Name} is not supported");
-        }
-    }
-
-    /// <summary>
-    /// Cooks (generates) an Excel recipe
-    /// </summary>
-    private static void CookExcelRecipe(ExcelRecipe recipe, string outputPath)
-    {
-        var document = recipe.Generate();
-        document.SaveAs(outputPath);
-    }
-
-    /// <summary>
-    /// Cooks (generates) a PowerPoint recipe
-    /// </summary>
-    private static void CookPowerPointRecipe(PowerPointRecipe recipe, string outputPath)
-    {
-        // Generate the document and save it - consistent with Excel approach
-        var document = recipe.Generate();
-        document.SaveAs(outputPath);
-    }
+    public static IDish CookDish(this IRecipe recipe) => recipe.Generate();
 }

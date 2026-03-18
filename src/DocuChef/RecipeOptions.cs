@@ -2,6 +2,7 @@ using System.Globalization;
 using ClosedXML.Report.XLCustom;
 using DocuChef.Excel;
 using DocuChef.Presentation;
+using DocuChef.Word;
 
 namespace DocuChef;
 
@@ -26,9 +27,9 @@ public class RecipeOptions
     public PowerPointOptions? PowerPoint { get; set; }
 
     /// <summary>
-    /// Word-specific options (TBD)
+    /// Word-specific options
     /// </summary>
-    // public WordOptions Word { get; set; } = new WordOptions();
+    public WordOptions? Word { get; set; }
 
     /// <summary>
     /// Whether to enable verbose logging
@@ -63,5 +64,15 @@ public class RecipeOptions
             ThrowOnMissingVariable = ThrowOnMissingVariable
         };
         return PowerPoint;
+    }
+
+    internal WordOptions GetWordOptions()
+    {
+        Word ??= new WordOptions()
+        {
+            EnableVerboseLogging = EnableVerboseLogging,
+            ThrowOnMissingVariable = ThrowOnMissingVariable
+        };
+        return Word;
     }
 }
