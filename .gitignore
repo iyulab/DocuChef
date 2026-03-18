@@ -365,3 +365,6 @@ FodyWeavers.xsd
 /src/DocuChef/AI_RULE.md
 /src/DocuChef/AI_RULE.md
 /src/DocuChef.TestApp/template.zip
+
+# Local NuGet config (developer-specific)
+nuget.config

@@ -1,20 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <!--
   <ItemGroup>
-    <PackageReference Include="DollarSignEngine" Version="1.3.4" />
-    <PackageReference Include="Iyulab.ClosedXML.Report" Version="0.2.12" />
+    <PackageReference Include="DollarSignEngine" Version="1.4.0" />
+    <PackageReference Include="Iyulab.ClosedXML.Report" Version="0.2.13" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.4.1" />
   </ItemGroup>
-  -->
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\ClosedXML.Report.XLCustom\src\ClosedXML.Report.XLCustom\ClosedXML.Report.XLCustom.csproj" />
-    <ProjectReference Include="..\..\..\DollarSignEngine\src\DollarSignEngine\DollarSignEngine.csproj" />
-  </ItemGroup>
 </Project>
