@@ -5,14 +5,14 @@ on:
     branches: [ "main" ]
     tags: [ "v*" ]
     paths:
-      - 'src/Directory.Build.props'
+      - 'src/**'
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'src/Directory.Build.props'
-      
+      - 'src/**'
+
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '10.0.x'
   SOLUTION_PATH: 'src/DocuChef.sln'
   PROJECT_PATH: 'src/DocuChef/DocuChef.csproj'
   
