@@ -77,7 +77,7 @@ internal class TestTemplate
 
             // Add Items to recipe
             recipe.AddVariable("Items", items);            // Cook the recipe (generate the presentation)
-            Console.WriteLine("Cooking recipe (generating presentation with NEW system)..."); var document = recipe.Cook(outputPath);
+            Console.WriteLine("Cooking recipe (generating presentation with NEW system)..."); recipe.Cook(outputPath);
 
             Console.WriteLine($"Presentation generated successfully: {outputPath}");            // Verify the data binding worked correctly
             Console.WriteLine("\n" + new string('=', 60));

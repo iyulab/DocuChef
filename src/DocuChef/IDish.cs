@@ -1,6 +1,3 @@
-using DocuChef.Excel;
-using DocuChef.Presentation;
-
 namespace DocuChef;
 
 /// <summary>
@@ -37,26 +34,15 @@ public static class DishExtensions
     /// <summary>
     /// Serves (saves) a document to a file
     /// </summary>
-    public static void Serve<T>(this T document, string filePath) where T : class
-    {
-        if (document is ExcelDocument excelDoc)
-            excelDoc.SaveAs(filePath);
-        else if (document is PowerPointDocument powerPointDoc)
-            powerPointDoc.SaveAs(filePath);
-        else
-            throw new InvalidOperationException($"Document type {typeof(T).Name} is not supported");
-    }
+    public static void Serve(this IDish dish, string filePath) => dish.SaveAs(filePath);
 
     /// <summary>
     /// Serves (saves) a document to a stream
     /// </summary>
-    public static void Serve<T>(this T document, Stream stream) where T : class
-    {
-        if (document is ExcelDocument excelDoc)
-            excelDoc.SaveAs(stream);
-        else if (document is PowerPointDocument powerPointDoc)
-            powerPointDoc.SaveAs(stream);
-        else
-            throw new InvalidOperationException($"Document type {typeof(T).Name} is not supported");
-    }
+    public static void Serve(this IDish dish, Stream stream) => dish.SaveAs(stream);
+
+    /// <summary>
+    /// Presents (opens) a document with the default application
+    /// </summary>
+    public static void Present(this IDish dish) => dish.Open();
 }

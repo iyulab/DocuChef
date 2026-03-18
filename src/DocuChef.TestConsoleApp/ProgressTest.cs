@@ -62,13 +62,11 @@ public class ProgressTest
             var outputPath = Path.Combine("output", "progress-test-output.pptx");
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 
-            var result = recipe.Cook(outputPath);
-            
+            using var result = recipe.Generate(outputPath);
+
             Console.WriteLine();
             Console.WriteLine($"✅ PowerPoint document generated successfully: {outputPath}");
             Console.WriteLine($"   File size: {new FileInfo(outputPath).Length:N0} bytes");
-            
-            result.Dispose();
         }
         catch (Exception ex)
         {
@@ -133,14 +131,14 @@ public class ProgressTest
             var outputPath = Path.Combine("output", "detailed-progress-output.pptx");
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 
-            var result = recipe.Cook(outputPath);
-            
+            using var result = recipe.Generate(outputPath);
+
             Console.WriteLine();
             Console.WriteLine("=== Progress Summary ===");
             Console.WriteLine($"Total progress updates: {progressHistory.Count}");
             Console.WriteLine($"Processing phases covered: {progressHistory.Select(p => p.Phase).Distinct().Count()}");
             Console.WriteLine($"Total processing time: {DateTime.Now:HH:mm:ss}");
-            
+
             // 각 단계별 요약
             var phaseGroups = progressHistory.GroupBy(p => p.Phase);
             foreach (var group in phaseGroups)
@@ -148,8 +146,6 @@ public class ProgressTest
                 var updates = group.ToList();
                 Console.WriteLine($"  {group.Key}: {updates.Count} updates ({updates.First().OverallPercentage}% → {updates.Last().OverallPercentage}%)");
             }
-            
-            result.Dispose();
         }
         catch (Exception ex)
         {
