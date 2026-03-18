@@ -73,10 +73,50 @@ public class WordRecipe : RecipeBase
     {
         ThrowIfDisposed();
 
-        // Will be wired in Task 13 (WordTemplateProcessor)
-        throw new NotImplementedException(
-            "Word document generation is not yet implemented. " +
-            "This will be completed when the WordTemplateProcessor pipeline is wired.");
+        try
+        {
+            Logger.Debug("Generating Word document from template");
+
+            using var templateDoc = OpenTemplateDocument();
+            var combinedData = CombineData();
+            var processor = new Processors.WordTemplateProcessor();
+            var resultStream = processor.Process(templateDoc, _options, combinedData);
+
+            Logger.Info("Word document generated successfully");
+            return new WordDocument(resultStream);
+        }
+        catch (Exception ex) when (ex is not DocuChefException)
+        {
+            Logger.Error($"Error generating Word document: {ex.Message}", ex);
+            throw new DocuChefException($"Failed to generate Word document: {ex.Message}", ex);
+        }
+    }
+
+    private WordprocessingDocument OpenTemplateDocument()
+    {
+        if (!string.IsNullOrEmpty(_templatePath))
+            return WordprocessingDocument.Open(_templatePath, false);
+
+        if (_templateMemoryStream != null)
+        {
+            _templateMemoryStream.Position = 0;
+            return WordprocessingDocument.Open(_templateMemoryStream, false);
+        }
+
+        throw new InvalidOperationException("No template source available");
+    }
+
+    private Dictionary<string, object> CombineData()
+    {
+        var combinedData = new Dictionary<string, object>(Variables);
+
+        foreach (var kvp in GlobalVariables)
+            combinedData[kvp.Key] = kvp.Value();
+
+        string? templateDir = _templatePath != null ? Path.GetDirectoryName(_templatePath) : null;
+        combinedData["word"] = new Functions.WordFunctions(templateDir);
+
+        return combinedData;
     }
 
     /// <summary>
