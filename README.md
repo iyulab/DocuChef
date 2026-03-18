@@ -17,9 +17,9 @@ In the spirit of its culinary name, DocuChef offers both standard API methods an
 - **Error Handling**: Clear error reporting with specialized exception types
 - **Culinary API Theme**: Optional cooking-themed extension methods for a more enjoyable API experience
 - **Consistent Document Interface**: All document types implement the `IDish` interface for unified handling
+- **Word Template Processing**: Generate Word documents from templates with variable binding, table/paragraph repetition, and image insertion
 
 ## Planned Features
-- Word document support
 - Additional built-in functions for Excel and PowerPoint templates
 - Enhanced PowerPoint chart and table functionality
 - Enhanced formatting options
@@ -41,7 +41,7 @@ dotnet add package DocuChef
 var chef = new Chef();
 
 // Load your template (Excel or PowerPoint)
-var recipe = chef.LoadTemplate("template.xlsx"); // or "template.pptx"
+var recipe = chef.LoadTemplate("template.xlsx"); // or "template.pptx" or "template.docx"
 
 // Add your data
 recipe.AddVariable("Title", "Sales Report");
@@ -49,7 +49,7 @@ recipe.AddVariable("Products", productList);
 recipe.AddVariable("Date", DateTime.Now);
 
 // Generate and save the document
-recipe.Cook("result.xlsx"); // or "result.pptx"
+recipe.Cook("result.xlsx"); // or "result.pptx" or "result.docx"
 ```
 
 ### Culinary-themed API
@@ -58,7 +58,7 @@ recipe.Cook("result.xlsx"); // or "result.pptx"
 var chef = new Chef();
 
 // Load your recipe (template)
-var recipe = chef.LoadRecipe("template.xlsx"); // or "template.pptx"
+var recipe = chef.LoadRecipe("template.xlsx"); // or "template.pptx" or "template.docx"
 
 // Add ingredients (variables)
 recipe.AddIngredient("Title", "Sales Report");
@@ -66,7 +66,7 @@ recipe.AddIngredients(productData); // Add all properties from an object
 
 // Cook the document and serve it
 var dish = recipe.CookDish();
-dish.Serve("result.xlsx"); // or "result.pptx"
+dish.Serve("result.xlsx"); // or "result.pptx" or "result.docx"
 
 // Optionally, present the dish to the user
 dish.Present(); // Opens in default application
