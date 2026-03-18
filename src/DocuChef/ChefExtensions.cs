@@ -1,5 +1,6 @@
 ﻿using DocuChef.Excel;
 using DocuChef.Presentation;
+using DocuChef.Word;
 
 namespace DocuChef;
 
@@ -45,5 +46,21 @@ public static class ChefExtensions
     public static PowerPointRecipe LoadPowerPointRecipe(this Chef chef, Stream templateStream, PowerPointOptions? options = null)
     {
         return chef.LoadPowerPointTemplate(templateStream, options);
+    }
+
+    /// <summary>
+    /// Loads a Word template as a recipe
+    /// </summary>
+    public static WordRecipe LoadWordRecipe(this Chef chef, string templatePath, WordOptions? options = null)
+    {
+        return chef.LoadWordTemplate(templatePath, options);
+    }
+
+    /// <summary>
+    /// Loads a Word template from a stream as a recipe
+    /// </summary>
+    public static WordRecipe LoadWordRecipe(this Chef chef, Stream templateStream, WordOptions? options = null)
+    {
+        return chef.LoadWordTemplate(templateStream, options);
     }
 }
