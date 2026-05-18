@@ -41,11 +41,6 @@ public class RecipeOptions
     /// </summary>
     public bool ThrowOnMissingVariable { get; set; } = false;
 
-    /// <summary>
-    /// Maximum number of items to process in iterations (like foreach)
-    /// </summary>
-    public int MaxIterationItems { get; set; } = 1000;
-
     internal ExcelOptions GetExcelOptions()
     {
         Excel ??= new ExcelOptions()

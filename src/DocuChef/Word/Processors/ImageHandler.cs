@@ -49,8 +49,10 @@ public static class ImageHandler
                     continue;
                 }
 
-                // Add the image part
-                var imagePart = mainPart.AddImagePart(ImagePartType.Png);
+                // Add the image part with correct content type based on file extension
+                var ext = Path.GetExtension(placeholder.Path);
+                var contentType = ext.GetContentType() ?? "image/png";
+                var imagePart = mainPart.AddImagePart(contentType);
                 using (var fileStream = File.OpenRead(placeholder.Path))
                 {
                     imagePart.FeedData(fileStream);

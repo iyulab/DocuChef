@@ -16,7 +16,8 @@ public class PowerPointOptions
     public bool ThrowOnMissingVariable { get; set; }
     
     /// <summary>
-    /// Output file path for the generated presentation
+    /// Whether to populate global variables (Today, Now, UserName, etc.)
     /// </summary>
-    public string? OutputPath { get; set; }
+    public bool RegisterGlobalVariables { get; set; } = true;
+
 }

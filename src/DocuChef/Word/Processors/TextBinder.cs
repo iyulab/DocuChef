@@ -1,6 +1,7 @@
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using DollarSignEngine;
+using DocuChef.Word;
 using WText = DocumentFormat.OpenXml.Wordprocessing.Text;
 
 namespace DocuChef.Word.Processors;
@@ -11,17 +12,17 @@ namespace DocuChef.Word.Processors;
 /// </summary>
 public static class TextBinder
 {
-    private static readonly DollarSignOptions EvalOptions = new()
-    {
-        SupportDollarSignSyntax = true,
-        ThrowOnError = false
-    };
-
     /// <summary>
     /// Binds data to all ${expression} placeholders in the given container.
     /// </summary>
-    public static void Bind(OpenXmlElement container, Dictionary<string, object> data)
+    public static void Bind(OpenXmlElement container, Dictionary<string, object> data, WordOptions? options = null)
     {
+        var evalOptions = new DollarSignOptions
+        {
+            SupportDollarSignSyntax = true,
+            ThrowOnError = options?.ThrowOnMissingVariable ?? false
+        };
+
         var runs = container.Descendants<Run>().ToList();
         foreach (var run in runs)
         {
@@ -34,7 +35,7 @@ public static class TextBinder
             if (textElement.Text.Contains("word.Image"))
                 continue;
 
-            var result = EvaluateText(textElement.Text, data);
+            var result = EvaluateText(textElement.Text, data, evalOptions);
             if (result != textElement.Text)
             {
                 textElement.Text = result;
@@ -43,11 +44,11 @@ public static class TextBinder
         }
     }
 
-    private static string EvaluateText(string text, Dictionary<string, object> data)
+    private static string EvaluateText(string text, Dictionary<string, object> data, DollarSignOptions evalOptions)
     {
         try
         {
-            var result = DollarSign.Eval(text, data, EvalOptions);
+            var result = DollarSign.Eval(text, data, evalOptions);
             if (result != null && result.Contains("[ERROR:"))
             {
                 Logger.Debug($"TextBinder: Error in evaluation, preserving original: {text}");

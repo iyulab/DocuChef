@@ -769,12 +769,7 @@ public class ContextBasedPowerPointProcessor
         }
         catch (DocuChefHideException ex)
         {
-            Logger.Debug($"ProcessElementExpressions: Array bounds exceeded, returning empty string: {ex.Message}");
-            return string.Empty;
-        }
-        catch (ElementHideException ex)
-        {
-            Logger.Debug($"ProcessElementExpressions: Element should be empty due to: {ex.Message}");
+            Logger.Debug($"ProcessElementExpressions: Element hidden due to: {ex.Message}");
             return string.Empty;
         }
     }    /// <summary>

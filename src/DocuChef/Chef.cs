@@ -87,6 +87,7 @@ public class Chef : IDisposable
         try
         {
             var recipe = new ExcelRecipe(templatePath, options ?? _options.GetExcelOptions());
+            InjectGlobalData(recipe);
             return recipe;
         }
         catch (Exception ex) when (!(ex is DocuChefException))
@@ -112,6 +113,7 @@ public class Chef : IDisposable
         try
         {
             var recipe = new ExcelRecipe(templateStream, options ?? _options.GetExcelOptions());
+            InjectGlobalData(recipe);
             return recipe;
         }
         catch (Exception ex) when (!(ex is DocuChefException))
@@ -137,6 +139,7 @@ public class Chef : IDisposable
         try
         {
             var recipe = new PowerPointRecipe(templatePath, options ?? _options.GetPowerPointOptions());
+            InjectGlobalData(recipe);
             return recipe;
         }
         catch (Exception ex) when (!(ex is DocuChefException))
@@ -162,6 +165,7 @@ public class Chef : IDisposable
         try
         {
             var recipe = new PowerPointRecipe(templateStream, options ?? _options.GetPowerPointOptions());
+            InjectGlobalData(recipe);
             return recipe;
         }
         catch (Exception ex) when (!(ex is DocuChefException))
@@ -187,6 +191,7 @@ public class Chef : IDisposable
         try
         {
             var recipe = new WordRecipe(templatePath, options ?? _options.GetWordOptions());
+            InjectGlobalData(recipe);
             return recipe;
         }
         catch (Exception ex) when (!(ex is DocuChefException))
@@ -212,6 +217,7 @@ public class Chef : IDisposable
         try
         {
             var recipe = new WordRecipe(templateStream, options ?? _options.GetWordOptions());
+            InjectGlobalData(recipe);
             return recipe;
         }
         catch (Exception ex) when (!(ex is DocuChefException))
@@ -268,6 +274,15 @@ public class Chef : IDisposable
         Logger.Debug("Cleared global data");
 
         return this; // For method chaining
+    }
+
+    private void InjectGlobalData(IRecipe recipe)
+    {
+        foreach (var (key, value) in _globalData)
+        {
+            if (value != null)
+                recipe.AddVariable(key, value);
+        }
     }
 
     /// <summary>

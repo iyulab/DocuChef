@@ -1,5 +1,3 @@
-using DocuChef.Excel;
-
 namespace DocuChef;
 
 /// <summary>
@@ -53,7 +51,9 @@ public abstract class RecipeBase : IRecipe
     public virtual void AddVariable(object data)
     {
         if (data == null)
-            throw new ArgumentNullException(nameof(data)); if (data is IDictionary dictionary)
+            throw new ArgumentNullException(nameof(data));
+
+        if (data is IDictionary dictionary)
         {
             foreach (DictionaryEntry entry in dictionary)
             {
@@ -198,15 +198,6 @@ public static class RecipeExtensions
     public static T ClearIngredients<T>(this T recipe) where T : IRecipe
     {
         recipe.ClearVariables();
-        return recipe;
-    }
-
-    /// <summary>
-    /// Registers a cooking technique (function) for Excel recipes
-    /// </summary>
-    public static ExcelRecipe RegisterTechnique(this ExcelRecipe recipe, string name, Action<ClosedXML.Excel.IXLCell, object, string[]> function)
-    {
-        recipe.RegisterFunction(name, function);
         return recipe;
     }
 

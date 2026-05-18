@@ -10,6 +10,7 @@ public class ExcelDocument : IDish, IDisposable
     private readonly IXLWorkbook _workbook;
     private bool _isDisposed;
     private string? _filePath;
+    private readonly bool _isTempFile;
 
     /// <summary>
     /// The underlying XLWorkbook instance
@@ -25,11 +26,13 @@ public class ExcelDocument : IDish, IDisposable
     {
         _workbook = workbook ?? throw new ArgumentNullException(nameof(workbook));
         _filePath = null;
+        _isTempFile = false;
     }
 
-    internal ExcelDocument(IXLWorkbook workbook, string filePath) : this(workbook)
+    internal ExcelDocument(IXLWorkbook workbook, string filePath, bool isTempFile = false) : this(workbook)
     {
         _filePath = filePath;
+        _isTempFile = isTempFile;
     }
 
     /// <summary>
@@ -131,6 +134,13 @@ public class ExcelDocument : IDish, IDisposable
         if (disposing)
         {
             _workbook?.Dispose();
+
+            if (_isTempFile && _filePath != null && File.Exists(_filePath))
+            {
+                try { File.Delete(_filePath); }
+                catch (Exception ex) { Logger.Warning($"Failed to delete temp file: {ex.Message}"); }
+            }
+
             Logger.Debug("Excel document disposed");
         }
 

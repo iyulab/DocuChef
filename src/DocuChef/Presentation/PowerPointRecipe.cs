@@ -34,9 +34,10 @@ public class PowerPointRecipe : RecipeBase
         this.templatePath = templatePath;
         this.options = options ?? new PowerPointOptions();
 
-        // Validate template path
         if (string.IsNullOrEmpty(templatePath) || !File.Exists(templatePath))
-            throw new ArgumentException("Template file not found", nameof(templatePath));
+            throw new FileNotFoundException("Template file not found", templatePath);
+
+        InitializePresentation();
     }
 
     /// <summary>
@@ -63,10 +64,11 @@ public class PowerPointRecipe : RecipeBase
 
         this.options = powerPointOptions ?? new PowerPointOptions();
 
-        // Copy the stream to memory for reuse
         templateMemoryStream = new MemoryStream();
         templateStream.CopyTo(templateMemoryStream);
         templateMemoryStream.Position = 0;
+
+        InitializePresentation();
     }
 
     /// <summary>
@@ -88,6 +90,8 @@ public class PowerPointRecipe : RecipeBase
     /// <param name="value">Variable value</param>
     public override void AddVariable(string name, object value)
     {
+        ThrowIfDisposed();
+
         if (string.IsNullOrEmpty(name))
             throw new ArgumentException("Variable name cannot be null or empty", nameof(name));
 
@@ -104,6 +108,14 @@ public class PowerPointRecipe : RecipeBase
             throw new ArgumentNullException(nameof(data));
 
         dataObject = data;
+    }
+
+    private void InitializePresentation()
+    {
+        if (options.RegisterGlobalVariables)
+        {
+            RegisterStandardGlobalVariables();
+        }
     }
 
     /// <summary>
@@ -152,10 +164,14 @@ public class PowerPointRecipe : RecipeBase
                 throw new InvalidOperationException("Failed to generate PowerPoint document");
             }
         }
+        catch (DocuChefException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             Logger.Error($"Error generating PowerPoint document: {ex.Message}", ex);
-            throw;
+            throw new DocuChefException($"Failed to generate PowerPoint document: {ex.Message}", ex);
         }
     }
 
@@ -204,27 +220,9 @@ public class PowerPointRecipe : RecipeBase
             }
             else
             {
-                var properties = dataObject.GetType().GetProperties();
-                foreach (var prop in properties)
+                foreach (var kvp in dataObject.GetProperties())
                 {
-                    if (prop.CanRead)
-                    {
-                        try
-                        {
-                            var propertyValue = prop.GetValue(dataObject);
-                            if (propertyValue != null)
-                            {
-                                combinedData[prop.Name] = propertyValue;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            if (options.EnableVerboseLogging)
-                            {
-                                Logger.Warning($"Could not read property {prop.Name}: {ex.Message}");
-                            }
-                        }
-                    }
+                    combinedData[kvp.Key] = kvp.Value;
                 }
             }
         }
@@ -259,52 +257,4 @@ public class PowerPointRecipe : RecipeBase
         base.Dispose(disposing);
     }
 
-    // NOTE: All data binding related methods have been removed
-    // Data binding is now handled exclusively in DataBinder.cs via DollarSignEngine
-    // The following methods are no longer needed:
-    // - BindData()
-    // - ScanAndReplaceExpressionsInSlide()
-    // - ReplaceTextInSlide()
-    // - ExtractExpressionsFromSlide()
-
-    /// <summary>
-    /// Processes image placeholders in the slide
-    /// </summary>
-    private void ProcessImagePlaceholders(SlidePart slidePart, DataBinder dataBinder)
-    {
-        if (slidePart?.Slide == null)
-            return;
-
-        try
-        {
-            // Find all text elements that might contain image placeholders
-            var textElements = slidePart.Slide.Descendants<DocumentFormat.OpenXml.Drawing.Text>().ToList();
-
-            foreach (var textElement in textElements)
-            {
-                if (string.IsNullOrEmpty(textElement.Text))
-                    continue;
-
-                // Look for ppt.Image() function calls
-                if (textElement.Text.Contains("ppt.Image("))
-                {
-                    if (options.EnableVerboseLogging)
-                    {
-                        Logger.Debug($"Found image placeholder: {textElement.Text}");
-                    }
-
-                    // Process the image function
-                    // Note: Image processing is handled by PowerPointFunctionHandler
-                    // This is just for logging/debugging purposes
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            if (options.EnableVerboseLogging)
-            {
-                Logger.Warning($"Error processing image placeholders: {ex.Message}");
-            }
-        }
-    }
 }

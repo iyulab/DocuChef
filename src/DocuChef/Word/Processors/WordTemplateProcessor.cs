@@ -60,7 +60,7 @@ public class WordTemplateProcessor
 
         // Stage 5: Bind text — evaluate ${expression} placeholders
         Logger.Debug("Pipeline stage 5: BindText");
-        TextBinder.Bind(body, data);
+        TextBinder.Bind(body, data, options);
 
         // Stage 6: Process images — replace markers with Drawing elements
         Logger.Debug("Pipeline stage 6: ProcessImages");

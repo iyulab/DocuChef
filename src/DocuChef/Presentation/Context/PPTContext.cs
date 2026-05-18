@@ -60,7 +60,7 @@ public class PPTContext
         TemplateDocument = templateDocument ?? throw new ArgumentNullException(nameof(templateDocument));
         Options = options ?? throw new ArgumentNullException(nameof(options));
         Functions = new PPTFunctions(Variables);
-        DataBinder = new DataBinder();
+        DataBinder = new DataBinder { ThrowOnMissingVariable = options.ThrowOnMissingVariable };
     }/// <summary>
      /// 변수 추가
      /// </summary>

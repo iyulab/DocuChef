@@ -13,6 +13,8 @@ namespace DocuChef.Presentation.Processors;
 /// </summary>
 public class DataBinder
 {
+    public bool ThrowOnMissingVariable { get; set; } = false;
+
     // PERFORMANCE OPTIMIZATION: Use instance-based caching instead of static to prevent memory leaks
     private readonly Dictionary<string, Dictionary<string, object>> _variableCache = new();
     private Dictionary<string, object>? _baseVariables;
@@ -199,7 +201,7 @@ public class DataBinder
             var options = new DollarSignOptions
             {
                 SupportDollarSignSyntax = true,
-                ThrowOnError = false  // Allow graceful handling of missing values
+                ThrowOnError = ThrowOnMissingVariable
             };
 
             var result = DollarSign.Eval(dollarSignTemplate, filteredVariables, options);

@@ -52,10 +52,10 @@ public class ExcelRecipe : RecipeBase
 
         _options = options ?? new ExcelOptions();
 
+        _templatePath = Path.Combine(Path.GetTempPath(), $"DocuChef_{Guid.NewGuid():N}.xlsx");
+
         try
         {
-            // Save to a temporary file to preserve the template content
-            _templatePath = Path.Combine(Path.GetTempPath(), $"DocuChef_{Guid.NewGuid():N}.xlsx");
             Logger.Debug($"Saving template stream to temporary file: {_templatePath}");
 
             using (var fileStream = new FileStream(_templatePath, FileMode.Create, FileAccess.Write))
@@ -71,6 +71,11 @@ public class ExcelRecipe : RecipeBase
         }
         catch (Exception ex)
         {
+            // Clean up temp file if initialization fails
+            if (File.Exists(_templatePath))
+            {
+                try { File.Delete(_templatePath); } catch { }
+            }
             Logger.Error("Failed to initialize Excel template from stream", ex);
             throw new DocuChefException($"Failed to initialize Excel template from stream: {ex.Message}", ex);
         }
@@ -163,14 +168,9 @@ public class ExcelRecipe : RecipeBase
                 throw new DocuChefException("Failed to retrieve workbook from template after generation.");
             }
 
-            // Create a temporary file path for the generated workbook if needed
             string outputPath = Path.Combine(Path.GetTempPath(), $"DocuChef_{Guid.NewGuid():N}.xlsx");
-
-            // Create document with file path reference
-            var document = new ExcelDocument(workbook, outputPath);
-
-            // Save to the temporary file so it can be opened later
             workbook.SaveAs(outputPath);
+            var document = new ExcelDocument(workbook, outputPath, isTempFile: true);
 
             Logger.Info("Excel document generated successfully");
             return document;
@@ -182,32 +182,28 @@ public class ExcelRecipe : RecipeBase
         }
     }
 
-    /// <summary>
-    /// Generates the document directly to a file path
-    /// </summary>
-    public void GenerateToFile(string outputPath)
+    public override IDish Generate(string outputPath)
     {
         ThrowIfDisposed();
 
+        if (string.IsNullOrEmpty(outputPath))
+            throw new ArgumentNullException(nameof(outputPath));
+
         try
         {
-            // Create directory if it doesn't exist
-            FileExtensions.EnsureDirectoryExists(outputPath); Logger.Debug($"Generating Excel document directly to: {outputPath}");
+            outputPath.EnsureDirectoryExists();
+            Logger.Debug($"Generating Excel document to: {outputPath}");
             _template.Generate();
 
-            // Get the workbook from the template
             var workbook = _template.Workbook;
             if (workbook == null)
-            {
                 throw new DocuChefException("Failed to retrieve workbook from template after generation.");
-            }
 
-            // Save directly to the output path
             workbook.SaveAs(outputPath);
-
             Logger.Info($"Excel document generated successfully to: {outputPath}");
+            return new ExcelDocument(workbook, outputPath);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not DocuChefException)
         {
             Logger.Error($"Failed to generate Excel document to {outputPath}", ex);
             throw new DocuChefException($"Failed to generate Excel document: {ex.Message}", ex);
@@ -245,5 +241,20 @@ public class ExcelRecipe : RecipeBase
         }
 
         base.Dispose(disposing);
+    }
+}
+
+/// <summary>
+/// Excel-specific cooking-themed extension methods
+/// </summary>
+public static class ExcelRecipeExtensions
+{
+    /// <summary>
+    /// Registers a cooking technique (custom cell function) for Excel recipes
+    /// </summary>
+    public static ExcelRecipe RegisterTechnique(this ExcelRecipe recipe, string name, Action<IXLCell, object, string[]> function)
+    {
+        recipe.RegisterFunction(name, function);
+        return recipe;
     }
 }
