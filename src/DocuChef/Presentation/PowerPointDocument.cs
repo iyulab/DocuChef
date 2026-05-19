@@ -7,9 +7,10 @@ namespace DocuChef.Presentation;
 /// </summary>
 public class PowerPointDocument : IDish
 {
-    private readonly string filePath;
+    private string filePath;
     private bool isDisposed;
-    
+    private bool _isTempFile;
+
     /// <summary>
     /// Creates a new PowerPoint document
     /// </summary>
@@ -17,13 +18,14 @@ public class PowerPointDocument : IDish
     public PowerPointDocument(string filePath)
     {
         this.filePath = filePath;
+        _isTempFile = filePath.Contains(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase);
     }
-    
+
     /// <summary>
     /// Gets the file path of the document
     /// </summary>
     public string FilePath => filePath;
-    
+
     /// <summary>
     /// Saves the document to a new file path
     /// </summary>
@@ -32,12 +34,13 @@ public class PowerPointDocument : IDish
     {
         if (isDisposed)
             throw new ObjectDisposedException(nameof(PowerPointDocument));
-        
+
         if (string.IsNullOrEmpty(filePath))
             throw new ArgumentNullException(nameof(filePath));
-        
-        // Copy the document to the new path
+
         File.Copy(this.filePath, filePath, true);
+        this.filePath = filePath;
+        _isTempFile = false;
     }
     
     /// <summary>
@@ -87,31 +90,14 @@ public class PowerPointDocument : IDish
     {
         if (!isDisposed)
         {
-            if (disposing)
+            if (disposing && _isTempFile && File.Exists(filePath))
             {
-                // Delete the temporary file if it's in the temp directory
-                if (filePath.Contains(Path.GetTempPath()) && File.Exists(filePath))
-                {
-                    try
-                    {
-                        File.Delete(filePath);
-                    }
-                    catch
-                    {
-                        // Ignore errors during cleanup
-                    }
-                }
+                try { File.Delete(filePath); }
+                catch { }
             }
-            
+
             isDisposed = true;
         }
     }
     
-    /// <summary>
-    /// Finalizer
-    /// </summary>
-    ~PowerPointDocument()
-    {
-        Dispose(false);
-    }
 }

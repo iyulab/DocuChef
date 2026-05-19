@@ -23,6 +23,18 @@ internal static class Logger
     private static Action<string, LogLevel> _logAction = DefaultLogAction;
     private static bool _isEnabled = true;
 
+    internal record LoggerState(LogLevel MinimumLevel, bool IsEnabled, Action<string, LogLevel> LogAction);
+
+    internal static LoggerState CaptureState() =>
+        new(_minimumLevel, _isEnabled, _logAction);
+
+    internal static void RestoreState(LoggerState state)
+    {
+        _minimumLevel = state.MinimumLevel;
+        _isEnabled = state.IsEnabled;
+        _logAction = state.LogAction;
+    }
+
     /// <summary>
     /// Gets or sets the minimum log level
     /// </summary>

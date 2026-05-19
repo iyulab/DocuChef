@@ -120,3 +120,19 @@ recipe.AddVariable("Categories", categories);
 // Generate the presentation
 recipe.Cook("result.pptx");
 ```
+
+## Known Limitations
+
+### Word: Nested `#foreach` not supported
+
+`ParagraphRepeater` and `TableRepeater` process only the outermost `#foreach` block. Nested blocks are silently skipped or produce incorrect output:
+
+```
+{{#foreach items}}
+  {{#foreach item.subItems}}   ← NOT processed
+    {{subItem.Name}}
+  {{/foreach}}
+{{/foreach}}
+```
+
+**Workaround**: Flatten the data before binding (pre-process nested collections into a flat list).

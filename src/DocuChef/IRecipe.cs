@@ -107,6 +107,16 @@ public abstract class RecipeBase : IRecipe
     }
 
     /// <summary>
+    /// Registers a deferred global variable whose value is evaluated on each Generate().
+    /// </summary>
+    protected void RegisterGlobalVariable(string name, Func<object> valueFactory)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentNullException(nameof(name));
+        GlobalVariables[name] = valueFactory;
+    }
+
+    /// <summary>
     /// Generates the document from the template
     /// </summary>
     public abstract IDish Generate();
@@ -128,14 +138,11 @@ public abstract class RecipeBase : IRecipe
     /// </summary>
     protected virtual void RegisterStandardGlobalVariables()
     {
-        // Register date/time related variables
-        RegisterGlobalVariable("Today", () => DateTime.Today);
-        RegisterGlobalVariable("Now", () => DateTime.Now);
-        RegisterGlobalVariable("Year", () => DateTime.Now.Year);
-        RegisterGlobalVariable("Month", () => DateTime.Now.Month);
-        RegisterGlobalVariable("Day", () => DateTime.Now.Day);
-
-        // Register system variables
+        RegisterGlobalVariable("Today", () => (object)DateTime.Today);
+        RegisterGlobalVariable("Now", () => (object)DateTime.Now);
+        RegisterGlobalVariable("Year", () => (object)DateTime.Now.Year);
+        RegisterGlobalVariable("Month", () => (object)DateTime.Now.Month);
+        RegisterGlobalVariable("Day", () => (object)DateTime.Now.Day);
         RegisterGlobalVariable("MachineName", Environment.MachineName);
         RegisterGlobalVariable("UserName", Environment.UserName);
         RegisterGlobalVariable("OSVersion", Environment.OSVersion.ToString());

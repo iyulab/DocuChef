@@ -706,10 +706,9 @@ public class ContextBasedPowerPointProcessor
                         }
                     }
                 }
-                catch (ElementHideException ex)
+                catch (DocuChefHideException ex)
                 {
                     Logger.Debug($"Array bounds exceeded, hiding element: {ex.Message}");
-                    // Hide the element instead of setting to empty string
                     HideTextElement(textElement);
                     modifiedElements.Add(textElement);
                     Logger.Debug($"    Hidden element due to array bounds: '{elementText}' → [HIDDEN]");
@@ -977,32 +976,12 @@ public class ContextBasedPowerPointProcessor
     }
 
     /// <summary>
-    /// Intelligently distribute text across elements to preserve formatting intention
+    /// Returns the remaining text for the current element.
+    /// First element always receives all remaining text (collapses remainingText to ""),
+    /// so subsequent elements fall through to the empty-string branch in the caller.
     /// </summary>
-    private string DistributeTextIntelligently(string text, int totalElements, int currentElementIndex)
-    {
-        if (string.IsNullOrEmpty(text) || totalElements <= 1)
-            return text;
-
-        // For the pattern "BOLD {content} Italic", try to preserve structure
-        if (currentElementIndex == 0 && text.Length > 10)
-        {
-            // First element gets reasonable portion, not everything
-            var firstPortionLength = Math.Min(text.Length * 2 / 3, text.Length - 5);
-            return text.Substring(0, firstPortionLength);
-        }
-        else if (currentElementIndex == totalElements - 1)
-        {
-            // Last element gets the remainder
-            return text;
-        }
-        else
-        {
-            // Middle elements get proportional distribution
-            var portionLength = text.Length / (totalElements - currentElementIndex);
-            return text.Substring(0, Math.Min(portionLength, text.Length));
-        }
-    }
+    private static string DistributeTextIntelligently(string text, int totalElements, int currentElementIndex)
+        => text;
 
     /// <summary>
     /// 5단계: 함수 처리 (이미지 등)

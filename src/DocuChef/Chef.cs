@@ -14,6 +14,9 @@ public class Chef : IDisposable
     private bool _isDisposed;
     private Dictionary<string, object?> _globalData = [];
 
+    // Saved Logger state — restored on Dispose so multiple Chef instances don't pollute each other
+    private readonly Logger.LoggerState _savedLoggerState;
+
     /// <summary>
     /// Creates a new DocuChef instance with default options
     /// </summary>
@@ -28,20 +31,17 @@ public class Chef : IDisposable
     {
         _options = options ?? new RecipeOptions();
 
-        // Set up logging based on options
+        // Snapshot before any mutation — fully restored in Dispose
+        _savedLoggerState = Logger.CaptureState();
+
         Logger.MinimumLevel = _options.EnableVerboseLogging ?
             Logger.LogLevel.Debug : Logger.LogLevel.Warning;
-
         Logger.IsEnabled = true;
 
-        // Set up console logging for verbose mode
         if (_options.EnableVerboseLogging)
         {
             Logger.SetLogHandler((message, level) =>
-            {
-                string prefix = $"[DocuChef:{level}] ";
-                Console.WriteLine($"{prefix}{message}");
-            });
+                Console.WriteLine($"[DocuChef:{level}] {message}"));
         }
 
         Logger.Debug("DocuChef initialized");
@@ -311,9 +311,9 @@ public class Chef : IDisposable
 
         if (disposing)
         {
-            // Dispose any resources here
             _globalData.Clear();
             Logger.Debug("Chef disposed");
+            Logger.RestoreState(_savedLoggerState);
         }
 
         _isDisposed = true;

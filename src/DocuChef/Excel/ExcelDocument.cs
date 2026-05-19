@@ -10,7 +10,7 @@ public class ExcelDocument : IDish, IDisposable
     private readonly IXLWorkbook _workbook;
     private bool _isDisposed;
     private string? _filePath;
-    private readonly bool _isTempFile;
+    private bool _isTempFile;
 
     /// <summary>
     /// The underlying XLWorkbook instance
@@ -51,7 +51,8 @@ public class ExcelDocument : IDish, IDisposable
             FileExtensions.EnsureDirectoryExists(filePath);
 
             _workbook.SaveAs(filePath);
-            _filePath = filePath; // Update the file path
+            _filePath = filePath;
+            _isTempFile = false; // ownership transferred to caller-specified path
             Logger.Info($"Excel document saved to {filePath}");
         }
         catch (Exception ex)

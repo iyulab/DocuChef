@@ -23,6 +23,16 @@ public class DataBinder
     private readonly Dictionary<Type, PropertyInfo[]> _propertyCache = new();
 
     /// <summary>
+    /// Clears all cached variables. Call before re-using this instance with different data.
+    /// (DataBinder is created per Generate() call so this is rarely needed in practice.)
+    /// </summary>
+    public void Reset()
+    {
+        _variableCache.Clear();
+        _baseVariables = null;
+    }
+
+    /// <summary>
     /// Initialize base variables once for performance optimization
     /// </summary>
     public void PrepareBaseVariables(object data)
