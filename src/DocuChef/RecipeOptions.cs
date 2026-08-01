@@ -37,7 +37,9 @@ public class RecipeOptions
     public bool EnableVerboseLogging { get; set; } = false;
 
     /// <summary>
-    /// Whether to throw exceptions for missing variables instead of showing placeholders
+    /// Whether to throw exceptions for missing variables instead of showing placeholders.
+    /// Honored by the Word and PowerPoint pipelines; see <see cref="ExcelOptions"/> for why
+    /// the Excel path cannot currently act on it.
     /// </summary>
     public bool ThrowOnMissingVariable { get; set; } = false;
 
@@ -46,7 +48,11 @@ public class RecipeOptions
         Excel ??= new ExcelOptions()
         {
             EnableVerboseLogging = EnableVerboseLogging,
+            // Still propagated so the value round-trips for callers reading it back; the
+            // Excel pipeline has no way to act on it until the template engine exposes one.
+#pragma warning disable CS0618
             ThrowOnMissingVariable = ThrowOnMissingVariable
+#pragma warning restore CS0618
         };
         return Excel;
     }

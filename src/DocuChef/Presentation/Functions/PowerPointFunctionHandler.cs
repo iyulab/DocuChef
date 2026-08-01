@@ -12,7 +12,7 @@ namespace DocuChef.Presentation.Functions;
 /// </summary>
 public static class PowerPointFunctionHandler
 {
-    private static readonly Regex ImagePlaceholderRegex = new(@"__PPT_IMAGE_([a-f0-9]{32})__([^_]+)(?:__(\d+)__(\d+)__(True|False))?__", RegexOptions.Compiled);
+    private static readonly Regex ImagePlaceholderRegex = new(@"__PPT_IMAGE_[a-f0-9]{32}__", RegexOptions.Compiled);
 
     /// <summary>
     /// <param name="presentationDocument">The presentation document</param>
@@ -117,8 +117,6 @@ public static class PowerPointFunctionHandler
         try
         {
             var placeholder = match.Value;
-            var guid = match.Groups[1].Value;
-            var propertyPath = match.Groups[2].Value;
 
             Logger.Debug($"Processing image placeholder: {placeholder}");
 
@@ -127,18 +125,6 @@ public static class PowerPointFunctionHandler
             {
                 Logger.Warning($"No cached image data found for placeholder: {placeholder}");
                 return;
-            }
-
-            // Parse dimensions if provided
-            int width = 300; // Default width
-            int height = 200; // Default height
-            bool preserveAspectRatio = true;
-
-            if (match.Groups.Count > 3 && !string.IsNullOrEmpty(match.Groups[3].Value))
-            {
-                int.TryParse(match.Groups[3].Value, out width);
-                int.TryParse(match.Groups[4].Value, out height);
-                bool.TryParse(match.Groups[5].Value, out preserveAspectRatio);
             }
 
             // Find the shape that contains this text element

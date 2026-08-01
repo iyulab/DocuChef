@@ -338,7 +338,6 @@ public class TemplateAnalyzer
             {
                 Type = DirectiveType.Foreach,
                 CollectionPath = collectionName,
-                SourcePath = collectionName,  // ProcessForeachDirective uses SourcePath
                 MaxItems = maxIndex + 1 // Convert from 0-based to count
             };
 

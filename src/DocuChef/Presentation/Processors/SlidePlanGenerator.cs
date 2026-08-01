@@ -43,7 +43,22 @@ public class SlidePlanGenerator
             }
 
             // Process nested ranges in correct order
-            ProcessNestedRangeSlides(slideInfos, slidePlan, data, aliasMap);            // Process static slides after ranges (END slide)
+            int plannedBeforeNested = slidePlan.SlideInstances.Count;
+            ProcessNestedRangeSlides(slideInfos, slidePlan, data, aliasMap);
+
+            // Nested planning needs a parent slide and a child slide; a template that pairs
+            // them differently plans nothing here. Without a fallback those source slides are
+            // never visited and their raw ${...} expressions reach the generated document.
+            // Each one is planned exactly once instead: multiplying them through standalone
+            // processing would duplicate slides the nested layout never asked for.
+            if (slidePlan.SlideInstances.Count == plannedBeforeNested)
+            {
+                Logger.Warning("SlidePlanGenerator: Nested context found no parent/child slide pair; " +
+                    "rendering each source slide once. Expressions using '>' resolve to empty.");
+                PlanUnplannedSourceSlidesOnce(slideInfos, slidePlan);
+            }
+
+            // Process static slides after ranges (END slide)
             var endSlides = slideInfos.Where(si => si.Type == SlideType.Static && si.SlideId > slideInfos.Where(s => s.Type == SlideType.Source).Max(s => s.SlideId)).ToList();
             foreach (var endSlide in endSlides)
             {
@@ -72,6 +87,26 @@ public class SlidePlanGenerator
     /// <summary>
     /// Calculates the number of slides required to display all items
     /// </summary>
+    /// <summary>
+    /// Adds one instance for every source slide the plan does not already cover, so that an
+    /// unplannable template still gets its expressions bound instead of emitted verbatim.
+    /// </summary>
+    private void PlanUnplannedSourceSlidesOnce(List<SlideInfo> slideInfos, SlidePlan slidePlan)
+    {
+        var alreadyPlanned = slidePlan.SlideInstances.Select(i => i.SourceSlideId).ToHashSet();
+
+        foreach (var slideInfo in slideInfos.Where(si => si.Type == SlideType.Source && !alreadyPlanned.Contains(si.SlideId)))
+        {
+            slidePlan.AddSlideInstance(new SlideInstance
+            {
+                SourceSlideId = slideInfo.SlideId,
+                Position = GetNextPosition(slidePlan),
+                ContextPath = new List<string>(),
+                IndexOffset = 0
+            });
+        }
+    }
+
     public int CalculateRequiredSlides(int itemCount, int itemsPerSlide)
     {
         if (itemCount == 0 || itemsPerSlide <= 0) return 0;
@@ -123,7 +158,7 @@ public class SlidePlanGenerator
                     si.Type == SlideType.Cloned &&
                     si.Directives.Any(d => d.Type == DirectiveType.Range &&
                                          d.RangeBoundary == RangeBoundary.End &&
-                                         d.SourcePath == rangeDirective.SourcePath));
+                                         d.CollectionPath == rangeDirective.CollectionPath));
 
                 // Get all slides between range begin and end
                 int endIndex = endSlide != null
@@ -138,7 +173,7 @@ public class SlidePlanGenerator
                     .ToList();
 
                 // Process the range
-                ProcessRangeWithContextPath(slidesInRange, slidePlan, data, rangeDirective.SourcePath, aliasMap);
+                ProcessRangeWithContextPath(slidesInRange, slidePlan, data, rangeDirective.CollectionPath, aliasMap);
             }
         }
     }    /// <summary>
@@ -166,7 +201,7 @@ public class SlidePlanGenerator
                 var foreachDirectives = slideInfo.Directives
                     .Where(d => d.Type == DirectiveType.Foreach)
                     .ToList();                // Process nested collections if any
-                if (foreachDirectives.Any(d => d.SourcePath.StartsWith(contextPath + ">")))
+                if (foreachDirectives.Any(d => d.CollectionPath.StartsWith(contextPath + ">")))
                 {
                     ProcessNestedCollections(slideInfo, slidePlan, item, position, itemContext ?? "", aliasMap);
                 }
@@ -195,7 +230,7 @@ public class SlidePlanGenerator
     {
         // Get foreach directives that reference nested collections
         var nestedDirectives = slideInfo.Directives
-            .Where(d => d.Type == DirectiveType.Foreach && d.SourcePath.Contains(">"))
+            .Where(d => d.Type == DirectiveType.Foreach && d.CollectionPath.Contains(">"))
             .ToList();
 
         if (nestedDirectives.Count == 0) return;
@@ -203,7 +238,7 @@ public class SlidePlanGenerator
         foreach (var directive in nestedDirectives)
         {
             // Resolve the nested path relative to the parent context
-            string nestedPath = directive.SourcePath.Replace(parentContext + ">", "");
+            string nestedPath = directive.CollectionPath.Replace(parentContext + ">", "");
 
             // Resolve the nested collection
             IEnumerable<object>? nestedCollection = ResolveCollection(contextItem, nestedPath);
@@ -279,7 +314,7 @@ public class SlidePlanGenerator
                     var inferredDirective = new Directive
                     {
                         Type = DirectiveType.Foreach,
-                        SourcePath = slideInfo.CollectionName,
+                        CollectionPath = slideInfo.CollectionName,
                         MaxItems = slideInfo.MaxArrayIndex + 1
                     };
                     ProcessForeachDirective(slideInfo, slidePlan, data, inferredDirective, aliasMap);
@@ -305,7 +340,7 @@ public class SlidePlanGenerator
     private void ProcessForeachDirective(SlideInfo slideInfo, SlidePlan slidePlan, object data, Directive directive, Dictionary<string, string> aliasMap)
     {
         // Resolve alias if used
-        string resolvedPath = ResolveAliasPath(directive.SourcePath, aliasMap);
+        string resolvedPath = ResolveAliasPath(directive.CollectionPath, aliasMap);
         // Resolve the collection
         IEnumerable<object>? collection = ResolveCollection(data, resolvedPath);
         if (collection == null) return;

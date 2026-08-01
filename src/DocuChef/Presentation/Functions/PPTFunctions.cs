@@ -38,9 +38,11 @@ public class PPTFunctions
 
             Logger.Debug($"PPTFunctions.Image: Received {propertyPathObj?.GetType().Name ?? "null"}, converted to '{propertyPath}'");
 
-            // Generate a unique GUID for this image placeholder
+            // The placeholder carries only the GUID. Embedding the path here would make the
+            // marker unparseable whenever the path itself contains the "_" delimiter, which
+            // is ordinary in file names — the path belongs in the cache, not in the marker.
             var guid = Guid.NewGuid().ToString("N");
-            var placeholder = $"__PPT_IMAGE_{guid}__{propertyPath}__";
+            var placeholder = $"__PPT_IMAGE_{guid}__";
 
             if (_imageCache.ContainsKey(placeholder))
             {

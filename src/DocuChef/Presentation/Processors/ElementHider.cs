@@ -12,10 +12,46 @@ internal class ElementHider
 {
     private static readonly Regex ArrayIndexPattern = new(@"(\w+)\[(\d+)\]", RegexOptions.Compiled);
 
+    private static readonly Regex ExpressionPattern = new(@"\$\{[^}]*\}", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Blanks only the expressions whose array index falls outside the bound data, leaving
+    /// the surrounding text and the in-range expressions of the same element intact.
+    /// Per the template contract, an unresolvable text expression becomes an empty string —
+    /// bounds overflow in one expression must not discard its siblings.
+    /// </summary>
+    /// <returns>True when at least one expression was blanked.</returns>
+    public bool TryBlankOutOfRangeExpressions(string text, int indexOffset, object? data, out string result)
+    {
+        result = text;
+
+        if (string.IsNullOrEmpty(text) || data == null)
+            return false;
+
+        var blanked = false;
+        result = ExpressionPattern.Replace(text, match =>
+        {
+            if (!ShouldHideElement(match.Value, indexOffset, data))
+                return match.Value;
+
+            Logger.Debug($"ElementHider: Blanking out-of-range expression '{match.Value}' (offset {indexOffset})");
+            blanked = true;
+            return string.Empty;
+        });
+
+        return blanked;
+    }
+
+    /// <summary>
+    /// Counts the binding expressions in a text fragment.
+    /// </summary>
+    public static int CountExpressions(string text) =>
+        string.IsNullOrEmpty(text) ? 0 : ExpressionPattern.Matches(text).Count;
+
     /// <summary>
     /// Checks if an element should be hidden due to data index overflow
     /// </summary>
-    public bool ShouldHideElement(string text, int indexOffset, object? data)
+    private bool ShouldHideElement(string text, int indexOffset, object? data)
     {
         if (string.IsNullOrEmpty(text) || data == null)
             return false;

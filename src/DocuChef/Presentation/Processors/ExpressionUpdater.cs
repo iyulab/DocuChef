@@ -35,93 +35,97 @@ internal class ExpressionUpdater
         try
         {
             var textElements = slidePart.Slide.Descendants<DrawingText>().ToList();
-            var elementsToHide = CollectElementsToHide(textElements, indexOffset, data);
+            var slotStates = UpdateTextElements(textElements, indexOffset, data, contextPath);
 
-            UpdateTextElements(textElements, indexOffset, elementsToHide, contextPath);
-            HideOverflowElements(elementsToHide);
+            HideShapesWithNoSurvivingSlot(slotStates);
         }
         catch (Exception ex)
         {
             Logger.Warning($"ExpressionUpdater: Error updating expressions with index offset: {ex.Message}");
         }
-    }/// <summary>
-     /// Collects elements that should be hidden due to data overflow
-     /// </summary>
-    private List<OpenXmlElement> CollectElementsToHide(List<DrawingText> textElements, int indexOffset, object? data)
+    }
+
+    /// <summary>
+    /// Tracks, per shape, whether any slot was blanked for overflow and whether any
+    /// expression survived the blanking.
+    /// </summary>
+    private sealed class ShapeSlotState
     {
-        var elementsToHide = new List<OpenXmlElement>();
+        public bool AnyBlanked;
+        public bool AnySurviving;
+    }
+
+    /// <summary>
+    /// Blanks out-of-range expressions, then resolves context operators and applies the
+    /// index offset to what remains. Returns per-shape slot state so the caller can drop
+    /// the shapes that ended up with no data to show.
+    /// </summary>
+    private Dictionary<OpenXmlElement, ShapeSlotState> UpdateTextElements(List<DrawingText> textElements, int indexOffset, object? data, string? contextPath)
+    {
+        var slotStates = new Dictionary<OpenXmlElement, ShapeSlotState>();
 
         foreach (var textElement in textElements)
         {
             if (string.IsNullOrEmpty(textElement.Text))
-                continue;
-
-            if (_elementHider.ShouldHideElement(textElement.Text, indexOffset, data))
-            {
-                var parentShape = _elementHider.FindParentShape(textElement);
-                if (parentShape != null && !elementsToHide.Contains(parentShape))
-                {
-                    elementsToHide.Add(parentShape);
-                    Logger.Debug($"ExpressionUpdater: Marking shape for hiding due to data overflow in expression: '{textElement.Text}'");
-                }
-            }
-        }
-
-        return elementsToHide;
-    }    /// <summary>
-         /// Updates text elements with adjusted array indices
-         /// </summary>
-    private void UpdateTextElements(List<DrawingText> textElements, int indexOffset, List<OpenXmlElement> elementsToHide, string? contextPath)
-    {
-        foreach (var textElement in textElements)
-        {
-            if (string.IsNullOrEmpty(textElement.Text))
-                continue;
-
-            // Skip elements that will be hidden
-            var parentShape = _elementHider.FindParentShape(textElement);
-            if (parentShape != null && elementsToHide.Contains(parentShape))
                 continue;
 
             var updatedText = textElement.Text;
 
-            // First, resolve context operators if contextPath is provided
+            // Bounds are checked before the offset is applied to the text, because the
+            // check itself accounts for the offset.
+            var blanked = _elementHider.TryBlankOutOfRangeExpressions(updatedText, indexOffset, data, out var blankedText);
+            if (blanked)
+            {
+                updatedText = blankedText;
+            }
+
+            var parentShape = _elementHider.FindParentShape(textElement);
+            if (parentShape != null)
+            {
+                if (!slotStates.TryGetValue(parentShape, out var state))
+                {
+                    state = new ShapeSlotState();
+                    slotStates[parentShape] = state;
+                }
+
+                state.AnyBlanked |= blanked;
+                state.AnySurviving |= ElementHider.CountExpressions(updatedText) > 0;
+            }
+
             if (!string.IsNullOrEmpty(contextPath))
             {
                 updatedText = ResolveContextOperators(updatedText, contextPath);
             }
 
-            // Then, adjust array indices with offset
             if (indexOffset > 0)
             {
                 updatedText = AdjustArrayIndicesInText(updatedText, indexOffset);
             }
+
             if (updatedText != textElement.Text)
             {
                 Logger.Debug($"ExpressionUpdater: Updated expression from '{textElement.Text}' to '{updatedText}'");
                 textElement.Text = updatedText;
             }
-
-            if (!string.IsNullOrEmpty(contextPath))
-            {
-                var contextResolvedText = ResolveContextOperators(textElement.Text, contextPath);
-                if (contextResolvedText != textElement.Text)
-                {
-                    Logger.Debug($"ExpressionUpdater: Resolved context operators in expression from '{textElement.Text}' to '{contextResolvedText}'");
-                    textElement.Text = contextResolvedText;
-                }
-            }
         }
+
+        return slotStates;
     }
 
     /// <summary>
-    /// Hides elements that contain data overflow
+    /// Removes a shape only when every one of its expressions overflowed. A shape keeping at
+    /// least one in-range expression stays — that is the sibling data the old shape-level
+    /// hiding used to discard. Static labels alone do not keep an exhausted slot alive, so a
+    /// spent "Item 3:" placeholder still disappears as the design-first behaviour intends.
     /// </summary>
-    private void HideOverflowElements(List<OpenXmlElement> elementsToHide)
+    private void HideShapesWithNoSurvivingSlot(Dictionary<OpenXmlElement, ShapeSlotState> slotStates)
     {
-        foreach (var element in elementsToHide)
+        foreach (var (shape, state) in slotStates)
         {
-            _elementHider.HideElement(element);
+            if (state.AnyBlanked && !state.AnySurviving)
+            {
+                _elementHider.HideElement(shape);
+            }
         }
     }
 
