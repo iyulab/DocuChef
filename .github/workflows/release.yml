@@ -1,0 +1,62 @@
+name: Release
+
+# Publishing is driven exclusively by a `v*` tag. A push to main never publishes,
+# so a forgotten version bump can no longer produce a green run that ships nothing.
+on:
+  push:
+    tags: [ "v*" ]
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  SOLUTION_PATH: 'src/DocuChef.sln'
+  PROJECT_PATH: 'src/DocuChef/DocuChef.csproj'
+  VERSION_FILE: 'src/Directory.Build.props'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    # Guard: the tag and the packed version must agree, and the version must not
+    # already exist on nuget.org. Either mismatch fails loudly instead of being
+    # swallowed by --skip-duplicate.
+    - name: Verify version
+      run: |
+        set -euo pipefail
+        TAG_VERSION="${GITHUB_REF_NAME#v}"
+        # tr -d '\r' so a CRLF-committed props file cannot produce a phantom mismatch
+        FILE_VERSION=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' "$VERSION_FILE" | head -n1 | tr -d '\r')
+
+        echo "tag=$TAG_VERSION file=$FILE_VERSION"
+        if [ "$TAG_VERSION" != "$FILE_VERSION" ]; then
+          echo "::error::Tag $GITHUB_REF_NAME does not match <Version>$FILE_VERSION</Version> in $VERSION_FILE"
+          exit 1
+        fi
+
+        PUBLISHED=$(curl -sS https://api.nuget.org/v3-flatcontainer/docuchef/index.json \
+          | grep -o "\"$FILE_VERSION\"" || true)
+        if [ -n "$PUBLISHED" ]; then
+          echo "::error::DocuChef $FILE_VERSION is already published on nuget.org — bump the version before tagging"
+          exit 1
+        fi
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.SOLUTION_PATH }}
+
+    - name: Build
+      run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test ${{ env.SOLUTION_PATH }} --no-build --verbosity normal --configuration Release
+
+    - name: Pack
+      run: dotnet pack ${{ env.PROJECT_PATH }} --configuration Release --no-build --output nupkg
+
+    - name: Push to NuGet
+      run: dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
