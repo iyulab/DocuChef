@@ -97,6 +97,33 @@ public class PowerPointIntegrationTests : TestBase
         }
     }
 
+    [Fact]
+    public void Chef_PrepareDish_OneStep_CreatesOutputFile()
+    {
+        string tempPath = TempPptx();
+        string outputPath = TempPptx();
+        try
+        {
+            using var stream = PowerPointTestHelper.CreatePptx("${Title}");
+            File.WriteAllBytes(tempPath, stream.ToArray());
+
+            using var chef = CreateNewChef();
+            chef.PrepareDish(tempPath, new { Title = "PrepareDishTest" }, outputPath);
+
+            File.Exists(outputPath).Should().BeTrue();
+
+            using var resultStream = new MemoryStream(File.ReadAllBytes(outputPath));
+            var texts = PowerPointTestHelper.ReadAllText(resultStream);
+            texts.Should().Contain(t => t.Contains("PrepareDishTest"),
+                "PrepareDish should bind the supplied data just like the Culinary API composition it wraps");
+        }
+        finally
+        {
+            Cleanup(tempPath);
+            Cleanup(outputPath);
+        }
+    }
+
     private static string TempPptx() =>
         Path.Combine(Path.GetTempPath(), $"docuchef_test_{Guid.NewGuid():N}.pptx");
 

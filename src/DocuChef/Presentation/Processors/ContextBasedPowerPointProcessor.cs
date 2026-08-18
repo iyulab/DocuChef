@@ -573,6 +573,12 @@ public class ContextBasedPowerPointProcessor
                     Logger.Debug($"Data binding complete for slide {i} (context: {slideInstance.ContextPath})");
                 }
             }
+            catch (BindingExpressionException)
+            {
+                // Only thrown when ThrowOnMissingVariable is true — must propagate instead of
+                // silently skipping this slide's remaining binding.
+                throw;
+            }
             catch (Exception ex)
             {
                 Logger.Error($"Error processing data binding for slide {i}: {ex.Message}", ex);

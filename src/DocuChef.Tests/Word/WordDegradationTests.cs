@@ -1,3 +1,4 @@
+using DocuChef.Word;
 using FluentAssertions;
 using Xunit.Abstractions;
 
@@ -45,6 +46,57 @@ public class WordDegradationTests : TestBase
 
         string.Join("\n", paragraphs).Should().NotContain("${",
             "an unresolvable variable must render empty, not expose the template expression");
+    }
+
+    [Fact]
+    public void ThrowOnMissingVariable_True_ThrowsInsteadOfDegrading()
+    {
+        // Regression guard: DollarSignOptions.ErrorHandler was observed to silently suppress
+        // ThrowOnError when both are set (verified empirically against DollarSignEngine 1.6.0).
+        // TextBinder must only wire ErrorHandler when ThrowOnMissingVariable is false, or this
+        // contract silently stops throwing.
+        string tempPath = TempDocx();
+        try
+        {
+            using var stream = WordTestHelper.CreateDocx(["Hello ${Missing}!"]);
+            File.WriteAllBytes(tempPath, stream.ToArray());
+
+            using var chef = CreateNewChef();
+            using var recipe = chef.LoadWordTemplate(tempPath,
+                new WordOptions { ThrowOnMissingVariable = true });
+
+            Action act = () => recipe.Generate();
+
+            act.Should().Throw<Exception>(
+                "ThrowOnMissingVariable=true must still surface a failure, not silently degrade");
+        }
+        finally { Cleanup(tempPath); }
+    }
+
+    [Fact]
+    public void ThrowOnMissingVariable_True_ThrowsInsideForeachToo()
+    {
+        // cycle-26 verified ThrowOnMissingVariable=true on a plain paragraph; confirm the same
+        // contract holds for text reached via ParagraphRepeater's #foreach expansion — the
+        // repeater rewrites ${Name} to ${People[i].Name} before TextBinder ever sees it, so this
+        // is a distinct code path from the plain-paragraph case.
+        string tempPath = TempDocx();
+        try
+        {
+            using var stream = WordTestHelper.CreateDocx(["#foreach: People", "${Missing}", "#end"]);
+            File.WriteAllBytes(tempPath, stream.ToArray());
+
+            using var chef = CreateNewChef();
+            using var recipe = chef.LoadWordTemplate(tempPath,
+                new WordOptions { ThrowOnMissingVariable = true });
+            recipe.AddVariable("People", new[] { new Person("Ada") });
+
+            Action act = () => recipe.Generate();
+
+            act.Should().Throw<Exception>(
+                "ThrowOnMissingVariable=true must still surface a failure for expressions reached through #foreach expansion");
+        }
+        finally { Cleanup(tempPath); }
     }
 
     [Fact]

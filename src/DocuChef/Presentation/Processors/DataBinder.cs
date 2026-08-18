@@ -1,6 +1,7 @@
 using DollarSignEngine;
 using DocuChef.Exceptions;
 using DocuChef.Logging;
+using DocuChef.Presentation.Exceptions;
 using System.Collections;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -207,12 +208,24 @@ public class DataBinder
             // Temporarily disable strict validation to allow more flexible array access
             // ValidateArrayIndicesInTemplate(dollarSignTemplate, variables);
 
-            // Setup DollarSignEngine options
+            // Setup DollarSignEngine options.
+            // ErrorHandler is only wired when ThrowOnMissingVariable is false: DollarSignEngine
+            // lets a configured ErrorHandler suppress ThrowOnError entirely (verified empirically —
+            // the two are not independent), so setting it unconditionally would silently break the
+            // ThrowOnMissingVariable=true contract that DataBinder's catch blocks below rely on.
             var options = new DollarSignOptions
             {
                 SupportDollarSignSyntax = true,
                 ThrowOnError = ThrowOnMissingVariable
             };
+            if (!ThrowOnMissingVariable)
+            {
+                options.ErrorHandler = (expression, exception) =>
+                {
+                    Logger.Warning($"DataBinder: expression '{expression}' failed to evaluate, degrading to empty text", exception);
+                    return string.Empty;
+                };
+            }
 
             var result = DollarSign.Eval(dollarSignTemplate, filteredVariables, options);
 
@@ -228,12 +241,19 @@ public class DataBinder
         }
         catch (DollarSignEngineException dollarSignEngineException)
         {
+            // Array-bounds failures are a distinct, intentional degrade path (element-hiding
+            // decisions are made elsewhere by checking for surviving expressions) — always
+            // graceful, regardless of ThrowOnMissingVariable.
             if (dollarSignEngineException.InnerException is ArgumentOutOfRangeException ||
                 dollarSignEngineException.InnerException is IndexOutOfRangeException)
             {
                 Logger.Debug($"DataBinder.EvaluateTemplate: Array index out of bounds, returning empty string - {dollarSignEngineException.Message}");
                 return string.Empty;
             }
+
+            if (ThrowOnMissingVariable)
+                throw new BindingExpressionException(
+                    $"Failed to evaluate expression '{dollarSignTemplate}'", dollarSignEngineException);
 
             Logger.Debug($"DataBinder.EvaluateTemplate: Not an array bounds error, returning empty string");
             return string.Empty;
@@ -242,6 +262,10 @@ public class DataBinder
         {
             Logger.Debug($"DataBinder.EvaluateTemplate: Array bounds exceeded, returning empty string - {hideEx.Message}");
             return string.Empty;
+        }
+        catch (Exception ex) when (ThrowOnMissingVariable)
+        {
+            throw new BindingExpressionException($"Failed to evaluate expression '{dollarSignTemplate}'", ex);
         }
         catch (Exception ex)
         {
@@ -553,6 +577,12 @@ public class DataBinder
         catch (DocuChefHideException)
         {
             // Re-throw DocuChefHideException to allow element hiding
+            throw;
+        }
+        catch (BindingExpressionException)
+        {
+            // Only thrown by EvaluateTemplate when ThrowOnMissingVariable is true — must
+            // propagate to the caller instead of degrading to the original template text.
             throw;
         }
         catch (Exception ex)

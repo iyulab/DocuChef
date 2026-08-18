@@ -63,4 +63,14 @@ public static class ChefExtensions
     {
         return chef.LoadWordTemplate(templateStream, options);
     }
+
+    /// <summary>
+    /// Loads a template, adds ingredients from the given data, and cooks it to the output path in one step
+    /// </summary>
+    public static void PrepareDish(this Chef chef, string templatePath, object data, string outputPath)
+    {
+        var recipe = chef.LoadRecipe(templatePath);
+        recipe.AddIngredients(data);
+        recipe.Cook(outputPath);
+    }
 }

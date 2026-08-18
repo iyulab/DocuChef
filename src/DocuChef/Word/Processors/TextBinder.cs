@@ -1,6 +1,7 @@
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using DollarSignEngine;
+using DocuChef.Presentation.Exceptions;
 using DocuChef.Word;
 using WText = DocumentFormat.OpenXml.Wordprocessing.Text;
 
@@ -17,11 +18,22 @@ public static class TextBinder
     /// </summary>
     public static void Bind(OpenXmlElement container, Dictionary<string, object> data, WordOptions? options = null)
     {
+        var throwOnMissingVariable = options?.ThrowOnMissingVariable ?? false;
         var evalOptions = new DollarSignOptions
         {
             SupportDollarSignSyntax = true,
-            ThrowOnError = options?.ThrowOnMissingVariable ?? false
+            ThrowOnError = throwOnMissingVariable
         };
+        // See DataBinder.EvaluateTemplate for why ErrorHandler is wired only in the non-throwing
+        // case: DollarSignEngine lets a configured ErrorHandler suppress ThrowOnError entirely.
+        if (!throwOnMissingVariable)
+        {
+            evalOptions.ErrorHandler = (expression, exception) =>
+            {
+                Logger.Warning($"TextBinder: expression '{expression}' failed to evaluate, degrading to empty text", exception);
+                return string.Empty;
+            };
+        }
 
         var runs = container.Descendants<Run>().ToList();
         foreach (var run in runs)
@@ -35,7 +47,7 @@ public static class TextBinder
             if (textElement.Text.Contains("word.Image"))
                 continue;
 
-            var result = EvaluateText(textElement.Text, data, evalOptions);
+            var result = EvaluateText(textElement.Text, data, evalOptions, throwOnMissingVariable);
             if (result != textElement.Text)
             {
                 textElement.Text = result;
@@ -44,7 +56,7 @@ public static class TextBinder
         }
     }
 
-    private static string EvaluateText(string text, Dictionary<string, object> data, DollarSignOptions evalOptions)
+    private static string EvaluateText(string text, Dictionary<string, object> data, DollarSignOptions evalOptions, bool throwOnMissingVariable)
     {
         try
         {
@@ -55,6 +67,10 @@ public static class TextBinder
                 return text;
             }
             return result ?? text;
+        }
+        catch (Exception ex) when (throwOnMissingVariable)
+        {
+            throw new BindingExpressionException($"Failed to evaluate expression '{text}'", ex);
         }
         catch (Exception ex)
         {
