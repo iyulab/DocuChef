@@ -99,6 +99,49 @@ public class WordIntegrationTests : TestBase
         }
     }
 
+    public record Item(string Name, string Price);
+
+    [Fact]
+    public void WordRecipe_TableRepetition_WorksWithPlainObjects_NotJustDictionaries()
+    {
+        // Every existing table-repetition test binds List<Dictionary<string,object>>.
+        // A real .NET consumer typically binds a list of POCOs/records instead — verify
+        // that path is not silently different (mirrors the Excel finding in cycle-27 that
+        // ValueTuple list items failed where a record succeeded).
+        string tempPath = Path.Combine(Path.GetTempPath(), $"docuchef_test_{Guid.NewGuid()}.docx");
+        try
+        {
+            using var templateStream = WordTestHelper.CreateDocxWithTable(
+                headerTexts: new[] { "Name", "Price" },
+                templateRowTexts: new[] { "${Items[].Name}", "${Items[].Price}" });
+            File.WriteAllBytes(tempPath, templateStream.ToArray());
+
+            var items = new List<Item>
+            {
+                new("Apple", "1.00"),
+                new("Banana", "0.50"),
+            };
+
+            using var chef = CreateNewChef();
+            using var recipe = chef.LoadTemplate(tempPath);
+            recipe.AddVariable("Items", items);
+            using var dish = recipe.Generate();
+
+            var resultStream = new MemoryStream();
+            dish.SaveAs(resultStream);
+
+            var rows = WordTestHelper.ReadTableRows(resultStream);
+            rows.Should().HaveCount(3); // header + 2 data rows
+            rows[1][0].Should().Be("Apple");
+            rows[1][1].Should().Be("1.00");
+            rows[2][0].Should().Be("Banana");
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
+
     [Fact]
     public void WordRecipe_CookExtension_Works()
     {

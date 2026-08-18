@@ -54,14 +54,17 @@ ${Departments>Teams[0]>Members[2].Name}   // Third member name in the first team
 ```
 ${ppt.Image("ImageProperty")}                    // Basic image binding
 ${ppt.Image("Product.Photo")}                    // Image from nested property
-${ppt.Image("Product.Photo", width: 300, height: 200, preserveAspectRatio: true)}  // With options
 ```
 
 #### Function Parameters
-- **ImageProperty**: Path to image data (URL, file path, or base64)
-- **width**: Desired width in pixels (optional)
-- **height**: Desired height in pixels (optional)
-- **preserveAspectRatio**: Maintain original aspect ratio (optional, default: true)
+- **ImageProperty**: Path to image data (URL, file path, or base64) — the single argument
+  `ppt.Image` accepts.
+
+#### Sizing
+`ppt.Image` does not take width/height/aspect-ratio arguments. The inserted image is sized
+to match the **placeholder shape** it replaces in the template (its width/height come from
+that shape's own dimensions), and the aspect ratio is always preserved. To control the final
+size, resize the placeholder shape itself in the template.
 
 ### 4. Control Directives (In Slide Notes Only)
 
@@ -147,22 +150,35 @@ For complex data structures with parent-child relationships:
 ```
 
 ### Slide Design Example
+
+The `>` operator resolves against "the current parent" only when the parent (`[]`) and child
+(`>`) expressions live on **two separate template slides**. Combining both on a single slide
+is not supported — the engine cannot plan it, and the unresolved parts degrade to empty text
+rather than shipping raw `${...}` syntax.
+
+**Template Slide 1 (parent — array index, no `>`):**
 ```
 Title: ${Categories[0].Name} Category
+```
+
+**Template Slide 2 (child — `>` resolves against the current parent):**
+```
 Item 1: ${Categories>Items[0].Name}: $${Categories>Items[0].Price}
 Item 2: ${Categories>Items[1].Name}: $${Categories>Items[1].Price}
 Item 3: ${Categories>Items[2].Name}: $${Categories>Items[2].Price}
 ```
 
 ### Generated Results
-- **Slide 1** (Categories[0] = Electronics):
-  - Title: "Electronics Category"
+One parent slide followed by one child slide per entry in `Categories`, with `>` on the child
+slide resolved against that iteration's parent:
+
+- **Slide 1** (parent, Categories[0] = Electronics): Title "Electronics Category"
+- **Slide 2** (child, resolved against Electronics):
   - Item 1: "Smartphone: $999"
   - Item 2: "Laptop: $1299"
   - Item 3: "Tablet: $599"
-
-- **Slide 2** (Categories[1] = Furniture):
-  - Title: "Furniture Category"
+- **Slide 3** (parent, Categories[1] = Furniture): Title "Furniture Category"
+- **Slide 4** (child, resolved against Furniture):
   - Item 1: "Sofa: $799"
   - Item 2: "Table: $499"
   - Item 3: (empty)
@@ -330,12 +346,16 @@ Item 3: ${Products[2].Name} - $${Products[2].Price:N2}
 
 ### Employee Directory with Departments
 ```
-// Slide content:
+// Template Slide 1 (parent — array index, no '>'):
 Department: ${Departments[0].Name}
+
+// Template Slide 2 (child — '>' resolves against the current parent):
 Manager: ${Departments>Employees[0].Name}
 Staff: ${Departments>Employees[1].Name}, ${Departments>Employees[2].Name}
 
-// Result: One slide per department with department-specific employees
+// Result: One parent slide + one child slide per department, each child's employees
+// resolved against that department (see "Nested Collections and Context" above — parent
+// and child expressions must be on separate template slides).
 ```
 
 ### Sales Report with Images

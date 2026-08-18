@@ -4,7 +4,7 @@ The Master Chef for Document Templates - Cook delicious documents with your data
 ![DocuChef Overview](./images/image-1.png)
 
 ## Overview
-DocuChef provides a unified interface for document generation across multiple formats. It supports Excel document generation using ClosedXML.Report.XLCustom and PowerPoint document generation using DollarSignEngine, with future plans to integrate additional template engines for Word documents.
+DocuChef provides a unified interface for document generation across multiple formats. It supports Excel document generation using ClosedXML.Report.XLCustom, PowerPoint document generation using DollarSignEngine, and Word document generation with variable binding, table/paragraph repetition, and image insertion.
 
 In the spirit of its culinary name, DocuChef offers both standard API methods and fun cooking-themed extension methods that make template processing feel like preparing a delicious dish!
 
@@ -103,6 +103,22 @@ recipe.RegisterTechnique("FormatCurrency", (cell, value, parameters) => {
     // Same implementation
 });
 
+recipe.Cook("result.xlsx");
+```
+
+### Binding a List (Repeating Rows)
+
+To expand a list into one row per item, define a named range in the template that covers the
+data row plus one extra column to its left and one extra row below it (a service column and a
+service row — required by the underlying ClosedXML.Report engine). Name the range after the
+variable you bind, and reference the current item with the fixed `item` keyword — **not** the
+range name itself:
+
+```csharp
+// Template: named range "Products" spanning A1:C2 (A = service column, row 2 = service row)
+//   B1: {{item.Name}}   C1: {{item.Price}}
+var recipe = chef.LoadTemplate("template.xlsx");
+recipe.AddVariable("Products", productList); // one row is generated per item in productList
 recipe.Cook("result.xlsx");
 ```
 

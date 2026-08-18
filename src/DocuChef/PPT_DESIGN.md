@@ -125,10 +125,18 @@ public SlidePlan GeneratePlan(List<SlideInfo> slideInfos, object data)
 
     if (hasNestedContext)
     {
-        Logger.Debug("SlidePlanGenerator: Detected nested context patterns, using nested processing");
-        // Process nested ranges first, then standalone slides
+        Logger.Debug("SlidePlanGenerator: Detected nested context, using nested range processing");
+        // Nested planning needs a parent slide (array index, no '>') and a child slide
+        // ('>' expressions) as two separate template slides. Static slides before/after the
+        // range are added around this block (omitted here for brevity).
+        int plannedBeforeNested = slidePlan.SlideInstances.Count;
         ProcessNestedRangeSlides(slideInfos, slidePlan, data, aliasMap);
-        ProcessStandaloneSlides(slideInfos, slidePlan, data, aliasMap);
+
+        // A template that doesn't pair a parent/child slide plans nothing above — each source
+        // slide is then planned exactly once instead of left unplanned (which would leak raw
+        // ${...} expressions) or multiplied through standalone processing.
+        if (slidePlan.SlideInstances.Count == plannedBeforeNested)
+            PlanUnplannedSourceSlidesOnce(slideInfos, slidePlan);
     }
     else
     {
