@@ -123,9 +123,11 @@ public class ExcelRecipe : RecipeBase
     }
 
     /// <summary>
-    /// Registers a custom function for cell processing
+    /// Registers a custom function for cell processing. The bound value can be null — an
+    /// expression that resolves to nothing produces one (matches the upstream
+    /// XLFunctionHandler contract as of Iyulab.ClosedXML.Report 0.3.1).
     /// </summary>
-    public void RegisterFunction(string name, Action<IXLCell, object, string[]> function)
+    public void RegisterFunction(string name, Action<IXLCell, object?, string[]> function)
     {
         ThrowIfDisposed();
 
@@ -250,9 +252,10 @@ public class ExcelRecipe : RecipeBase
 public static class ExcelRecipeExtensions
 {
     /// <summary>
-    /// Registers a cooking technique (custom cell function) for Excel recipes
+    /// Registers a cooking technique (custom cell function) for Excel recipes. The bound
+    /// value can be null — see <see cref="ExcelRecipe.RegisterFunction"/>.
     /// </summary>
-    public static ExcelRecipe RegisterTechnique(this ExcelRecipe recipe, string name, Action<IXLCell, object, string[]> function)
+    public static ExcelRecipe RegisterTechnique(this ExcelRecipe recipe, string name, Action<IXLCell, object?, string[]> function)
     {
         recipe.RegisterFunction(name, function);
         return recipe;
