@@ -363,8 +363,12 @@ MigrationBackup/
 FodyWeavers.xsd
 /src/DocuChef/BOT_RULE.md
 /src/DocuChef/AI_RULE.md
-/src/DocuChef/AI_RULE.md
-/src/DocuChef.TestApp/template.zip
+
+# DocuChef.TestConsoleApp scratch output (not test fixtures — those stay tracked under files/)
+/src/DocuChef.TestConsoleApp/output.txt
+/src/DocuChef.TestConsoleApp/temp_output.txt
+/src/DocuChef.TestConsoleApp/output_multi_slides_new.pptx
+/src/DocuChef.TestConsoleApp/output_nested_template.pptx
 
 # Local NuGet config (developer-specific)
 nuget.config

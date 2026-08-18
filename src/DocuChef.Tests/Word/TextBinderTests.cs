@@ -14,7 +14,7 @@ public class TextBinderTests
     {
         using var stream = WordTestHelper.CreateDocx("Hello ${Name}!");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
         var data = new Dictionary<string, object> { { "Name", "World" } };
 
         TextBinder.Bind(body, data);
@@ -28,7 +28,7 @@ public class TextBinderTests
     {
         using var stream = WordTestHelper.CreateDocx("${First} and ${Second}");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
         var data = new Dictionary<string, object>
         {
             { "First", "A" },
@@ -46,7 +46,7 @@ public class TextBinderTests
     {
         using var stream = WordTestHelper.CreateDocx("Hello ${Unknown}!");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
         var data = new Dictionary<string, object>();
 
         var act = () => TextBinder.Bind(body, data);
@@ -59,7 +59,7 @@ public class TextBinderTests
     {
         using var stream = WordTestHelper.CreateDocx("Plain text");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
         var data = new Dictionary<string, object> { { "Name", "World" } };
 
         TextBinder.Bind(body, data);
@@ -73,7 +73,7 @@ public class TextBinderTests
     {
         using var stream = WordTestHelper.CreateDocx("Count: ${Count}");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
         var data = new Dictionary<string, object> { { "Count", 42 } };
 
         TextBinder.Bind(body, data);

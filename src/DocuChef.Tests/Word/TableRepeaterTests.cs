@@ -19,7 +19,7 @@ public class TableRepeaterTests
             new[] { "Name", "Qty" },
             new[] { "${Items[].Name}", "${Items[].Qty}" });
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
 
         var data = new Dictionary<string, object>
         {
@@ -58,7 +58,7 @@ public class TableRepeaterTests
             new[] { "Name", "Qty" },
             new[] { "${Items[].Name}", "${Items[].Qty}" });
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
 
         var data = new Dictionary<string, object>
         {
@@ -80,7 +80,7 @@ public class TableRepeaterTests
             new[] { "Header" },
             new[] { "${StaticValue}" });
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
 
         var data = new Dictionary<string, object>
         {

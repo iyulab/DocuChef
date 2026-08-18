@@ -81,7 +81,7 @@ public static class PowerPointTestHelper
         using var prs = PresentationDocument.Open(stream, false);
         var texts = new List<string>();
 
-        var slideIdList = prs.PresentationPart?.Presentation.SlideIdList;
+        var slideIdList = prs.PresentationPart?.Presentation?.SlideIdList;
         if (slideIdList == null) return texts;
 
         foreach (SlideId sid in slideIdList.Elements<SlideId>())
@@ -89,7 +89,7 @@ public static class PowerPointTestHelper
             var relId = sid.RelationshipId?.Value;
             if (relId == null) continue;
             var slidePart = (SlidePart)prs.PresentationPart!.GetPartById(relId);
-            foreach (var t in slidePart.Slide.Descendants<D.Text>())
+            foreach (var t in slidePart.Slide!.Descendants<D.Text>())
                 texts.Add(t.Text);
         }
         return texts;
@@ -249,7 +249,7 @@ public static class PowerPointTestHelper
         stream.Position = 0;
         using var prs = PresentationDocument.Open(stream, false);
 
-        var slideIdList = prs.PresentationPart?.Presentation.SlideIdList;
+        var slideIdList = prs.PresentationPart?.Presentation?.SlideIdList;
         if (slideIdList == null) return 0;
 
         int count = 0;
@@ -279,7 +279,7 @@ public static class PowerPointTestHelper
         using var prs = PresentationDocument.Open(stream, false);
         var perSlide = new List<string>();
 
-        var slideIdList = prs.PresentationPart?.Presentation.SlideIdList;
+        var slideIdList = prs.PresentationPart?.Presentation?.SlideIdList;
         if (slideIdList == null) return perSlide;
 
         foreach (SlideId sid in slideIdList.Elements<SlideId>())
@@ -287,7 +287,7 @@ public static class PowerPointTestHelper
             var relId = sid.RelationshipId?.Value;
             if (relId == null) continue;
             var slidePart = (SlidePart)prs.PresentationPart!.GetPartById(relId);
-            perSlide.Add(string.Concat(slidePart.Slide.Descendants<D.Text>().Select(t => t.Text)));
+            perSlide.Add(string.Concat(slidePart.Slide!.Descendants<D.Text>().Select(t => t.Text)));
         }
         return perSlide;
     }

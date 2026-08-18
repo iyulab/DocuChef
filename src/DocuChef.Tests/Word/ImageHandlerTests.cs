@@ -37,7 +37,7 @@ public class ImageHandlerTests : IDisposable
         using var stream = WordTestHelper.CreateDocx(placeholderKey);
         using var doc = WordprocessingDocument.Open(stream, true);
         var mainPart = doc.MainDocumentPart!;
-        var body = mainPart.Document.Body!;
+        var body = mainPart.Document!.Body!;
 
         var images = new Dictionary<string, ImagePlaceholder>
         {
@@ -65,7 +65,7 @@ public class ImageHandlerTests : IDisposable
         using var stream = WordTestHelper.CreateDocx("Normal text without placeholders");
         using var doc = WordprocessingDocument.Open(stream, true);
         var mainPart = doc.MainDocumentPart!;
-        var body = mainPart.Document.Body!;
+        var body = mainPart.Document!.Body!;
 
         var images = new Dictionary<string, ImagePlaceholder>
         {

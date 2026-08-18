@@ -14,7 +14,7 @@ public class RunMergerTests
         // ${Name} in a single run should not be modified
         using var stream = WordTestHelper.CreateDocx("Hello ${Name}!");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
 
         RunMerger.MergeExpressionRuns(body);
 
@@ -31,7 +31,7 @@ public class RunMergerTests
         // "${", "Name", "}" in 3 runs → merged to "${Name}" in first run
         using var stream = WordTestHelper.CreateDocxWithSplitRuns("${", "Name", "}");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
 
         RunMerger.MergeExpressionRuns(body);
 
@@ -52,7 +52,7 @@ public class RunMergerTests
         // "${", "First", "} and ${", "Second", "}" → "${First} and ${Second}"
         using var stream = WordTestHelper.CreateDocxWithSplitRuns("${", "First", "} and ${", "Second", "}");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
 
         RunMerger.MergeExpressionRuns(body);
 
@@ -66,7 +66,7 @@ public class RunMergerTests
         // Plain text should be untouched
         using var stream = WordTestHelper.CreateDocxWithSplitRuns("Hello ", "World");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
 
         var originalTexts = body.Elements<Paragraph>().First()
             .Elements<Run>().Select(r => r.InnerText).ToList();
@@ -84,7 +84,7 @@ public class RunMergerTests
         // "${" without "}" should be preserved
         using var stream = WordTestHelper.CreateDocxWithSplitRuns("${", "NoClose");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
 
         var originalTexts = body.Elements<Paragraph>().First()
             .Elements<Run>().Select(r => r.InnerText).ToList();

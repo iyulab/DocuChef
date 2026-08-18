@@ -112,7 +112,7 @@ public static class WordTestHelper
     {
         stream.Position = 0;
         using var doc = WordprocessingDocument.Open(stream, false);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
         return body.Elements<Paragraph>()
             .Select(p => p.InnerText)
             .ToList();
@@ -125,7 +125,7 @@ public static class WordTestHelper
     {
         stream.Position = 0;
         using var doc = WordprocessingDocument.Open(stream, false);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
         var table = body.Elements<Table>().First();
 
         return table.Elements<TableRow>()

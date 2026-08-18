@@ -19,7 +19,7 @@ public class ParagraphRepeaterTests
             "#end",
             "After");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
 
         var data = new Dictionary<string, object>
         {
@@ -64,7 +64,7 @@ public class ParagraphRepeaterTests
             "#end",
             "After");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
 
         var data = new Dictionary<string, object>
         {
@@ -92,7 +92,7 @@ public class ParagraphRepeaterTests
             "Hello ${Name}!",
             "Bye");
         using var doc = WordprocessingDocument.Open(stream, true);
-        var body = doc.MainDocumentPart!.Document.Body!;
+        var body = doc.MainDocumentPart!.Document!.Body!;
 
         var data = new Dictionary<string, object>
         {
